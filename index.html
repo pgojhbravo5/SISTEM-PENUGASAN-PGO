@@ -8,6 +8,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#b3261e">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{--bg:#eef1f5;--card:rgba(255,255,255,.55);--field:rgba(255,255,255,.6);--tx:#1b2430;--mut:#5f6b79;--bd:rgba(255,255,255,.7);--ln:rgba(27,36,48,.1);--ok:#1a7f4b;--bad:#c62828;--pri:#b3261e;--sh:0 8px 28px rgba(40,50,70,.12);--b1:rgba(179,38,30,.28);--b2:rgba(60,110,220,.25);--b3:rgba(26,127,75,.18)}
 @media(prefers-color-scheme:dark){:root{--bg:#0d1115;--card:rgba(34,42,52,.55);--field:rgba(255,255,255,.07);--tx:#e8ecf0;--mut:#98a3af;--bd:rgba(255,255,255,.14);--ln:rgba(255,255,255,.1);--ok:#4cc58a;--bad:#ff6b6b;--pri:#e0554a;--sh:0 8px 28px rgba(0,0,0,.45);--b1:rgba(224,85,74,.3);--b2:rgba(70,120,230,.28);--b3:rgba(76,197,138,.16)}}
@@ -40,6 +42,8 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .tabs button{flex:1;margin:0;width:auto;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:0;border-radius:22px;background:transparent;color:var(--tx);font-size:.72rem;font-weight:600;transition:background .2s,color .2s}
 .tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
+@media(prefers-color-scheme:dark){#peta .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9)}}
+#peta .leaflet-tooltip{font-weight:600}
 </style>
 </head>
 <body>
@@ -115,11 +119,21 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <div class="card"><h2>Log terkini</h2><ul id="log"></ul></div>
 </section>
 
+<!-- TAB 5: Peta lokasi Punch In -->
+<section id="t5" class="tab">
+<div class="card">
+  <h2>Lokasi Punch In</h2>
+  <p id="petaInfo" class="mut" style="margin:0 0 8px"></p>
+  <div id="peta" style="height:62vh;min-height:320px;border-radius:14px;overflow:hidden;position:relative;z-index:0;isolation:isolate"></div>
+</div>
+</section>
+
 <nav class="tabs" aria-label="Menu utama">
   <button data-tab="t1" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>Utama</button>
   <button data-tab="t2"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Jadual</button>
   <button data-tab="t3"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Rujukan</button>
   <button data-tab="t4"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Log</button>
+  <button data-tab="t5"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>Peta</button>
 </nav>
 </div>
 
@@ -133,7 +147,7 @@ const KONFIG_OK = typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_KEY !==
 const db = KONFIG_OK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const MSG_KONFIG = 'Tetapan Supabase belum diisi. Isi config.js dan deploy semula.';
 const $ = s => document.querySelector(s);
-let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false;
+let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false, peta = null, lapisan = null, sibuk = false;
 $('#min').textContent = MIN;
 
 // ===== Tab =====
@@ -141,6 +155,7 @@ function bukaTab(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === id));
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
   window.scrollTo(0, 0);
+  if (id === 't5') setTimeout(() => petaRender(true), 30);
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
@@ -175,6 +190,7 @@ async function boot() {
   const {data: {session}} = await db.auth.getSession();
   if (!session) { $('#login').style.display = 'block'; $('#app').style.display = 'none'; return; }
   $('#login').style.display = 'none'; $('#app').style.display = 'block';
+  semakIzin();
   await load();
   me = anggota.find(a => a.user_id === session.user.id);
   if (!me) { alert(`Akaun ini belum dipautkan dengan anggota. Anggota dibaca: ${anggota.length}, ID akaun: ${session.user.id}`); return; }
@@ -217,6 +233,7 @@ function render() {
   pilihanStesen();
   stesen();
   timer();
+  if (peta) petaRender(false);
 }
 
 // ===== Timer tempoh bertugas (Punch In hingga Punch Out) =====
@@ -253,8 +270,19 @@ async function punch(jenis, st) {
     const n = bertugas().filter(a => a.id !== me.id).length + 1;
     if (!bukaStesen(n).includes(st) && !confirm(`Stesen ${st} ditutup bila ${n} orang bertugas. Teruskan?`)) return;
   }
-  const {error} = await db.from('punch').insert({anggota_id: me.id, jenis, stesen: jenis === 'IN' ? st : null});
-  if (error) alert('Gagal: ' + error.message);
+  if (sibuk) return;
+  sibuk = true;
+  try {
+    const row = {anggota_id: me.id, jenis, stesen: jenis === 'IN' ? st : null};
+    if (jenis === 'IN') {
+      toast('Mendapatkan lokasi...');
+      const g = await lokasi();
+      if (g) { row.lat = g.lat; row.lng = g.lng; }
+      else toast('Lokasi tidak diperoleh. Punch In direkod tanpa lokasi.');
+    }
+    const {error} = await db.from('punch').insert(row);
+    if (error) alert('Gagal: ' + error.message);
+  } finally { sibuk = false; }
 }
 $('#bIn').onclick = () => punch('IN', $('#pilihStesen').value);
 $('#bTukar').onclick = () => {
@@ -311,6 +339,48 @@ $('#aktif').onclick = async () => {
   await izin;
   daftarPush();
 };
+
+// ===== Izin notifikasi: jangan minta berulang kali =====
+function semakIzin() {
+  const b = $('#aktif');
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') b.style.display = 'none';
+  else if (Notification.permission === 'denied') { b.textContent = 'Notifikasi disekat. Benarkan di tetapan pelayar'; b.style.display = 'block'; }
+}
+function bukaAudio() { // pelayar hanya benarkan bunyi selepas sentuhan pertama
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (_) {}
+}
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, bukaAudio, {once: true}));
+
+// ===== Lokasi Punch In dan peta =====
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const lokasi = () => new Promise(r => !navigator.geolocation ? r(null) :
+  navigator.geolocation.getCurrentPosition(p => r({lat: p.coords.latitude, lng: p.coords.longitude}), () => r(null),
+    {enableHighAccuracy: true, timeout: 10000, maximumAge: 30000}));
+
+function petaRender(fit) {
+  if (!window.L) { $('#petaInfo').textContent = 'Peta tidak dapat dimuatkan. Semak sambungan internet.'; return; }
+  if (!peta) {
+    peta = L.map($('#peta')).setView([1.4927, 103.7414], 10);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap'}).addTo(peta);
+    lapisan = L.layerGroup().addTo(peta);
+  }
+  peta.invalidateSize();
+  lapisan.clearLayers();
+  const pts = [];
+  bertugas().forEach(a => {
+    const l = last[a.id];
+    if (l.lat == null || l.lng == null) return;
+    pts.push([l.lat, l.lng]);
+    L.circleMarker([l.lat, l.lng], {radius: 9, color: '#fff', weight: 2, fillColor: '#b3261e', fillOpacity: 1})
+      .bindTooltip(esc(a.kod || a.nama) + (l.stesen ? ' · ' + esc(l.stesen) : ''), {permanent: true, direction: 'top', offset: [0, -8]})
+      .bindPopup(`<b>${esc(a.nama)}</b><br>${esc(l.stesen || '-')}<br>Punch In ${fmt(l.masa)}`)
+      .addTo(lapisan);
+  });
+  $('#petaInfo').textContent = pts.length ? `${pts.length} anggota bertugas dengan lokasi Punch In` : 'Tiada lokasi Punch In bagi anggota yang sedang bertugas';
+  if (fit && pts.length === 1) peta.setView(pts[0], 16);
+  else if (fit && pts.length > 1) peta.fitBounds(pts, {padding: [40, 40], maxZoom: 17});
+}
 
 // ===== Web Push =====
 const b64 = k => Uint8Array.from(atob((k + '='.repeat((4 - k.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
