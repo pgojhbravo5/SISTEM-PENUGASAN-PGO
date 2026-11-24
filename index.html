@@ -134,6 +134,21 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 /* Footer kredit */
 .kredit{margin:6px 0 0;padding:10px 0;text-align:center;font-size:.75rem;line-height:1.6;color:var(--mut)}
 .kredit .hak{margin-top:6px;padding-top:6px;border-top:1px solid var(--ln);font-size:.7rem}
+/* Chat kumpulan */
+#chatCard{display:flex;flex-direction:column;padding:0;overflow:hidden;height:calc(100vh - 150px);height:calc(100dvh - 150px);min-height:320px}
+.ch-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--ln)}
+#chatMsgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;overscroll-behavior:contain}
+.cm{max-width:82%;padding:7px 11px;border-radius:16px;word-break:break-word;white-space:pre-wrap}
+.cm b{display:block;font-size:.72rem;color:var(--pri)}
+.cm small{display:block;text-align:right;font-size:.65rem;opacity:.65;margin-top:1px}
+.cm.lain{align-self:flex-start;background:var(--field);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.cm.me{align-self:flex-end;background:var(--pri);color:#fff;border-bottom-right-radius:4px}
+.cdate{align-self:center;font-size:.7rem;color:var(--mut);background:var(--field);padding:2px 10px;border-radius:999px;margin:6px 0}
+.cf{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--ln)}
+.cf input{margin:0;flex:1;min-width:0}.cf button{width:auto;margin:0;padding:10px 16px}
+body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{display:none!important}
+.tabs button{position:relative}
+.tdot{position:absolute;top:3px;left:calc(50% + 4px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--bad);color:#fff;font:700 .62rem/1 system-ui;font-style:normal;display:none;place-items:center}
 </style>
 </head>
 <body>
@@ -159,7 +174,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <path d="M25 20H35V27Q35 31.5 30 33.5Q25 31.5 25 27Z" fill="#ffd54f" stroke="#f9a825" stroke-width=".8"/>
   <path d="M30 22Q33.2 26 30 30Q26.8 26 30 22Z" fill="#e53935"/>
 </g></defs></svg>
-<div id="alarm"><div class="big">ALARM</div><p id="alarmMsg" style="font-size:1.3rem"></p><button id="alarmOff">Matikan alarm</button></div>
+<div id="alarm"><div class="big">ALARM</div><p id="alarmMsg" style="font-size:1.3rem"></p><p id="alarmDari" style="font-size:1rem;opacity:.9"></p><button id="alarmOff">Matikan alarm</button></div>
 
 <div id="login" class="card" style="margin-top:12vh">
   <h1>Syif PGO Johor</h1>
@@ -264,6 +279,15 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 </div>
 </section>
 
+<!-- TAB 6: Chat kumpulan -->
+<section id="t6" class="tab">
+<div class="card" id="chatCard">
+  <div class="ch-h"><h2 style="margin:0">Chat kumpulan</h2><span class="mut">Semua anggota</span></div>
+  <div id="chatMsgs"></div>
+  <div class="cf"><input id="chatIn" placeholder="Tulis mesej..." maxlength="500" autocomplete="off" enterkeyhint="send"><button id="chatSend" class="pri" type="button">Hantar</button></div>
+</div>
+</section>
+
 <footer class="kredit">
   <div>Pembina sistem &amp; aplikasi: <b>PB Mohamad Aidil</b></div>
   <div>Editor CSS: <b>PB Jevinson</b></div>
@@ -298,7 +322,8 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <button data-tab="t2"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Jadual</button>
   <button data-tab="t3"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Rujukan</button>
   <button data-tab="t4"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Log</button>
-  <button data-tab="t5"><svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/></svg>Notifikasi</button>
+  <button data-tab="t5"><svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/></svg>Notif</button>
+  <button data-tab="t6"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H10l-4 3.5V16H4z"/></svg>Chat<i id="chatDot" class="tdot"></i></button>
 </nav>
 </div>
 
@@ -313,6 +338,7 @@ const db = KONFIG_OK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const MSG_KONFIG = 'Tetapan Supabase belum diisi. Isi config.js dan deploy semula.';
 const $ = s => document.querySelector(s);
 let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false, sibuk = false;
+let chatMsgs = [], chatTdkBaca = 0, chatSedia = false, chatSibuk = false;
 let logFilter = 'all', fAng = '', fStn = '', fDari = '', fHingga = ''; // penapis log: jenis, anggota, stesen, julat tarikh
 $('#min').textContent = MIN;
 
@@ -321,6 +347,8 @@ function bukaTab(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === id));
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
   window.scrollTo(0, 0);
+  document.body.classList.toggle('chat', id === 't6');
+  if (id === 't6') { chatTdkBaca = 0; chatDot(); chatRender(true); }
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
 document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
@@ -364,6 +392,7 @@ async function boot() {
   render();
   rujukanN(Math.min(5, Math.max(3, bertugas().length)));
   aiMula();
+  chatMula();
   if (!subscribed) { subscribed = true; langgan(); }
   daftarPush();
 }
@@ -488,7 +517,7 @@ $('#bTukar').onclick = () => {
   if (last[me.id] && last[me.id].stesen === st) return alert('Anda sudah di stesen ini');
   punch('IN', st);
 };
-$('#bOut').onclick = () => punch('OUT');
+$('#bOut').onclick = () => { if (confirm('Anda pasti mahu Punch Out?')) punch('OUT'); };
 
 async function hantar(jenis) {
   const m = $('#mesej').value.trim();
@@ -508,9 +537,10 @@ function beep(ms = 200) {
   o.connect(g); g.connect(ac.destination);
   o.start(); o.stop(ac.currentTime + ms / 1000);
 }
-function startAlarm(m) {
+function startAlarm(m, dari) {
   clearInterval(alarmTimer);
   $('#alarmMsg').textContent = m;
+  $('#alarmDari').textContent = dari ? 'Dihantar oleh: ' + dari : '';
   $('#alarm').classList.add('on');
   alarmTimer = setInterval(() => { beep(350); navigator.vibrate && navigator.vibrate(350); }, 700);
 }
@@ -524,7 +554,7 @@ function toast(m) {
 function notify(n, sys) {
   const tajuk = n.jenis === 'alarm' ? 'ALARM' : 'Notifikasi';
   toast(`${tajuk}: ${n.mesej}${n.dari ? ' (' + n.dari + ')' : ''}`);
-  if (n.jenis === 'alarm') startAlarm(n.mesej); else { beep(250); navigator.vibrate && navigator.vibrate(200); }
+  if (n.jenis === 'alarm') startAlarm(n.mesej, n.dari); else { beep(250); navigator.vibrate && navigator.vibrate(200); }
   if (sys && 'Notification' in window && Notification.permission === 'granted') // peringatan setempat
     navigator.serviceWorker.getRegistration().then(r => r && r.showNotification(tajuk + ' - Syif PGO', {body: n.mesej, icon: 'icon-192.png', vibrate: [200, 100, 200]}));
 }
@@ -1048,6 +1078,64 @@ $('#aiSend').onclick = aiKirim;
 $('#aiIn').onkeydown = e => { if (e.key === 'Enter') aiKirim(); else if (e.key === 'Escape') aiBuka(false); };
 document.querySelectorAll('#aiChips button').forEach(b => b.onclick = () => aiTanya(b.dataset.q));
 
+// ===== Chat kumpulan (semua ID boleh berbual) =====
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const chatKini = () => $('#t6').classList.contains('on');
+function chatDot() { const d = $('#chatDot'); d.style.display = chatTdkBaca ? 'grid' : 'none'; d.textContent = chatTdkBaca > 9 ? '9+' : chatTdkBaca; }
+function chatNama(m) { const a = anggota.find(x => x.user_id === m.user_id); return a ? a.nama : (m.nama || '?'); }
+function chatRender(bawah) {
+  if (!me) return;
+  const el = $('#chatMsgs'), dekat = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  let h = '', hari = '';
+  chatMsgs.forEach(m => {
+    const hk = new Date(m.masa).toLocaleDateString('ms-MY', {weekday: 'short', day: 'numeric', month: 'short'});
+    if (hk !== hari) { hari = hk; h += `<div class="cdate">${esc(hk)}</div>`; }
+    const sendiri = m.user_id === me.user_id;
+    h += `<div class="cm ${sendiri ? 'me' : 'lain'}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}<span>${esc(m.mesej)}</span><small>${jam(m.masa)}</small></div>`;
+  });
+  el.innerHTML = h || '<p class="mut" style="text-align:center;margin:auto">Belum ada mesej. Mulakan perbualan!</p>';
+  if (bawah || dekat) el.scrollTop = el.scrollHeight;
+}
+function chatTerima(m) {
+  if (chatMsgs.some(x => x.id === m.id)) return;
+  chatMsgs.push(m);
+  if (chatMsgs.length > 200) chatMsgs.shift();
+  chatRender(false);
+  if (m.user_id !== me.user_id && !chatKini()) {
+    chatTdkBaca++; chatDot();
+    toast(`Chat · ${chatNama(m)}: ${m.mesej}`);
+    beep(120);
+  }
+}
+async function chatMuat() {
+  const {data, error} = await db.from('chat').select('*').order('masa', {ascending: false}).limit(200);
+  if (error) {
+    $('#chatMsgs').innerHTML = `<p class="mut" style="text-align:center;margin:auto;padding:0 16px">Chat belum sedia. Jalankan SQL chat di Supabase dahulu.<br>(${esc(error.message)})</p>`;
+    return false;
+  }
+  chatMsgs = (data || []).reverse();
+  chatRender(true);
+  return true;
+}
+async function chatHantar() {
+  const i = $('#chatIn'), v = i.value.trim();
+  if (!v || !me || chatSibuk) return;
+  chatSibuk = true; i.value = '';
+  const {data, error} = await db.from('chat').insert({nama: me.nama, mesej: v}).select().single();
+  chatSibuk = false;
+  if (error) { i.value = v; return alert('Gagal hantar: ' + error.message); }
+  chatTerima(data); chatRender(true);
+}
+async function chatMula() {
+  if (chatSedia) return;
+  if (!(await chatMuat())) return;
+  chatSedia = true;
+  db.channel('chat-grup').on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'chat'}, p => chatTerima(p.new)).subscribe();
+}
+$('#chatSend').onclick = chatHantar;
+$('#chatIn').onkeydown = e => { if (e.key === 'Enter') chatHantar(); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden && chatSedia) chatMuat(); }); // kejar mesej yang terlepas
+
 // ===== Reset penuh (butang Reset di bawah status Live) =====
 $('#bReset').onclick = async e => {
   e.preventDefault();
@@ -1066,9 +1154,9 @@ rujukanN(5);
 setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); aiAuto(); }, 30000);
 
 // Ketuk notifikasi alarm: buka skrin alarm yang berbunyi berulang
-if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'alarm') startAlarm(e.data.mesej); });
-const qa = new URLSearchParams(location.search).get('alarm');
-if (qa) { startAlarm(qa); history.replaceState(null, '', location.pathname); }
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'alarm') startAlarm(e.data.mesej, e.data.dari); });
+const qp = new URLSearchParams(location.search), qa = qp.get('alarm');
+if (qa) { startAlarm(qa, qp.get('dari')); history.replaceState(null, '', location.pathname); }
 
 boot();
 </script>
