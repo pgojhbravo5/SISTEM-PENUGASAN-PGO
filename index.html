@@ -93,6 +93,11 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .lg .who{flex:1;min-width:0}.lg .who b{display:block}.lg .who span{font-size:.85rem}
 .lg .when{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
 .lg .when b{font-variant-numeric:tabular-nums}.lg .when span{font-size:.8rem}
+/* Penapis bilangan bertugas */
+.seg{display:flex;gap:4px;padding:4px;border-radius:16px;background:var(--field);border:1px solid var(--bd);margin:4px 0 10px}
+.seg button{flex:1;width:auto;margin:0;padding:8px 4px;border:0;border-radius:12px;background:transparent;color:var(--mut);font-size:.85rem}
+.seg button.on{background:var(--card);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
+.rt td[colspan]{font-size:.75rem;font-weight:600}
 </style>
 </head>
 <body>
@@ -153,8 +158,17 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 
 <!-- TAB 3: Jadual rujukan -->
 <section id="t3" class="tab">
-<div class="card"><h2>Jadual rujukan stesen</h2><div id="rujukan"></div></div>
-</section>
+  <div class="card">
+    <h2>Rujukan ikut bilangan bertugas</h2>
+    
+    <div class="seg" id="segN" role="group" aria-label="Bilangan anggota bertugas">
+      <button data-n="5">5 orang</button>
+      <button data-n="4">4 orang</button>
+      <button data-n="3">3 orang</button>
+    </div>
+    <div id="rujN"></div>
+  </div>
+  </section>
 
 <!-- TAB 4: Log terkini -->
 <section id="t4" class="tab">
@@ -238,6 +252,7 @@ async function boot() {
   $('#kod').textContent = me.kod || me.nama;
   $('#mykump').textContent = me.kumpulan || '-';
   render();
+  rujukanN(Math.min(5, Math.max(3, bertugas().length)));
   if (!subscribed) { subscribed = true; langgan(); }
   daftarPush();
 }
@@ -567,28 +582,49 @@ function ingatRehat() { // notifikasi 5 minit sebelum dan bila tamat
   });
 }
 
-function rujukan() {
-  const j = h => h.slice(0, 2) + ':' + h.slice(2);
-  const ikon = {
-    Siang: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>',
-    Malam: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>'
-  };
-  const t = jenis => `<div class="sesi">${ikon[jenis]}<b>${jenis}</b><span class="mut">${jenis === 'Siang' ? '08:00–20:00' : '20:00–08:00'}</span></div>
+const IKON_SESI = {
+  Siang: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>',
+  Malam: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>'
+};
+
+// ===== Rujukan ikut bilangan bertugas (penapis 5 / 4 / 3 orang) =====
+const NOTA_N = {
+  5: 'Semua stesen jalan. MERS 2 ganti stesen yang rehat.',
+  4: 'MERS 2 tutup. Stesen lain jalan seperti biasa.',
+  3: 'SPI dan MERS 2 tutup. Rehat perlu relief atau standby kerana minimum 3 orang.'
+};
+let nRuj = 5;
+function rujukanN(n) {
+  nRuj = n;
+  document.querySelectorAll('#segN button').forEach(b => b.classList.toggle('on', +b.dataset.n === n));
+  const buka = bukaStesen(n), tutup = STESEN_SEMUA.filter(s => !buka.includes(s));
+  const t = jenis => {
+    const base = jenis === 'Siang' ? 480 : 1200;
+    let h = `<div class="sesi">${IKON_SESI[jenis]}<b>${jenis}</b><span class="mut">${jenis === 'Siang' ? '08:00–20:00' : '20:00–08:00'}</span></div>
     <table class="rt"><colgroup><col style="width:19%"><col style="width:27%"><col style="width:27%"><col style="width:27%"></colgroup>
-    <tr><th>Stesen</th><th>Kritikal</th><th>Slot 1</th><th>Slot 2</th></tr>` +
-    Object.entries(REHAT[jenis]).map(([s, r]) => {
+      <tr><th>Stesen</th><th>Kritikal</th><th>Slot 1</th><th>Slot 2</th></tr>`;
+    h += STESEN_SEMUA.map(s => {
+      if (!buka.includes(s)) return `<tr><td>${s}</td><td colspan="3" class="mut">Ditutup</td></tr>`;
       const kr = KRITIKAL[s].filter(w => dalamSlot(jenis, mnt(w.slice(0, 4))));
-      return `<tr><td>${s}</td><td class="k">${kr.map(w => j(w.slice(0, 4)) + '–' + j(w.slice(5))).join('<br>') || '<span class="mut">-</span>'}</td>` +
-        r.map(([n, a, b]) => `<td class="${n.toLowerCase()}"><small>${n}</small>${j(a)}–${j(b)}</td>`).join('') + '</tr>';
+      return `<tr><td>${s}</td><td class="k">${kr.map(w => jf(w.slice(0, 4)) + '–' + jf(w.slice(5))).join('<br>') || '<span class="mut">-</span>'}</td>` +
+        REHAT[jenis][s].map(([nm, a, b]) => `<td class="${nm.toLowerCase()}"><small>${nm}</small>${jf(a)}–${jf(b)}</td>`).join('') + '</tr>';
     }).join('') + '</table>';
-  $('#rujukan').innerHTML = t('Siang') + t('Malam') + `<div class="nota">
-    <div><b>5 orang</b>Semua stesen jalan, MERS 2 ganti stesen yang rehat.</div>
-    <div><b>4 orang</b>MERS 2 tutup.</div>
-    <div><b>3 orang</b>SPI juga tutup (rehat perlu relief atau standby kerana minimum 3).</div></div>`;
+    if (n === 5) { // MERS 2 ganti stesen yang rehat
+      const g = [];
+      Object.entries(REHAT[jenis]).forEach(([s, v]) => { if (s !== 'MERS 2') v.forEach(([, a, b]) => g.push([s, a, b])); });
+      g.sort((x, y) => ((mnt(x[1]) - base + 1440) % 1440) - ((mnt(y[1]) - base + 1440) % 1440));
+      h += `<div class="nota"><div><b>MERS 2 ganti</b>${g.map(([s, a, b]) => `${jf(a)}–${jf(b)} ${s}`).join(' · ')}</div></div>`;
+    }
+    return h;
+  };
+  $('#rujN').innerHTML = t('Siang') + t('Malam') + `<div class="nota">
+    <div><b>${n} orang</b>${NOTA_N[n]}</div>
+    ${tutup.length ? `<div><b>Ditutup</b>${tutup.join(', ')}</div>` : ''}</div>`;
 }
+document.querySelectorAll('#segN button').forEach(b => b.onclick = () => rujukanN(+b.dataset.n));
 
 jadual();
-rujukan();
+rujukanN(5);
 setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); }, 30000);
 
 // Ketuk notifikasi alarm: buka skrin alarm yang berbunyi berulang
