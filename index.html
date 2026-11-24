@@ -152,6 +152,12 @@ body.chat .ch-h{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{display:none!important}
 .tabs button{position:relative}
 .tdot{position:absolute;top:3px;left:calc(50% + 4px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--bad);color:#fff;font:700 .62rem/1 system-ui;font-style:normal;display:none;place-items:center}
+/* Chat: gambar dan suara */
+.cf .ic{width:42px;height:42px;padding:0;flex:none;display:grid;place-items:center;border-radius:50%}
+.cf .ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cf .ic.rec{background:var(--bad);color:#fff;border:0;animation:b 1s steps(2) infinite}
+.cm img{display:block;max-width:100%;max-height:260px;border-radius:12px;margin:2px 0;cursor:pointer}
+.cm audio{display:block;width:220px;max-width:100%;height:36px;margin:2px 0}
 </style>
 </head>
 <body>
@@ -287,7 +293,14 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <div class="card" id="chatCard">
   <div class="ch-h"><h2 style="margin:0">Chat kumpulan</h2><span class="mut">Semua anggota</span></div>
   <div id="chatMsgs"></div>
-  <div class="cf"><input id="chatIn" placeholder="Tulis mesej..." maxlength="500" autocomplete="off" enterkeyhint="send"><button id="chatSend" class="pri" type="button">Hantar</button></div>
+  <div class="cf">
+    <button id="chatImg" class="ic" type="button" aria-label="Hantar gambar"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg></button>
+    <input id="chatFile" type="file" accept="image/*" hidden>
+    <input id="chatIn" placeholder="Tulis mesej..." maxlength="500" autocomplete="off" enterkeyhint="send">
+    <button id="chatBatal" class="ic" type="button" aria-label="Batal rakaman" style="display:none"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button id="chatMic" class="ic" type="button" aria-label="Rakam suara"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button>
+    <button id="chatSend" class="pri" type="button">Hantar</button>
+  </div>
 </div>
 </section>
 
@@ -1083,7 +1096,7 @@ $('#aiSend').onclick = aiKirim;
 $('#aiIn').onkeydown = e => { if (e.key === 'Enter') aiKirim(); else if (e.key === 'Escape') aiBuka(false); };
 document.querySelectorAll('#aiChips button').forEach(b => b.onclick = () => aiTanya(b.dataset.q));
 
-// ===== Chat kumpulan (semua ID boleh berbual) =====
+// ===== Chat kumpulan (semua ID boleh berbual; teks, gambar, suara) =====
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const chatKini = () => $('#t6').classList.contains('on');
 function chatDot() { const d = $('#chatDot'); d.style.display = chatTdkBaca ? 'grid' : 'none'; d.textContent = chatTdkBaca > 9 ? '9+' : chatTdkBaca; }
@@ -1096,7 +1109,10 @@ function chatRender(bawah) {
     const hk = new Date(m.masa).toLocaleDateString('ms-MY', {weekday: 'short', day: 'numeric', month: 'short'});
     if (hk !== hari) { hari = hk; h += `<div class="cdate">${esc(hk)}</div>`; }
     const sendiri = m.user_id === me.user_id;
-    h += `<div class="cm ${sendiri ? 'me' : 'lain'}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}<span>${esc(m.mesej)}</span><small>${jam(m.masa)}</small></div>`;
+    const isi = m.jenis === 'gambar' ? `<img src="${esc(m.url)}" loading="lazy" alt="Gambar" data-buka="${esc(m.url)}">`
+      : m.jenis === 'suara' ? `<audio controls preload="metadata" src="${esc(m.url)}"></audio>`
+      : `<span>${esc(m.mesej)}</span>`;
+    h += `<div class="cm ${sendiri ? 'me' : 'lain'}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}${isi}<small>${jam(m.masa)}</small></div>`;
   });
   el.innerHTML = h || '<p class="mut" style="text-align:center;margin:auto">Belum ada mesej. Mulakan perbualan!</p>';
   if (bawah || dekat) el.scrollTop = el.scrollHeight;
@@ -1108,7 +1124,7 @@ function chatTerima(m) {
   chatRender(false);
   if (m.user_id !== me.user_id && !chatKini()) {
     chatTdkBaca++; chatDot();
-    toast(`Chat · ${chatNama(m)}: ${m.mesej}`);
+    toast(`Chat · ${chatNama(m)}: ${m.jenis === 'gambar' ? '📷 Gambar' : m.jenis === 'suara' ? '🎤 Mesej suara' : m.mesej}`);
     beep(120);
   }
 }
@@ -1137,6 +1153,81 @@ async function chatMula() {
   chatSedia = true;
   db.channel('chat-grup').on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'chat'}, p => chatTerima(p.new)).subscribe();
 }
+
+// ----- Gambar dan suara -----
+async function chatMuatNaik(blob, ext, jenis) { // muat naik ke Storage, kemudian simpan baris chat
+  if (!me || chatSibuk) return;
+  chatSibuk = true;
+  try {
+    const path = `${me.user_id}/${Date.now()}.${ext}`;
+    const up = await db.storage.from('chat-media').upload(path, blob, {contentType: blob.type.split(';')[0], cacheControl: '31536000'});
+    if (up.error) throw up.error;
+    const url = db.storage.from('chat-media').getPublicUrl(path).data.publicUrl;
+    const {data, error} = await db.from('chat').insert({nama: me.nama, mesej: '', jenis, url}).select().single();
+    if (error) throw error;
+    chatTerima(data); chatRender(true);
+  } catch (e) { alert('Gagal hantar: ' + (e.message || e)); }
+  finally { chatSibuk = false; }
+}
+
+function kecilkan(file, maks = 1280) { // kecilkan gambar sebelum muat naik
+  return new Promise((ok, gagal) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, maks / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(u);
+      c.toBlob(b => b ? ok(b) : gagal(new Error('Gagal proses gambar')), 'image/jpeg', .8);
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); gagal(new Error('Fail bukan gambar yang sah')); };
+    img.src = u;
+  });
+}
+$('#chatImg').onclick = () => $('#chatFile').click();
+$('#chatFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { chatMuatNaik(await kecilkan(f), 'jpg', 'gambar'); } catch (err) { alert(err.message); }
+};
+$('#chatMsgs').addEventListener('click', e => { const u = e.target.dataset && e.target.dataset.buka; if (u) window.open(u, '_blank'); });
+
+let rakam = null;
+function suaraUI(on, saat) {
+  $('#chatMic').classList.toggle('rec', on);
+  $('#chatBatal').style.display = on ? 'grid' : 'none';
+  $('#chatIn').placeholder = on ? `Merakam ${saat || 0}s... tekan mikrofon untuk hantar` : 'Tulis mesej...';
+}
+function suaraHenti(hantar) { if (rakam) { rakam.batal = !hantar; rakam.mr.stop(); } }
+async function suaraMula() {
+  if (rakam) return suaraHenti(true); // tekan sekali lagi = hantar
+  if (!navigator.mediaDevices || !window.MediaRecorder) return alert('Pelayar ini tidak menyokong rakaman suara.');
+  let strim;
+  try { strim = await navigator.mediaDevices.getUserMedia({audio: true}); }
+  catch (_) { return alert('Benarkan akses mikrofon di tetapan pelayar.'); }
+  const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  const mr = new MediaRecorder(strim, mime ? {mimeType: mime} : undefined), kep = [];
+  const r = rakam = {mr, mula: Date.now(), batal: false, tmr: null};
+  mr.ondataavailable = e => { if (e.data.size) kep.push(e.data); };
+  mr.onstop = () => {
+    clearInterval(r.tmr); strim.getTracks().forEach(t => t.stop());
+    rakam = null; suaraUI(false);
+    if (r.batal || Date.now() - r.mula < 800) return; // terlalu pendek diabaikan
+    const tipe = (mr.mimeType || mime || 'audio/webm').split(';')[0];
+    chatMuatNaik(new Blob(kep, {type: tipe}), tipe.includes('mp4') ? 'm4a' : tipe.includes('ogg') ? 'ogg' : 'webm', 'suara');
+  };
+  mr.start();
+  suaraUI(true, 0);
+  r.tmr = setInterval(() => {
+    const s = Math.floor((Date.now() - r.mula) / 1000);
+    suaraUI(true, s);
+    if (s >= 120) suaraHenti(true); // had 2 minit
+  }, 500);
+}
+$('#chatMic').onclick = suaraMula;
+$('#chatBatal').onclick = () => suaraHenti(false);
+
 $('#chatSend').onclick = chatHantar;
 $('#chatIn').onkeydown = e => { if (e.key === 'Enter') chatHantar(); };
 document.addEventListener('visibilitychange', () => { if (!document.hidden && chatSedia) chatMuat(); }); // kejar mesej yang terlepas
