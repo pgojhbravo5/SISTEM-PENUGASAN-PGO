@@ -40,6 +40,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .tabs button{flex:1;margin:0;width:auto;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:0;border-radius:22px;background:transparent;color:var(--tx);font-size:.72rem;font-weight:600;transition:background .2s,color .2s}
 .tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
+
 /* Jadual rujukan */
 :root{--c-rehat:#2f62c9;--c-makan:#a86400;--c-tidur:#7248bd}
 @media(prefers-color-scheme:dark){:root{--c-rehat:#7fa6ff;--c-makan:#f0b955;--c-tidur:#b995ff}}
@@ -97,6 +98,38 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .seg button{flex:1;width:auto;margin:0;padding:8px 4px;border:0;border-radius:12px;background:transparent;color:var(--mut);font-size:.85rem}
 .seg button.on{background:var(--card);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
 .rt td[colspan]{font-size:.75rem;font-weight:600}
+/* Penapis log */
+.fl{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.fl select{margin-top:0;padding:8px 6px;font-size:.82rem;min-width:0}
+.fd{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.fd label{font-size:.75rem;color:var(--mut);font-weight:600;min-width:0}
+.fd input{margin-top:2px;padding:8px 6px;font-size:.85rem;min-width:0}
+/* Tupai Bomba (pembantu) */
+#aiLaunch{position:fixed;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;width:66px;height:66px;margin:0;padding:4px;border-radius:50%;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);display:grid;place-items:center;animation:aibob 3s ease-in-out infinite}
+#aiLaunch svg{width:100%;height:100%;display:block}
+#aiLaunch.wig{animation:aiwig .6s ease 3}
+#aiBadge{position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;background:var(--bad);border:2px solid var(--bg);display:none}
+#aiBubble{position:fixed;right:84px;bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:3;max-width:min(250px,calc(100vw - 108px));padding:8px 12px;border-radius:14px 14px 4px 14px;background:var(--tx);color:var(--bg);font-size:.82rem;line-height:1.35;white-space:pre-line;display:none;cursor:pointer;box-shadow:var(--sh)}
+#aiBubble.on{display:block}
+#aiPanel{position:fixed;left:12px;right:12px;margin-inline:auto;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;max-width:380px;max-height:calc(100vh - 210px);max-height:min(520px,calc(100dvh - 210px));display:none;flex-direction:column;overflow:hidden;border-radius:20px;border:1px solid var(--bd);box-shadow:var(--sh);background:linear-gradient(var(--card),var(--card)),var(--bg);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
+#aiPanel.on{display:flex}
+.aih{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln)}
+.aih svg{width:42px;height:42px;flex:none}
+.aih div{min-width:0}.aih b{display:block;line-height:1.2}.aih small{color:var(--mut);font-size:.75rem}
+#aiPanel .aih button{width:34px;height:34px;margin:0 0 0 auto;padding:0;flex:none;border-radius:50%;font-size:1.2rem;line-height:1}
+#aiMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:140px;overscroll-behavior:contain}
+.aim{max-width:88%;padding:8px 12px;border-radius:14px;font-size:.88rem;white-space:pre-line;word-break:break-word}
+.aim.ai{align-self:flex-start;background:var(--field);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.aim.me{align-self:flex-end;background:var(--pri);color:#fff;border-bottom-right-radius:4px}
+.aic{display:flex;gap:6px;overflow-x:auto;padding:4px 12px 8px;scrollbar-width:none}
+.aic::-webkit-scrollbar{display:none}
+#aiPanel .aic button{flex:none;width:auto;margin:0;padding:6px 12px;border-radius:999px;font-size:.78rem;white-space:nowrap}
+.aif{display:flex;gap:6px;padding:8px 12px 12px;border-top:1px solid var(--ln)}
+.aif input{margin:0;flex:1;min-width:0}
+#aiPanel .aif button{width:auto;margin:0;padding:10px 14px}
+@keyframes aibob{50%{transform:translateY(-3px)}}
+@keyframes aiwig{25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@media(prefers-reduced-motion:reduce){#aiLaunch,#aiLaunch.wig{animation:none}}
 /* Footer kredit */
 .kredit{margin:6px 0 0;padding:10px 0;text-align:center;font-size:.75rem;line-height:1.6;color:var(--mut)}
 .kredit .hak{margin-top:6px;padding-top:6px;border-top:1px solid var(--ln);font-size:.7rem}
@@ -104,6 +137,27 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 </head>
 <body>
 <div id="toast"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="tupai">
+  <path d="M44 64C66 66 75 42 69 23C67 15 61 9 56 11C60 21 60 31 54 39C50 45 46 47 42 49Z" fill="#b8692c"/>
+  <path d="M48 58C62 58 69 42 65 27C61 37 56 45 46 52Z" fill="#e0924f"/>
+  <path d="M66 24C64 18 61 14 58 12" stroke="#f7dcb8" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M14 70C14 58 22 52 30 52C38 52 46 58 46 70Z" fill="#d32f2f"/>
+  <path d="M15 63H45" stroke="#ffd54f" stroke-width="3"/>
+  <circle cx="13" cy="37" r="4.2" fill="#cf8240"/><circle cx="47" cy="37" r="4.2" fill="#cf8240"/>
+  <circle cx="30" cy="40" r="16" fill="#cf8240"/>
+  <ellipse cx="30" cy="46.5" rx="9" ry="7" fill="#f7dcb8"/>
+  <circle cx="23.5" cy="41" r="2.4" fill="#2b1d14"/><circle cx="36.5" cy="41" r="2.4" fill="#2b1d14"/>
+  <circle cx="24.3" cy="40.2" r=".8" fill="#fff"/><circle cx="37.3" cy="40.2" r=".8" fill="#fff"/>
+  <ellipse cx="30" cy="44.5" rx="2.4" ry="1.8" fill="#4a2f22"/>
+  <path d="M27.5 47.6Q30 50 32.5 47.6" stroke="#4a2f22" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <rect x="28.8" y="48.2" width="2.4" height="3" rx=".6" fill="#fff" stroke="#d9c3a5" stroke-width=".3"/>
+  <path d="M12 35C12 19 20 12 30 12C40 12 48 19 48 35Z" fill="#e53935"/>
+  <path d="M30 12V35" stroke="#ff8a80" stroke-width="2" opacity=".7"/>
+  <path d="M19 24Q22 17 28 15.5" stroke="#fff" stroke-width="2" opacity=".5" fill="none" stroke-linecap="round"/>
+  <path d="M8 35Q30 30 52 35Q50 39 30 39Q10 39 8 35Z" fill="#b71c1c"/>
+  <path d="M25 20H35V27Q35 31.5 30 33.5Q25 31.5 25 27Z" fill="#ffd54f" stroke="#f9a825" stroke-width=".8"/>
+  <path d="M30 22Q33.2 26 30 30Q26.8 26 30 22Z" fill="#e53935"/>
+</g></defs></svg>
 <div id="alarm"><div class="big">ALARM</div><p id="alarmMsg" style="font-size:1.3rem"></p><button id="alarmOff">Matikan alarm</button></div>
 
 <div id="login" class="card" style="margin-top:12vh">
@@ -120,7 +174,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <section id="t1" class="tab on">
 <header class="hd">
   <div><h1>Syif PGO Johor</h1><p class="mut" style="margin:2px 0 0">Log masuk: <b id="kod"></b> · Syif <span id="mykump"></span></p></div>
-  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="keluar" class="keluar">Keluar</a></div>
+  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar">Keluar</a></div>
 </header>
 <button id="aktif" class="pri" style="margin:0 0 6px">Aktifkan bunyi dan notifikasi</button>
 <p id="pushStatus" class="mut" style="margin:0 0 12px"></p>
@@ -162,7 +216,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <section id="t3" class="tab">
   <div class="card">
     <h2>Rujukan ikut bilangan bertugas</h2>
-    
+
     <div class="seg" id="segN" role="group" aria-label="Bilangan anggota bertugas">
       <button data-n="5">5 orang</button>
       <button data-n="4">4 orang</button>
@@ -177,11 +231,25 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <div class="card">
     <h2>Log terkini</h2>
     <!-- Penapis Log -->
-    <div class="seg" id="segLog" role="group" aria-label="Tapis jenis log">
-      <button data-log="all" class="on">Semua</button>
-      <button data-log="IN">Punch In</button>
-      <button data-log="OUT">Punch Out</button>
+    <div class="fl">
+      <select id="fJns" aria-label="Tapis jenis log">
+        <option value="all">Semua</option>
+        <option value="IN">Punch In</option>
+        <option value="OUT">Punch Out</option>
+      </select>
+      <select id="fAng" aria-label="Tapis anggota"></select>
+      <select id="fStn" aria-label="Tapis stesen"></select>
     </div>
+    <div class="fd">
+      <label>Dari<input type="date" id="fDari" aria-label="Dari tarikh"></label>
+      <label>Hingga<input type="date" id="fHingga" aria-label="Hingga tarikh"></label>
+    </div>
+    <div class="seg" id="segTrk" role="group" aria-label="Pilihan tarikh pantas">
+      <button data-d="0">Hari ini</button>
+      <button data-d="6">7 hari</button>
+      <button data-d="13">14 hari</button>
+    </div>
+    <div class="sb"><span id="logCnt" class="mut"></span><a href="#" id="fReset" class="keluar">Set semula</a></div>
     <ul id="log"></ul>
   </div>
   </section>
@@ -200,6 +268,27 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <div>Editor CSS: <b>PB Jevinson</b></div>
   <div class="hak">&copy; 2026 PGO Johor</div>
 </footer>
+
+<!-- Pembantu: Tupai Bomba -->
+<div id="aiBubble" role="status"></div>
+<button type="button" id="aiLaunch" aria-label="Buka Tupai Bomba"><svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg><i id="aiBadge"></i></button>
+<section id="aiPanel" aria-label="Tupai Bomba">
+  <div class="aih">
+    <svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg>
+    <div><b>Tupai Bomba</b><small>Pembantu syif anda</small></div>
+    <button type="button" id="aiMinBtn" aria-label="Kecilkan">&minus;</button>
+  </div>
+  <div id="aiMsgs" aria-live="polite"></div>
+  <div class="aic" id="aiChips">
+    <button type="button" data-q="statistik saya">Statistik saya</button>
+    <button type="button" data-q="rehat seterusnya">Rehat seterusnya</button>
+    <button type="button" data-q="berapa lama saya bertugas">Dah berapa lama?</button>
+    <button type="button" data-q="siapa bertugas">Siapa bertugas</button>
+    <button type="button" data-q="syif semasa">Syif</button>
+    <button type="button" data-q="waktu kritikal">Waktu kritikal</button>
+  </div>
+  <div class="aif"><input id="aiIn" placeholder="Tanya saya..." enterkeyhint="send" autocomplete="off"><button type="button" id="aiSend" class="pri">Hantar</button></div>
+</section>
 
 <nav class="tabs" aria-label="Menu utama">
   <button data-tab="t1" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>Utama</button>
@@ -221,7 +310,7 @@ const db = KONFIG_OK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const MSG_KONFIG = 'Tetapan Supabase belum diisi. Isi config.js dan deploy semula.';
 const $ = s => document.querySelector(s);
 let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false, sibuk = false;
-let logFilter = 'all'; // Tambah baris ini
+let logFilter = 'all', fAng = '', fStn = '', fDari = '', fHingga = ''; // penapis log: jenis, anggota, stesen, julat tarikh
 $('#min').textContent = MIN;
 
 // ===== Tab =====
@@ -231,7 +320,7 @@ function bukaTab(id) {
   window.scrollTo(0, 0);
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
+document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
 try { const t = sessionStorage.getItem('tab'); if (t && document.getElementById(t)) bukaTab(t); } catch (_) {}
 
 const fmt = t => new Date(t).toLocaleString('ms-MY', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
@@ -271,6 +360,7 @@ async function boot() {
   $('#mykump').textContent = me.kumpulan || '-';
   render();
   rujukanN(Math.min(5, Math.max(3, bertugas().length)));
+  aiMula();
   if (!subscribed) { subscribed = true; langgan(); }
   daftarPush();
 }
@@ -303,10 +393,33 @@ function render() {
   $('#senaraiLain').innerHTML = lain.map(baris).join('');
   $('#nLain').textContent = lain.length;
   $('#lain').style.display = lain.length ? 'block' : 'none';
-  // Tapis log berdasarkan pilihan pengguna
-  const filteredLogs = logFilter === 'all' ? logs : logs.filter(l => l.jenis === logFilter);
-  
-  $('#log').innerHTML = filteredLogs.slice(0, 15).map(l => {
+
+  // Penapis log: jenis + anggota + stesen + tarikh
+  const aSel = $('#fAng');
+  if (aSel.options.length !== anggota.length + 1) aSel.innerHTML = '<option value="">Semua anggota</option>' +
+    anggota.map(x => `<option value="${x.id}">${x.kod || x.nama}</option>`).join('');
+  aSel.value = fAng;
+  $('#fJns').value = logFilter;
+  const sSel = $('#fStn');
+  if (!sSel.options.length) sSel.innerHTML = '<option value="">Semua stesen</option>' +
+    STESEN_SEMUA.map(s => `<option value="${s}">${s}</option>`).join('');
+  sSel.value = fStn;
+  $('#fDari').value = fDari; $('#fHingga').value = fHingga;
+
+  // Julat tarikh: "Dari" mula 00:00, "Hingga" termasuk sepanjang hari itu
+  const tsHari = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).getTime(); };
+  const t0 = fDari ? tsHari(fDari) : -Infinity;
+  const t1 = fHingga ? tsHari(fHingga) + 86400000 : Infinity;
+  const filteredLogs = logs.filter(l => {
+    const t = new Date(l.masa).getTime();
+    return (logFilter === 'all' || l.jenis === logFilter) &&
+      (!fAng || String(l.anggota_id) === fAng) &&
+      (!fStn || l.stesen === fStn) &&
+      t >= t0 && t < t1;
+  });
+  $('#logCnt').textContent = filteredLogs.length + ' rekod';
+
+  $('#log').innerHTML = filteredLogs.slice(0, 50).map(l => {
     const msk = l.jenis === 'IN';
     return `<li class="lg"><span class="av ${msk ? 'in' : 'out'}">${l.jenis}</span>
       <div class="who"><b>${nama(l.anggota_id)}</b><span class="mut">${msk ? 'Punch In' + (l.stesen ? ' · ' + l.stesen : '') : 'Punch Out'}</span></div>
@@ -443,7 +556,7 @@ async function daftarPush() { // dipanggil setiap kali log masuk atau buka app; 
     const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
     if (ios && !standalone) return st('iPhone: tekan Kongsi > Tambah ke Skrin Utama, buka dari ikon itu, kemudian tekan Aktifkan.');
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return st('Push tidak disokong pada pelayar ini.');
-        if (!('Notification' in window) || Notification.permission !== 'granted') return st('Push belum aktif. Tekan butang Aktifkan di atas.');
+    if (!('Notification' in window) || Notification.permission !== 'granted') return st('Push belum aktif. Tekan butang Aktifkan di atas.');
     const reg = await navigator.serviceWorker.register('sw.js');
     await navigator.serviceWorker.ready;
     const sub = (await reg.pushManager.getSubscription()) ||
@@ -502,6 +615,7 @@ function ingatan() { // peringatan 15 minit sebelum pertukaran syif
   if (me && tamat - now <= 900000 && diingat !== tamat) {
     diingat = tamat;
     notify({jenis: 'info', mesej: `Syif bertukar jam ${jam(tamat)}: Syif ${kump(tamat)} ambil alih`}, true);
+    aiBicara(`Syif bertukar jam ${jam(tamat)}. Syif ${kump(tamat)} ambil alih. Siapkan serah tugas ya!`);
   }
 }
 // ===== Stesen dan jadual rehat (tetap ikut stesen) =====
@@ -596,10 +710,16 @@ function ingatRehat() { // notifikasi 5 minit sebelum dan bila tamat
     if (now >= x.s - 300000 && now < x.s && !dingat.has(k + 's')) {
       dingat.add(k + 's');
       notify({jenis: 'info', mesej: `${x.j} ${x.a}-${x.b} (stesen ${st}) bermula 5 minit lagi`}, true);
+      aiBicara(`${x.j} anda (${jf(x.a)}–${jf(x.b)}) bermula 5 minit lagi. Bersedia serah stesen ${st}.`);
+    }
+    if (now >= x.s && now < x.e && now < x.s + 120000 && !dingat.has(k + 'm')) {
+      dingat.add(k + 'm');
+      aiBicara(`Masa ${x.j.toLowerCase()} dah tiba (${jf(x.a)}–${jf(x.b)}). Selamat berehat!`);
     }
     if (now >= x.e && now < x.e + 120000 && !dingat.has(k + 'e')) {
       dingat.add(k + 'e');
       notify({jenis: 'info', mesej: `${x.j} tamat. Kembali ke stesen ${st}`}, true);
+      aiBicara(`${x.j} tamat. Kembali ke stesen ${st}.`);
     }
   });
 }
@@ -638,15 +758,204 @@ function rujukanN(n) {
 }
 document.querySelectorAll('#segN button').forEach(b => b.onclick = () => rujukanN(+b.dataset.n));
 
-// 👇 TAMPAL KOD FILTER LOG DI SINI 👇
-document.querySelectorAll('#segLog button').forEach(b => {
-  b.onclick = () => {
-    logFilter = b.dataset.log;
-    document.querySelectorAll('#segLog button').forEach(btn => btn.classList.toggle('on', btn === b));
-    render();
-  };
+// ===== Penapis log =====
+$('#fJns').onchange = e => { logFilter = e.target.value; render(); };
+$('#fAng').onchange = e => { fAng = e.target.value; render(); };
+$('#fStn').onchange = e => { fStn = e.target.value; render(); };
+$('#fDari').onchange = e => {
+  fDari = e.target.value;
+  if (fDari && fHingga && fHingga < fDari) fHingga = fDari; // pastikan Hingga tidak sebelum Dari
+  render();
+};
+$('#fHingga').onchange = e => {
+  fHingga = e.target.value;
+  if (fDari && fHingga && fHingga < fDari) fDari = fHingga;
+  render();
+};
+const isoTempatan = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+document.querySelectorAll('#segTrk button').forEach(b => b.onclick = () => { // pantas: N hari lepas hingga hari ini
+  const h = new Date(), m = new Date(); m.setDate(h.getDate() - +b.dataset.d);
+  fDari = isoTempatan(m); fHingga = isoTempatan(h);
+  render();
 });
-// 👆 HABIS KOD FILTER LOG 👆
+$('#fReset').onclick = e => {
+  e.preventDefault();
+  logFilter = 'all'; fAng = ''; fStn = ''; fDari = ''; fHingga = '';
+  render();
+};
+
+// ===== Tupai Bomba: pembantu pintar (jawab berdasarkan data app + peringatan rehat) =====
+let aiTerbuka = false, aiOk = false, aiTt;
+const aiJm = ms => { const m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? `${m} minit` : `${Math.floor(m / 60)} jam ${m % 60} minit`; };
+const aiTindih = (ss, a, b) => ss.reduce((n, x) => n + Math.max(0, Math.min(x.t, b) - Math.max(x.m, a)), 0);
+const aiSapa = () => { const h = new Date().getHours(); return h < 5 || h >= 19 ? 'Selamat malam' : h < 12 ? 'Selamat pagi' : h < 15 ? 'Selamat tengah hari' : 'Selamat petang'; };
+const aiNota = () => logs.length >= 300 ? '\n(Nota: sistem hanya baca 300 log terkini, rekod lama mungkin tidak lengkap.)' : '';
+
+function aiSesi(id) { // pasangan IN→OUT; 'Tukar stesen' tidak memulakan sesi baharu
+  const arr = logs.filter(x => x.anggota_id === id).map(x => ({j: x.jenis, t: new Date(x.masa).getTime()})).sort((a, b) => a.t - b.t);
+  const out = []; let buka = null;
+  arr.forEach(x => {
+    if (x.j === 'IN') { if (buka === null) buka = x.t; }
+    else if (buka !== null) { out.push({m: buka, t: x.t, jalan: false}); buka = null; }
+  });
+  if (buka !== null) out.push({m: buka, t: Date.now(), jalan: true});
+  return out;
+}
+function aiMasaStesen(id) { // jumlah masa mengikut stesen
+  const arr = logs.filter(x => x.anggota_id === id).map(x => ({j: x.jenis, t: new Date(x.masa).getTime(), s: x.stesen})).sort((a, b) => a.t - b.t);
+  const m = {};
+  arr.forEach((x, i) => { if (x.j === 'IN' && x.s) m[x.s] = (m[x.s] || 0) + ((arr[i + 1] ? arr[i + 1].t : Date.now()) - x.t); });
+  return m;
+}
+function aiStatus() {
+  const t = tempohTugas(me.id), l = last[me.id];
+  if (l && l.jenis === 'IN' && t && !t.tamat) return `Anda sedang bertugas di ${l.stesen || '-'} sejak ${jam(t.mula)} (${aiJm(Date.now() - t.mula)}).`;
+  if (t && t.tamat) return `Anda tidak bertugas. Tempoh terakhir: ${aiJm(t.tamat - t.mula)} (${jam(t.mula)}–${jam(t.tamat)}).`;
+  return 'Anda belum Punch In.';
+}
+function aiHariIni() {
+  const ss = aiSesi(me.id), now = Date.now(), d = new Date(); d.setHours(0, 0, 0, 0);
+  const mula = ANCHOR + idx(now) * SLOT;
+  return `${aiStatus()}\nHari ini (sejak 00:00): ${aiJm(aiTindih(ss, d.getTime(), now))}\nSlot syif semasa (mula ${jam(mula)}): ${aiJm(aiTindih(ss, mula, now))}`;
+}
+function aiMinggu() {
+  const ss = aiSesi(me.id), now = Date.now(), d = new Date(); d.setHours(0, 0, 0, 0);
+  const a = d.getTime() - 6 * 86400000;
+  return `7 hari lepas: ${aiJm(aiTindih(ss, a, now))} dalam ${ss.filter(x => x.t > a).length} sesi.${aiNota()}`;
+}
+function aiStatistik() {
+  const ss = aiSesi(me.id), now = Date.now(), d = new Date(); d.setHours(0, 0, 0, 0);
+  const h0 = d.getTime(), mula = ANCHOR + idx(now) * SLOT;
+  const jumlah = ss.reduce((n, x) => n + (x.t - x.m), 0), max = ss.reduce((n, x) => Math.max(n, x.t - x.m), 0);
+  const top = Object.entries(aiMasaStesen(me.id)).sort((a, b) => b[1] - a[1])[0];
+  return [
+    aiStatus(),
+    `Hari ini: ${aiJm(aiTindih(ss, h0, now))}`,
+    `Slot syif semasa (mula ${jam(mula)}): ${aiJm(aiTindih(ss, mula, now))}`,
+    `7 hari lepas: ${aiJm(aiTindih(ss, h0 - 6 * 86400000, now))}`,
+    `Jumlah dalam rekod: ${aiJm(jumlah)} (${ss.length} sesi)`,
+    ss.length ? `Purata sesi: ${aiJm(jumlah / ss.length)} · terpanjang: ${aiJm(max)}` : '',
+    top ? `Stesen paling lama: ${top[0]} (${aiJm(top[1])})` : ''
+  ].filter(Boolean).join('\n') + aiNota();
+}
+function aiRehat() {
+  const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, jenis = jenisSlot(now), p = penugasan(), st = p.map[me.id];
+  if (!st) return 'Saya perlu tahu stesen anda. Punch In dahulu, kemudian tanya saya semula.';
+  const sl = slotSaya(st, p, jenis, mula);
+  if (!sl.length) return `Stesen ${st} tiada slot rehat.`;
+  const sek = sl.find(x => now >= x.s && now < x.e), dpn = sl.find(x => x.s > now);
+  const ayat = sek ? `Sekarang masa ${sek.j.toLowerCase()} anda, tamat ${jf(sek.b)} (${aiJm(sek.e - now)} lagi).`
+    : dpn ? `${dpn.j} seterusnya jam ${jf(dpn.a)}, lagi ${aiJm(dpn.s - now)}.` : 'Semua rehat untuk slot ini sudah selesai.';
+  return `Stesen ${st} (${jenis}).\n${ayat}\n` + sl.map(x => `• ${x.j} ${jf(x.a)}–${jf(x.b)}${now >= x.e ? ' (selesai)' : now >= x.s ? ' (sedang berlangsung)' : ''}`).join('\n');
+}
+function aiKritikal() {
+  const st = penugasan().map[me.id];
+  if (!st) return 'Punch In dahulu supaya saya tahu stesen anda.';
+  const w = KRITIKAL[st] || [];
+  if (!w.length) return `Stesen ${st} tiada waktu kritikal tetap.`;
+  const c = new Date(), cur = c.getHours() * 60 + c.getMinutes();
+  const kini = w.some(x => { const a = mnt(x.slice(0, 4)), b = mnt(x.slice(5)); return a <= b ? cur >= a && cur < b : cur >= a || cur < b; });
+  return `Waktu kritikal stesen ${st}: ${w.map(x => jf(x.slice(0, 4)) + '–' + jf(x.slice(5))).join(', ')}.\n${kini ? 'Sekarang WAKTU KRITIKAL, jangan tinggalkan stesen.' : 'Sekarang bukan waktu kritikal.'}`;
+}
+function aiSiapa() {
+  const p = penugasan(), n = p.ons.length;
+  if (!n) return 'Tiada sesiapa bertugas sekarang.';
+  const kosong = p.buka.filter(s => !p.ons.some(x => p.map[x.id] === s));
+  return `${n} orang bertugas (minimum ${MIN}).\n` + p.ons.map(a => `• ${a.nama}: ${p.map[a.id]}`).join('\n') +
+    (kosong.length ? `\nStesen kosong: ${kosong.join(', ')}` : '') + (n < MIN ? '\nAmaran: bawah minimum!' : '');
+}
+function aiSyif() {
+  const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, tamat = mula + SLOT;
+  let s = `Sekarang Syif ${kump(now)} (${jenisSlot(now)}), tamat ${jam(tamat)} (${aiJm(tamat - now)} lagi).\nSeterusnya: Syif ${kump(tamat)} (${jenisSlot(tamat)}).`;
+  if (me.kumpulan) {
+    if (kump(now) === me.kumpulan) s += `\nAnda Syif ${me.kumpulan}: giliran anda sedang berjalan.`;
+    else for (let k = 1; k < 6; k++) {
+      const t0 = mula + k * SLOT;
+      if (kump(t0) === me.kumpulan) { s += `\nAnda Syif ${me.kumpulan}: giliran seterusnya ${new Date(t0).toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'short'})} jam ${jam(t0)} (${jenisSlot(t0)}).`; break; }
+    }
+  }
+  return s;
+}
+function aiLog() {
+  const m = logs.filter(x => x.anggota_id === me.id).slice(0, 4);
+  return m.length ? 'Log terakhir anda:\n' + m.map(x => `• ${fmt(x.masa)} · Punch ${x.jenis}${x.stesen ? ' · ' + x.stesen : ''}`).join('\n') : 'Belum ada log untuk anda.';
+}
+const AI_BANTU = 'Saya Tupai Bomba, pembantu app ini. Tanya saya tentang:\n• statistik dan tempoh kerja anda (hari ini, 7 hari, jumlah)\n• dah berapa lama anda bertugas\n• rehat, makan, tidur seterusnya\n• waktu kritikal stesen anda\n• siapa bertugas dan stesen kosong\n• syif semasa dan giliran anda\n• log punch terakhir\nSaya juga akan ingatkan bila masa rehat dah dekat.';
+
+function aiJawab(q) {
+  if (!me) return 'Log masuk dahulu.';
+  const s = ' ' + q.toLowerCase().replace(/[^a-z0-9\s]/g, ' ') + ' ', kata = new Set(s.split(/\s+/));
+  const ada = (...k) => k.some(w => s.includes(' ' + w));
+  const kata_ = (...k) => k.some(w => kata.has(w));
+  if (kata_('hai', 'hi', 'helo', 'hello', 'hey', 'salam', 'assalamualaikum')) return `${aiSapa()}, ${me.nama}!\n${aiStatus()}`;
+  if (kata_('tq', 'thanks', 'thank') || ada('terima kasih')) return 'Sama-sama! Kerja elok-elok, jaga keselamatan.';
+  if (ada('rehat', 'makan', 'tidur', 'break', 'lunch')) return aiRehat();
+  if (ada('kritikal')) return aiKritikal();
+  if (ada('statistik', 'ringkasan', 'summary', 'laporan', 'prestasi')) return aiStatistik();
+  if (ada('minggu', '7 hari', 'seminggu')) return aiMinggu();
+  if (ada('hari ini', 'harini')) return aiHariIni();
+  if (ada('syif', 'shift', 'giliran', 'jadual', 'tamat')) return aiSyif();
+  if (ada('lama', 'jam', 'tempoh', 'durasi', 'status', 'sekarang')) return aiHariIni();
+  if (ada('siapa', 'bertugas', 'orang', 'anggota', 'kawan', 'rakan', 'cukup', 'minimum', 'amaran')) return aiSiapa();
+  if (ada('stesen')) { const st = penugasan().map[me.id]; return st ? `Anda di stesen ${st}.\n${aiKritikal()}` : 'Anda belum Punch In, jadi belum ada stesen.'; }
+  if (ada('log', 'punch', 'terakhir', 'sejarah')) return aiLog();
+  if (ada('tolong', 'bantu', 'help', 'menu', 'boleh buat')) return AI_BANTU;
+  return 'Maaf, saya hanya boleh jawab tentang data app ini (kerja, rehat, syif, stesen, log). Cuba tekan salah satu butang pantas, atau taip "tolong".';
+}
+
+function aiTambah(siapa, teks) {
+  const d = document.createElement('div'); d.className = 'aim ' + siapa; d.textContent = teks;
+  const m = $('#aiMsgs'); m.appendChild(d); m.scrollTop = m.scrollHeight;
+}
+function aiTanya(q) {
+  q = (q || '').trim(); if (!q) return;
+  aiTambah('me', q);
+  setTimeout(() => aiTambah('ai', aiJawab(q)), 250);
+}
+function aiKirim() { const i = $('#aiIn'), v = i.value; i.value = ''; aiTanya(v); }
+function aiBicara(t) { // peringatan automatik daripada tupai
+  aiTambah('ai', t);
+  if (aiTerbuka) return;
+  $('#aiBadge').style.display = 'block';
+  const b = $('#aiBubble'); b.textContent = t.length > 110 ? t.slice(0, 107) + '…' : t; b.classList.add('on');
+  const l = $('#aiLaunch'); l.classList.remove('wig'); void l.offsetWidth; l.classList.add('wig');
+  clearTimeout(aiTt); aiTt = setTimeout(() => b.classList.remove('on'), 10000);
+}
+function aiBuka(b) {
+  aiTerbuka = b;
+  $('#aiPanel').classList.toggle('on', b);
+  $('#aiLaunch').style.display = b ? 'none' : 'grid';
+  if (b) {
+    $('#aiBubble').classList.remove('on'); $('#aiBadge').style.display = 'none';
+    if (me && !$('#aiMsgs').children.length) aiTambah('ai', `${aiSapa()}, ${me.nama}! Saya Tupai Bomba, pembantu syif anda.\n${aiStatus()}\nTanya saya apa-apa tentang kerja anda, atau tekan butang pantas di bawah.`);
+    setTimeout(() => { $('#aiMsgs').scrollTop = $('#aiMsgs').scrollHeight; }, 0);
+  }
+  try { localStorage.setItem('aiBuka', b ? '1' : '0'); } catch (_) {}
+}
+function aiMula() { // dipanggil sekali selepas log masuk
+  if (aiOk) return; aiOk = true;
+  let b = false; try { b = localStorage.getItem('aiBuka') === '1'; } catch (_) {}
+  aiBuka(b);
+}
+$('#aiLaunch').onclick = () => aiBuka(true);
+$('#aiBubble').onclick = () => aiBuka(true);
+$('#aiMinBtn').onclick = () => aiBuka(false);
+$('#aiSend').onclick = aiKirim;
+$('#aiIn').onkeydown = e => { if (e.key === 'Enter') aiKirim(); else if (e.key === 'Escape') aiBuka(false); };
+document.querySelectorAll('#aiChips button').forEach(b => b.onclick = () => aiTanya(b.dataset.q));
+
+// ===== Reset penuh (butang Reset di bawah status Live) =====
+$('#bReset').onclick = async e => {
+  e.preventDefault();
+  if (!confirm('Reset penuh? Semua penapis dikosongkan, cache dibersihkan dan data dimuat semula. Anda kekal log masuk.')) return;
+  $('#bReset').textContent = 'Memuat...';
+  clearInterval(alarmTimer); $('#alarm').classList.remove('on');
+  logFilter = 'all'; fAng = ''; fStn = ''; fDari = ''; fHingga = '';
+  try { sessionStorage.removeItem('tab'); } catch (_) {}
+  try { if ('caches' in window) await Promise.all((await caches.keys()).map(k => caches.delete(k))); } catch (_) {}
+  try { if ('serviceWorker' in navigator) await Promise.all((await navigator.serviceWorker.getRegistrations()).map(r => r.update())); } catch (_) {}
+  location.reload();
+};
 
 jadual();
 rujukanN(5);
