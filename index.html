@@ -1,884 +1,395 @@
 <!DOCTYPE html>
 <html lang="ms">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sistem Syif PGO</title>
-    <link rel="manifest" href="manifest.json" />
-    <link rel="apple-touch-icon" href="icon-192.png" />
-    <meta name="theme-color" content="#b3261e" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <style>
-      :root {
-        --bg: #f3f5f7;
-        --card: #fff;
-        --tx: #1b2430;
-        --mut: #6b7785;
-        --bd: #dde2e8;
-        --ok: #1a7f4b;
-        --bad: #c62828;
-        --pri: #b3261e;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #12161b;
-          --card: #1b2128;
-          --tx: #e8ecf0;
-          --mut: #8f9aa6;
-          --bd: #2c3540;
-          --ok: #4cc58a;
-          --bad: #ff6b6b;
-          --pri: #e0554a;
-        }
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--tx);
-        font: 16px/1.45 system-ui, sans-serif;
-        padding: 12px;
-        max-width: 640px;
-        margin-inline: auto;
-      }
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-      h1 {
-        font-size: 1.15rem;
-        margin: 0;
-      }
-      h2 {
-        font-size: 1rem;
-        margin: 0 0 8px;
-      }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--bd);
-        border-radius: 10px;
-        padding: 14px;
-        margin-bottom: 12px;
-      }
-      select,
-      input,
-      button {
-        font: inherit;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid var(--bd);
-        background: var(--card);
-        color: var(--tx);
-        width: 100%;
-        margin-top: 8px;
-      }
-      button {
-        cursor: pointer;
-        font-weight: 600;
-      }
-      button:disabled {
-        opacity: 0.4;
-      }
-      .row {
-        display: flex;
-        gap: 8px;
-      }
-      .row button {
-        margin-top: 8px;
-      }
-      .in {
-        background: var(--ok);
-        color: #fff;
-        border: 0;
-      }
-      .out {
-        background: var(--bad);
-        color: #fff;
-        border: 0;
-      }
-      .pri {
-        background: var(--pri);
-        color: #fff;
-        border: 0;
-      }
-      .big {
-        font-size: 2.4rem;
-        font-weight: 700;
-        line-height: 1;
-      }
-      .ok {
-        color: var(--ok);
-      }
-      .bad {
-        color: var(--bad);
-      }
-      .mut {
-        color: var(--mut);
-        font-size: 0.85rem;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      td,
-      th {
-        padding: 6px 4px;
-        border-bottom: 1px solid var(--bd);
-        text-align: left;
-        font-weight: 400;
-      }
-      th {
-        color: var(--mut);
-        font-size: 0.85rem;
-      }
-      ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      li {
-        display: flex;
-        justify-content: space-between;
-        padding: 6px 0;
-        border-bottom: 1px solid var(--bd);
-      }
-      li:last-child {
-        border: 0;
-      }
-      #app {
-        display: none;
-      }
-      #toast {
-        position: fixed;
-        left: 12px;
-        right: 12px;
-        top: 12px;
-        max-width: 616px;
-        margin-inline: auto;
-        background: var(--tx);
-        color: var(--bg);
-        padding: 12px;
-        border-radius: 8px;
-        display: none;
-        z-index: 5;
-      }
-      #alarm {
-        position: fixed;
-        inset: 0;
-        background: var(--pri);
-        color: #fff;
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 24px;
-        z-index: 9;
-        animation: b 1s steps(2) infinite;
-      }
-      #alarm.on {
-        display: flex;
-      }
-      #alarm button {
-        background: #fff;
-        color: var(--pri);
-        margin-top: 24px;
-        max-width: 320px;
-        font-size: 1.2rem;
-      }
-      @keyframes b {
-        50% {
-          filter: brightness(0.7);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        #alarm {
-          animation: none;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="toast"></div>
-    <div id="alarm">
-      <div class="big">ALARM</div>
-      <p id="alarmMsg" style="font-size: 1.3rem"></p>
-      <button id="alarmOff">Matikan alarm</button>
-    </div>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistem Syif PGO</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#b3261e">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--tx:#1b2430;--mut:#6b7785;--bd:#dde2e8;--ok:#1a7f4b;--bad:#c62828;--pri:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#12161b;--card:#1b2128;--tx:#e8ecf0;--mut:#8f9aa6;--bd:#2c3540;--ok:#4cc58a;--bad:#ff6b6b;--pri:#e0554a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,sans-serif;padding:12px;max-width:640px;margin-inline:auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+h1{font-size:1.15rem;margin:0}h2{font-size:1rem;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:12px}
+select,input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin-top:8px}
+button{cursor:pointer;font-weight:600}button:disabled{opacity:.4}
+.row{display:flex;gap:8px}.row button{margin-top:8px}
+.in{background:var(--ok);color:#fff;border:0}.out{background:var(--bad);color:#fff;border:0}.pri{background:var(--pri);color:#fff;border:0}
+.big{font-size:2.4rem;font-weight:700;line-height:1}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.mut{color:var(--mut);font-size:.85rem}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left;font-weight:400}th{color:var(--mut);font-size:.85rem}
+ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd)}li:last-child{border:0}
+#app{display:none}
+#toast{position:fixed;left:12px;right:12px;top:12px;max-width:616px;margin-inline:auto;background:var(--tx);color:var(--bg);padding:12px;border-radius:8px;display:none;z-index:5}
+#alarm{position:fixed;inset:0;background:var(--pri);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:9;animation:b 1s steps(2) infinite}
+#alarm.on{display:flex}#alarm button{background:#fff;color:var(--pri);margin-top:24px;max-width:320px;font-size:1.2rem}
+@keyframes b{50%{filter:brightness(.7)}}
+@media(prefers-reduced-motion:reduce){#alarm{animation:none}}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="alarm"><div class="big">ALARM</div><p id="alarmMsg" style="font-size:1.3rem"></p><button id="alarmOff">Matikan alarm</button></div>
 
-    <div id="login" class="card" style="margin-top: 12vh">
-      <h1>Syif PGO Johor</h1>
-      <input
-        id="lid"
-        placeholder="ID (contoh: A01)"
-        autocapitalize="characters"
-        autocomplete="username"
-      />
-      <input
-        id="lpw"
-        type="password"
-        placeholder="Kata laluan"
-        autocomplete="current-password"
-      />
-      <button id="bMasuk" class="pri">Log masuk</button>
-      <p id="lerr" class="bad"></p>
-    </div>
+<div id="login" class="card" style="margin-top:12vh">
+  <h1>Syif PGO Johor</h1>
+  <input id="lid" placeholder="ID (contoh: A01)" autocapitalize="characters" autocomplete="username">
+  <input id="lpw" type="password" placeholder="Kata laluan" autocomplete="current-password">
+  <button id="bMasuk" class="pri">Log masuk</button>
+  <p id="lerr" class="bad"></p>
+</div>
 
-    <div id="app">
-      <header>
-        <h1>Syif PGO Johor</h1>
-        <span id="conn" class="mut">○ Menyambung...</span>
-      </header>
-      <p class="mut" style="margin: 0 0 10px">
-        Log masuk sebagai <b id="kod"></b> (Syif <span id="mykump"></span>)
-        <a href="#" id="keluar">Keluar</a>
-      </p>
-      <button id="aktif" class="pri" style="margin-bottom: 12px">
-        Aktifkan bunyi dan notifikasi
-      </button>
+<div id="app">
+<header><h1>Syif PGO Johor</h1><span id="conn" class="mut">○ Menyambung...</span></header>
+<p class="mut" style="margin:0 0 10px">Log masuk sebagai <b id="kod"></b> (Syif <span id="mykump"></span>) <a href="#" id="keluar">Keluar</a></p>
+<button id="aktif" class="pri" style="margin-bottom:12px">Aktifkan bunyi dan notifikasi</button>
 
-      <div class="card">
-        <h2>Punch</h2>
-        <p id="status" class="mut" style="margin: 0"></p>
-        <div class="row">
-          <button id="bIn" class="in">Punch In</button
-          ><button id="bOut" class="out">Punch Out</button>
-        </div>
-      </div>
+<div class="card">
+  <h2>Punch</h2>
+  <p id="status" class="mut" style="margin:0"></p>
+  <div class="row"><button id="bIn" class="in">Punch In</button><button id="bOut" class="out">Punch Out</button></div>
+</div>
 
-      <div class="card">
-        <h2>Stesen saya</h2>
-        <div id="stesenSaya" class="big" style="font-size: 1.6rem">-</div>
-        <p id="krit" class="mut" style="margin: 4px 0 8px"></p>
-        <ul id="rehatSaya"></ul>
-        <h2 style="margin-top: 14px">Penugasan semasa</h2>
-        <table id="penugasan"></table>
-      </div>
+<div class="card">
+  <h2>Stesen saya</h2>
+  <div id="stesenSaya" class="big" style="font-size:1.6rem">-</div>
+  <p id="krit" class="mut" style="margin:4px 0 8px"></p>
+  <ul id="rehatSaya"></ul>
+  <h2 style="margin-top:14px">Penugasan semasa</h2>
+  <table id="penugasan"></table>
+</div>
 
-      <div class="card">
-        <h2>Jadual syif</h2>
-        <div id="semasa" class="big" style="font-size: 1.5rem"></div>
-        <p id="seterus" class="mut" style="margin: 4px 0 10px"></p>
-        <table id="jadual"></table>
-      </div>
+<div class="card">
+  <h2>Jadual syif</h2>
+  <div id="semasa" class="big" style="font-size:1.5rem"></div>
+  <p id="seterus" class="mut" style="margin:4px 0 10px"></p>
+  <table id="jadual"></table>
+</div>
 
-      <div class="card">
-        <h2>Sedang bertugas</h2>
-        <div>
-          <span id="cnt" class="big">0</span>
-          <span class="mut">orang (minimum <span id="min"></span>)</span>
-        </div>
-        <p id="warn" class="bad" style="font-weight: 600; margin: 6px 0"></p>
-        <ul id="senarai"></ul>
-      </div>
+<div class="card">
+  <h2>Sedang bertugas</h2>
+  <div><span id="cnt" class="big">0</span> <span class="mut">orang (minimum <span id="min"></span>)</span></div>
+  <p id="warn" class="bad" style="font-weight:600;margin:6px 0"></p>
+  <ul id="senarai"></ul>
+</div>
 
-      <div class="card">
-        <h2>Hantar notifikasi</h2>
-        <input id="mesej" placeholder="Mesej untuk semua anggota" />
-        <div class="row">
-          <button id="bInfo">Notifikasi</button
-          ><button id="bAlarm" class="pri">Alarm</button>
-        </div>
-      </div>
+<div class="card">
+  <h2>Hantar notifikasi</h2>
+  <input id="mesej" placeholder="Mesej untuk semua anggota">
+  <div class="row"><button id="bInfo">Notifikasi</button><button id="bAlarm" class="pri">Alarm</button></div>
+</div>
 
-      <div class="card">
-        <h2>Jadual rujukan stesen</h2>
-        <div id="rujukan"></div>
-      </div>
+<div class="card"><h2>Jadual rujukan stesen</h2><div id="rujukan"></div></div>
 
-      <div class="card">
-        <h2>Log terkini</h2>
-        <ul id="log"></ul>
-      </div>
-    </div>
+<div class="card"><h2>Log terkini</h2><ul id="log"></ul></div>
+</div>
 
-    <script>
-      // ====== TETAPAN ======
-      const SUPABASE_URL = 'https://qkfzftexobaqqjhxhkxc.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_LvBgojqLPbRMwOLXo56NPQ_xUBSmzwu';
-      const MIN = 3; // minimum anggota bertugas
-      const VAPID_PUBLIC =
-        'BA5r2LyXtJz8Vfu0MYn1lvGD4TV8KZn-rmDUugOupHqUKmuLpvwJqhwkkZcNJXVMFKp8v593z9WRYTHUSTvzjZI'; // dari: npx web-push generate-vapid-keys
-      // =====================
-      const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const $ = (s) => document.querySelector(s);
-      let anggota = [],
-        logs = [],
-        last = {},
-        me = null,
-        ac = null,
-        alarmTimer = null,
-        subscribed = false;
-      $('#min').textContent = MIN;
+<script>
+// ====== TETAPAN ======
+const SUPABASE_URL = 'https://XXXX.supabase.co';
+const SUPABASE_KEY = 'ANON_PUBLIC_KEY';
+const MIN = 3; // minimum anggota bertugas
+const VAPID_PUBLIC = 'VAPID_PUBLIC_KEY'; // dari: npx web-push generate-vapid-keys
+// =====================
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = s => document.querySelector(s);
+let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false;
+$('#min').textContent = MIN;
 
-      const fmt = (t) =>
-        new Date(t).toLocaleString('ms-MY', {
-          day: '2-digit',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      const nama = (id) => (anggota.find((a) => a.id === id) || {}).nama || '?';
-      const bertugas = () =>
-        anggota.filter((a) => last[a.id] && last[a.id].jenis === 'IN');
+const fmt = t => new Date(t).toLocaleString('ms-MY', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
+const nama = id => (anggota.find(a => a.id === id) || {}).nama || '?';
+const bertugas = () => anggota.filter(a => last[a.id] && last[a.id].jenis === 'IN');
 
-      // ===== Login =====
-      async function masuk() {
-        const id = $('#lid').value.trim().toLowerCase();
-        $('#lerr').textContent = '';
-        const { error } = await db.auth.signInWithPassword({
-          email: id + '@pgo.local',
-          password: $('#lpw').value,
-        });
-        if (error) $('#lerr').textContent = 'ID atau kata laluan salah';
-        else boot();
-      }
-      $('#bMasuk').onclick = masuk;
-      $('#lpw').onkeydown = (e) => {
-        if (e.key === 'Enter') masuk();
-      };
-      $('#keluar').onclick = async (e) => {
-        e.preventDefault();
-        try {
-          const reg = await navigator.serviceWorker.getRegistration(),
-            sub = reg && (await reg.pushManager.getSubscription());
-          if (sub) {
-            await db.rpc('padam_push', { p_endpoint: sub.endpoint });
-            await sub.unsubscribe();
-          }
-        } catch (_) {}
-        await db.auth.signOut();
-        location.reload();
-      };
+// ===== Login =====
+async function masuk() {
+  const id = $('#lid').value.trim().toLowerCase();
+  $('#lerr').textContent = '';
+  const {error} = await db.auth.signInWithPassword({email: id + '@pgo.local', password: $('#lpw').value});
+  if (error) $('#lerr').textContent = 'ID atau kata laluan salah';
+  else boot();
+}
+$('#bMasuk').onclick = masuk;
+$('#lpw').onkeydown = e => { if (e.key === 'Enter') masuk(); };
+$('#keluar').onclick = async e => {
+  e.preventDefault();
+  try {
+    const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription();
+    if (sub) { await db.rpc('padam_push', {p_endpoint: sub.endpoint}); await sub.unsubscribe(); }
+  } catch (_) {}
+  await db.auth.signOut(); location.reload();
+};
 
-      async function boot() {
-        const {
-          data: { session },
-        } = await db.auth.getSession();
-        if (!session) {
-          $('#login').style.display = 'block';
-          $('#app').style.display = 'none';
-          return;
-        }
-        $('#login').style.display = 'none';
-        $('#app').style.display = 'block';
-        await load();
-        me = anggota.find((a) => a.user_id === session.user.id);
-        if (!me) {
-          alert(
-            'Akaun ini belum dipautkan dengan anggota. Jalankan create-users.mjs.'
-          );
-          return;
-        }
-        $('#kod').textContent = me.kod || me.nama;
-        $('#mykump').textContent = me.kumpulan || '-';
-        render();
-        if (!subscribed) {
-          subscribed = true;
-          langgan();
-        }
-        daftarPush();
-      }
+async function boot() {
+  const {data: {session}} = await db.auth.getSession();
+  if (!session) { $('#login').style.display = 'block'; $('#app').style.display = 'none'; return; }
+  $('#login').style.display = 'none'; $('#app').style.display = 'block';
+  await load();
+  me = anggota.find(a => a.user_id === session.user.id);
+  if (!me) { alert(`Akaun ini belum dipautkan dengan anggota. Anggota dibaca: ${anggota.length}, ID akaun: ${session.user.id}`); return; }
+  $('#kod').textContent = me.kod || me.nama;
+  $('#mykump').textContent = me.kumpulan || '-';
+  render();
+  if (!subscribed) { subscribed = true; langgan(); }
+  daftarPush();
+}
 
-      // ===== Data =====
-      async function load() {
-        const [a, p] = await Promise.all([
-          db.from('anggota').select('*').eq('aktif', true).order('kod'),
-          db
-            .from('punch')
-            .select('*')
-            .order('masa', { ascending: false })
-            .limit(300),
-        ]);
-        anggota = a.data || [];
-        logs = p.data || [];
-        last = {};
-        [...logs].reverse().forEach((x) => (last[x.anggota_id] = x));
-        render();
-      }
+// ===== Data =====
+async function load() {
+  const [a, p] = await Promise.all([
+    db.from('anggota').select('*').eq('aktif', true).order('kod'),
+    db.from('punch').select('*').order('masa', {ascending: false}).limit(300)
+  ]);
+  if (a.error) alert('Gagal baca jadual anggota: ' + a.error.message);
+  if (p.error) console.warn('Gagal baca punch:', p.error.message);
+  anggota = a.data || []; logs = p.data || []; last = {};
+  [...logs].reverse().forEach(x => last[x.anggota_id] = x);
+  render();
+}
 
-      function render() {
-        const on = bertugas();
-        $('#cnt').textContent = on.length;
-        $('#cnt').className = 'big ' + (on.length >= MIN ? 'ok' : 'bad');
-        $('#warn').textContent =
-          on.length < MIN ? `Amaran: kurang daripada minimum ${MIN} orang` : '';
-        $('#senarai').innerHTML =
-          anggota
-            .map((a) => {
-              const l = last[a.id],
-                dalam = l && l.jenis === 'IN';
-              return `<li><span>${a.nama} <span class="mut">${
-                a.kumpulan === kump(Date.now()) ? '(syif semasa)' : ''
-              }</span></span>
-      <span class="${dalam ? 'ok' : 'mut'}">${
-                dalam ? 'Bertugas sejak ' + fmt(l.masa) : 'Tidak bertugas'
-              }</span></li>`;
-            })
-            .join('') || '<li class="mut">Tiada anggota.</li>';
-        $('#log').innerHTML = logs
-          .slice(0, 15)
-          .map(
-            (l) =>
-              `<li><span>${nama(l.anggota_id)}</span><span class="${
-                l.jenis === 'IN' ? 'ok' : 'bad'
-              }">${l.jenis} · ${fmt(l.masa)}</span></li>`
-          )
-          .join('');
-        const l = me && last[me.id],
-          dalam = l && l.jenis === 'IN';
-        $('#status').textContent = !me
-          ? ''
-          : dalam
-          ? 'Status: bertugas sejak ' + fmt(l.masa)
-          : 'Status: tidak bertugas';
-        $('#bIn').disabled = !me || dalam;
-        $('#bOut').disabled = !me || !dalam;
-        stesen();
-      }
+function render() {
+  const on = bertugas();
+  $('#cnt').textContent = on.length;
+  $('#cnt').className = 'big ' + (on.length >= MIN ? 'ok' : 'bad');
+  $('#warn').textContent = on.length < MIN ? `Amaran: kurang daripada minimum ${MIN} orang` : '';
+  $('#senarai').innerHTML = anggota.map(a => {
+    const l = last[a.id], dalam = l && l.jenis === 'IN';
+    return `<li><span>${a.nama} <span class="mut">${a.kumpulan === kump(Date.now()) ? '(syif semasa)' : ''}</span></span>
+      <span class="${dalam ? 'ok' : 'mut'}">${dalam ? 'Bertugas sejak ' + fmt(l.masa) : 'Tidak bertugas'}</span></li>`;
+  }).join('') || '<li class="mut">Tiada anggota.</li>';
+  $('#log').innerHTML = logs.slice(0, 15).map(l =>
+    `<li><span>${nama(l.anggota_id)}</span><span class="${l.jenis === 'IN' ? 'ok' : 'bad'}">${l.jenis} · ${fmt(l.masa)}</span></li>`).join('');
+  const l = me && last[me.id], dalam = l && l.jenis === 'IN';
+  $('#status').textContent = !me ? '' : dalam ? 'Status: bertugas sejak ' + fmt(l.masa) : 'Status: tidak bertugas';
+  $('#bIn').disabled = !me || dalam;
+  $('#bOut').disabled = !me || !dalam;
+  stesen();
+}
 
-      async function punch(jenis) {
-        if (!me) return;
-        const { error } = await db
-          .from('punch')
-          .insert({ anggota_id: me.id, jenis });
-        if (error) alert('Gagal: ' + error.message);
-      }
-      $('#bIn').onclick = () => punch('IN');
-      $('#bOut').onclick = () => punch('OUT');
+async function punch(jenis) {
+  if (!me) return;
+  const {error} = await db.from('punch').insert({anggota_id: me.id, jenis});
+  if (error) alert('Gagal: ' + error.message);
+}
+$('#bIn').onclick = () => punch('IN');
+$('#bOut').onclick = () => punch('OUT');
 
-      async function hantar(jenis) {
-        const m = $('#mesej').value.trim();
-        if (!m || !me) return;
-        const { error } = await db
-          .from('notifikasi')
-          .insert({ jenis, mesej: m, dari: me.nama });
-        if (error) return alert('Gagal: ' + error.message);
-        $('#mesej').value = '';
-      }
-      $('#bInfo').onclick = () => hantar('info');
-      $('#bAlarm').onclick = () => hantar('alarm');
+async function hantar(jenis) {
+  const m = $('#mesej').value.trim();
+  if (!m || !me) return;
+  const {error} = await db.from('notifikasi').insert({jenis, mesej: m, dari: me.nama});
+  if (error) return alert('Gagal: ' + error.message);
+  $('#mesej').value = '';
+}
+$('#bInfo').onclick = () => hantar('info');
+$('#bAlarm').onclick = () => hantar('alarm');
 
-      // ===== Bunyi, alarm, notifikasi =====
-      function beep(ms = 200) {
-        if (!ac) return;
-        const o = ac.createOscillator(),
-          g = ac.createGain();
-        o.type = 'square';
-        o.frequency.value = 880;
-        g.gain.value = 0.25;
-        o.connect(g);
-        g.connect(ac.destination);
-        o.start();
-        o.stop(ac.currentTime + ms / 1000);
-      }
-      function startAlarm(m) {
-        clearInterval(alarmTimer);
-        $('#alarmMsg').textContent = m;
-        $('#alarm').classList.add('on');
-        alarmTimer = setInterval(() => {
-          beep(350);
-          navigator.vibrate && navigator.vibrate(350);
-        }, 700);
-      }
-      $('#alarmOff').onclick = () => {
-        clearInterval(alarmTimer);
-        $('#alarm').classList.remove('on');
-      };
+// ===== Bunyi, alarm, notifikasi =====
+function beep(ms = 200) {
+  if (!ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'square'; o.frequency.value = 880; g.gain.value = .25;
+  o.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + ms / 1000);
+}
+function startAlarm(m) {
+  clearInterval(alarmTimer);
+  $('#alarmMsg').textContent = m;
+  $('#alarm').classList.add('on');
+  alarmTimer = setInterval(() => { beep(350); navigator.vibrate && navigator.vibrate(350); }, 700);
+}
+$('#alarmOff').onclick = () => { clearInterval(alarmTimer); $('#alarm').classList.remove('on'); };
 
-      let tt;
-      function toast(m) {
-        const t = $('#toast');
-        t.textContent = m;
-        t.style.display = 'block';
-        clearTimeout(tt);
-        tt = setTimeout(() => (t.style.display = 'none'), 5000);
-      }
-      function notify(n, sys) {
-        const tajuk = n.jenis === 'alarm' ? 'ALARM' : 'Notifikasi';
-        toast(`${tajuk}: ${n.mesej}${n.dari ? ' (' + n.dari + ')' : ''}`);
-        if (n.jenis === 'alarm') startAlarm(n.mesej);
-        else {
-          beep(250);
-          navigator.vibrate && navigator.vibrate(200);
-        }
-        if (
-          sys &&
-          'Notification' in window &&
-          Notification.permission === 'granted'
-        )
-          // peringatan setempat
-          navigator.serviceWorker.getRegistration().then(
-            (r) =>
-              r &&
-              r.showNotification(tajuk + ' - Syif PGO', {
-                body: n.mesej,
-                icon: 'icon-192.png',
-                vibrate: [200, 100, 200],
-              })
-          );
-      }
-      $('#aktif').onclick = async () => {
-        const izin =
-          'Notification' in window ? Notification.requestPermission() : null; // mesti terus dalam klik
-        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-        await ac.resume();
-        beep(150);
-        $('#aktif').style.display = 'none';
-        await izin;
-        daftarPush();
-      };
+let tt;
+function toast(m) {
+  const t = $('#toast'); t.textContent = m; t.style.display = 'block';
+  clearTimeout(tt); tt = setTimeout(() => t.style.display = 'none', 5000);
+}
+function notify(n, sys) {
+  const tajuk = n.jenis === 'alarm' ? 'ALARM' : 'Notifikasi';
+  toast(`${tajuk}: ${n.mesej}${n.dari ? ' (' + n.dari + ')' : ''}`);
+  if (n.jenis === 'alarm') startAlarm(n.mesej); else { beep(250); navigator.vibrate && navigator.vibrate(200); }
+  if (sys && 'Notification' in window && Notification.permission === 'granted') // peringatan setempat
+    navigator.serviceWorker.getRegistration().then(r => r && r.showNotification(tajuk + ' - Syif PGO', {body: n.mesej, icon: 'icon-192.png', vibrate: [200, 100, 200]}));
+}
+$('#aktif').onclick = async () => {
+  const izin = 'Notification' in window ? Notification.requestPermission() : null; // mesti terus dalam klik
+  ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+  await ac.resume();
+  beep(150);
+  $('#aktif').style.display = 'none';
+  await izin;
+  daftarPush();
+};
 
-      // ===== Web Push =====
-      const b64 = (k) =>
-        Uint8Array.from(
-          atob(
-            (k + '='.repeat((4 - (k.length % 4)) % 4))
-              .replace(/-/g, '+')
-              .replace(/_/g, '/')
-          ),
-          (c) => c.charCodeAt(0)
-        );
-      async function daftarPush() {
-        // dipanggil setiap kali log masuk atau buka app: mengemas kini "log masuk hari ini"
-        try {
-          if (
-            !me ||
-            !('serviceWorker' in navigator) ||
-            !('PushManager' in window) ||
-            Notification.permission !== 'granted'
-          )
-            return;
-          const reg = await navigator.serviceWorker.register('sw.js');
-          await navigator.serviceWorker.ready;
-          const sub =
-            (await reg.pushManager.getSubscription()) ||
-            (await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: b64(VAPID_PUBLIC),
-            }));
-          const j = sub.toJSON();
-          await db.rpc('daftar_push', {
-            p_endpoint: j.endpoint,
-            p_p256dh: j.keys.p256dh,
-            p_kunci: j.keys.auth,
-          });
-        } catch (e) {
-          console.warn('Push:', e);
-        }
-      }
+// ===== Web Push =====
+const b64 = k => Uint8Array.from(atob((k + '='.repeat((4 - k.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+async function daftarPush() { // dipanggil setiap kali log masuk atau buka app: mengemas kini "log masuk hari ini"
+  try {
+    if (!me || !('serviceWorker' in navigator) || !('PushManager' in window) || Notification.permission !== 'granted') return;
+    const reg = await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) ||
+      await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64(VAPID_PUBLIC)});
+    const j = sub.toJSON();
+    await db.rpc('daftar_push', {p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_kunci: j.keys.auth});
+  } catch (e) { console.warn('Push:', e); }
+}
 
-      // ===== Realtime =====
-      function langgan() {
-        db.channel('pgo')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'punch' },
-            (p) => {
-              if (p.eventType !== 'INSERT') return load();
-              logs.unshift(p.new);
-              last[p.new.anggota_id] = p.new;
-              render();
-              toast(`${nama(p.new.anggota_id)} Punch ${p.new.jenis}`);
-              if (p.new.jenis === 'OUT' && bertugas().length < MIN)
-                notify({
-                  jenis: 'info',
-                  mesej: `Anggota bertugas tinggal ${
-                    bertugas().length
-                  }, kurang daripada minimum ${MIN}`,
-                });
-            }
-          )
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'anggota' },
-            load
-          )
-          .on(
-            'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'notifikasi' },
-            (p) => notify(p.new)
-          )
-          .subscribe((s) => {
-            $('#conn').textContent = s === 'SUBSCRIBED' ? '● Live' : '○ ' + s;
-            $('#conn').className = s === 'SUBSCRIBED' ? 'ok' : 'mut';
-          });
-      }
+// ===== Realtime =====
+function langgan() {
+  db.channel('pgo')
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'punch'}, p => {
+      if (p.eventType !== 'INSERT') return load();
+      logs.unshift(p.new); last[p.new.anggota_id] = p.new; render();
+      toast(`${nama(p.new.anggota_id)} Punch ${p.new.jenis}`);
+      if (p.new.jenis === 'OUT' && bertugas().length < MIN)
+        notify({jenis: 'info', mesej: `Anggota bertugas tinggal ${bertugas().length}, kurang daripada minimum ${MIN}`});
+    })
+    .on('postgres_changes', {event: '*', schema: 'public', table: 'anggota'}, load)
+    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifikasi'}, p => notify(p.new))
+    .subscribe(s => {
+      $('#conn').textContent = s === 'SUBSCRIBED' ? '● Live' : '○ ' + s;
+      $('#conn').className = s === 'SUBSCRIBED' ? 'ok' : 'mut';
+    });
+}
 
-      // ===== Rotasi syif: slot 12 jam, urutan B → C → A =====
-      // Rujukan: 23 Nov 2026 jam 0800 = Syif B (siang)
-      const ANCHOR = new Date('2026-11-23T08:00:00+08:00').getTime(),
-        SLOT = 43200000,
-        URUTAN = ['B', 'C', 'A'];
-      const idx = (t) => Math.floor((t - ANCHOR) / SLOT);
-      const kump = (t) => URUTAN[((idx(t) % 3) + 3) % 3];
-      const jenisSlot = (t) =>
-        ((idx(t) % 2) + 2) % 2 === 0 ? 'Siang' : 'Malam';
-      const jam = (t) =>
-        new Date(t).toLocaleTimeString('ms-MY', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        });
+// ===== Rotasi syif: slot 12 jam, urutan B → C → A =====
+// Rujukan: 23 Nov 2026 jam 0800 = Syif B (siang)
+const ANCHOR = new Date('2026-11-23T08:00:00+08:00').getTime(), SLOT = 43200000, URUTAN = ['B', 'C', 'A'];
+const idx = t => Math.floor((t - ANCHOR) / SLOT);
+const kump = t => URUTAN[((idx(t) % 3) + 3) % 3];
+const jenisSlot = t => ((idx(t) % 2) + 2) % 2 === 0 ? 'Siang' : 'Malam';
+const jam = t => new Date(t).toLocaleTimeString('ms-MY', {hour: '2-digit', minute: '2-digit', hour12: false});
 
-      function jadual() {
-        const now = Date.now(),
-          tamat = ANCHOR + (idx(now) + 1) * SLOT;
-        $('#semasa').textContent = `Syif ${kump(now)} (${jenisSlot(now)})`;
-        $('#seterus').textContent = `Hingga ${jam(tamat)}, kemudian Syif ${kump(
-          tamat
-        )} (${jenisSlot(tamat)})`;
-        const d0 = ANCHOR + Math.floor((now - ANCHOR) / 86400000) * 86400000;
-        let h =
-          '<tr><th>Tarikh</th><th>Siang 0800-2000</th><th>Malam 2000-0800</th></tr>';
-        for (let k = 0; k < 7; k++) {
-          const d = d0 + k * 86400000;
-          h += `<tr><td>${new Date(d).toLocaleDateString('ms-MY', {
-            weekday: 'short',
-            day: 'numeric',
-            month: 'short',
-          })}</td>
+function jadual() {
+  const now = Date.now(), tamat = ANCHOR + (idx(now) + 1) * SLOT;
+  $('#semasa').textContent = `Syif ${kump(now)} (${jenisSlot(now)})`;
+  $('#seterus').textContent = `Hingga ${jam(tamat)}, kemudian Syif ${kump(tamat)} (${jenisSlot(tamat)})`;
+  const d0 = ANCHOR + Math.floor((now - ANCHOR) / 86400000) * 86400000;
+  let h = '<tr><th>Tarikh</th><th>Siang 0800-2000</th><th>Malam 2000-0800</th></tr>';
+  for (let k = 0; k < 7; k++) {
+    const d = d0 + k * 86400000;
+    h += `<tr><td>${new Date(d).toLocaleDateString('ms-MY', {weekday: 'short', day: 'numeric', month: 'short'})}</td>
       <td><b>${kump(d)}</b></td><td><b>${kump(d + SLOT)}</b></td></tr>`;
-        }
-        $('#jadual').innerHTML = h;
-      }
-      let diingat = 0;
-      function ingatan() {
-        // peringatan 15 minit sebelum pertukaran syif
-        const now = Date.now(),
-          tamat = ANCHOR + (idx(now) + 1) * SLOT;
-        if (me && tamat - now <= 900000 && diingat !== tamat) {
-          diingat = tamat;
-          notify(
-            {
-              jenis: 'info',
-              mesej: `Syif bertukar jam ${jam(tamat)}: Syif ${kump(
-                tamat
-              )} ambil alih`,
-            },
-            true
-          );
-        }
-      }
-      // ===== Stesen dan jadual rehat (tetap ikut stesen) =====
-      // 5 orang: semua stesen, MERS 2 ganti stesen yang rehat. 4 orang: MERS 2 tutup. 3 orang: SPI juga tutup.
-      const REHAT = {
-        Siang: {
-          RT: [
-            ['Rehat', '1000', '1030'],
-            ['Makan', '1200', '1300'],
-          ],
-          PGO: [
-            ['Rehat', '1030', '1100'],
-            ['Makan', '1300', '1400'],
-          ],
-          SPI: [
-            ['Rehat', '1100', '1130'],
-            ['Makan', '1400', '1500'],
-          ],
-          'MERS 1': [
-            ['Rehat', '1130', '1200'],
-            ['Makan', '1500', '1600'],
-          ],
-          'MERS 2': [
-            ['Makan', '1600', '1700'],
-            ['Rehat', '1700', '1730'],
-          ],
-        },
-        Malam: {
-          PGO: [
-            ['Makan', '2030', '2100'],
-            ['Tidur', '0030', '0200'],
-          ],
-          SPI: [
-            ['Makan', '2100', '2130'],
-            ['Tidur', '0200', '0330'],
-          ],
-          'MERS 1': [
-            ['Makan', '2130', '2200'],
-            ['Tidur', '2300', '0030'],
-          ],
-          RT: [
-            ['Makan', '2200', '2230'],
-            ['Tidur', '0330', '0500'],
-          ],
-          'MERS 2': [
-            ['Makan', '2230', '2300'],
-            ['Tidur', '0500', '0630'],
-          ],
-        },
-      };
-      const KRITIKAL = {
-        PGO: ['1530-1600', '2330-0030', '0530-0630'],
-        SPI: ['1800-2000', '0600-0800'],
-        RT: ['0800-1000', '2000-2200'],
-        'MERS 1': ['1800-2000', '0400-0600'],
-        'MERS 2': [],
-      };
-      const mnt = (h) => +h.slice(0, 2) * 60 + +h.slice(2, 4);
-      const dalamSlot = (jenis, a) =>
-        (a >= 480 && a < 1200) === (jenis === 'Siang');
+  }
+  $('#jadual').innerHTML = h;
+}
+let diingat = 0;
+function ingatan() { // peringatan 15 minit sebelum pertukaran syif
+  const now = Date.now(), tamat = ANCHOR + (idx(now) + 1) * SLOT;
+  if (me && tamat - now <= 900000 && diingat !== tamat) {
+    diingat = tamat;
+    notify({jenis: 'info', mesej: `Syif bertukar jam ${jam(tamat)}: Syif ${kump(tamat)} ambil alih`}, true);
+  }
+}
+// ===== Stesen dan jadual rehat (tetap ikut stesen) =====
+// 5 orang: semua stesen, MERS 2 ganti stesen yang rehat. 4 orang: MERS 2 tutup. 3 orang: SPI juga tutup.
+const REHAT = {
+  Siang: {
+    'RT': [['Rehat', '1000', '1030'], ['Makan', '1200', '1300']],
+    'PGO': [['Rehat', '1030', '1100'], ['Makan', '1300', '1400']],
+    'SPI': [['Rehat', '1100', '1130'], ['Makan', '1400', '1500']],
+    'MERS 1': [['Rehat', '1130', '1200'], ['Makan', '1500', '1600']],
+    'MERS 2': [['Makan', '1600', '1700'], ['Rehat', '1700', '1730']]
+  },
+  Malam: {
+    'PGO': [['Makan', '2030', '2100'], ['Tidur', '0030', '0200']],
+    'SPI': [['Makan', '2100', '2130'], ['Tidur', '0200', '0330']],
+    'MERS 1': [['Makan', '2130', '2200'], ['Tidur', '2300', '0030']],
+    'RT': [['Makan', '2200', '2230'], ['Tidur', '0330', '0500']],
+    'MERS 2': [['Makan', '2230', '2300'], ['Tidur', '0500', '0630']]
+  }
+};
+const KRITIKAL = {
+  'PGO': ['1530-1600', '2330-0030', '0530-0630'],
+  'SPI': ['1800-2000', '0600-0800'],
+  'RT': ['0800-1000', '2000-2200'],
+  'MERS 1': ['1800-2000', '0400-0600'],
+  'MERS 2': []
+};
+const mnt = h => +h.slice(0, 2) * 60 + +h.slice(2, 4);
+const dalamSlot = (jenis, a) => (a >= 480 && a < 1200) === (jenis === 'Siang');
 
-      function slotTs(mula, jenis, a, b) {
-        // masa mula/tamat dalam slot semasa (ms)
-        const base = jenis === 'Siang' ? 480 : 1200;
-        const ra = (mnt(a) - base + 1440) % 1440;
-        let rb = (mnt(b) - base + 1440) % 1440;
-        if (rb <= ra) rb += 1440;
-        return [mula + ra * 60000, mula + rb * 60000];
-      }
+function slotTs(mula, jenis, a, b) { // masa mula/tamat dalam slot semasa (ms)
+  const base = jenis === 'Siang' ? 480 : 1200;
+  const ra = (mnt(a) - base + 1440) % 1440;
+  let rb = (mnt(b) - base + 1440) % 1440; if (rb <= ra) rb += 1440;
+  return [mula + ra * 60000, mula + rb * 60000];
+}
 
-      function penugasan() {
-        // ikut anggota yang Punch In, susun ikut ID, pusing +1 setiap syif
-        const ons = bertugas().sort((x, y) =>
-            (x.kod || '').localeCompare(y.kod || '')
-          ),
-          n = ons.length;
-        const buka =
-          n >= 5
-            ? ['PGO', 'SPI', 'RT', 'MERS 1', 'MERS 2']
-            : n === 4
-            ? ['PGO', 'SPI', 'RT', 'MERS 1']
-            : ['PGO', 'RT', 'MERS 1'];
-        const off = Math.floor(idx(Date.now()) / 3),
-          map = {};
-        ons.forEach((a, p) => {
-          const k = (p + off) % Math.max(n, buka.length);
-          map[a.id] = k < buka.length ? buka[k] : 'Simpanan';
-        });
-        return { buka, map, ons };
-      }
+function penugasan() { // ikut anggota yang Punch In, susun ikut ID, pusing +1 setiap syif
+  const ons = bertugas().sort((x, y) => (x.kod || '').localeCompare(y.kod || '')), n = ons.length;
+  const buka = n >= 5 ? ['PGO', 'SPI', 'RT', 'MERS 1', 'MERS 2'] : n === 4 ? ['PGO', 'SPI', 'RT', 'MERS 1'] : ['PGO', 'RT', 'MERS 1'];
+  const off = Math.floor(idx(Date.now()) / 3), map = {};
+  ons.forEach((a, p) => { const k = (p + off) % Math.max(n, buka.length); map[a.id] = k < buka.length ? buka[k] : 'Simpanan'; });
+  return {buka, map, ons};
+}
 
-      function slotSaya(st, p, jenis, mula) {
-        const r = (REHAT[jenis][st] || []).map((x) => x.slice());
-        if (st === 'MERS 2' && p.buka.length === 5)
-          Object.entries(REHAT[jenis]).forEach(([s, v]) => {
-            if (s !== 'MERS 2')
-              v.forEach(([, a, b]) => r.push(['Ganti ' + s, a, b]));
-          });
-        return r
-          .map(([j, a, b]) => {
-            const [s, e] = slotTs(mula, jenis, a, b);
-            return { j, a, b, s, e };
-          })
-          .sort((x, y) => x.s - y.s);
-      }
+function slotSaya(st, p, jenis, mula) {
+  const r = (REHAT[jenis][st] || []).map(x => x.slice());
+  if (st === 'MERS 2' && p.buka.length === 5)
+    Object.entries(REHAT[jenis]).forEach(([s, v]) => { if (s !== 'MERS 2') v.forEach(([, a, b]) => r.push(['Ganti ' + s, a, b])); });
+  return r.map(([j, a, b]) => { const [s, e] = slotTs(mula, jenis, a, b); return {j, a, b, s, e}; }).sort((x, y) => x.s - y.s);
+}
 
-      function stesen() {
-        if (!me) return;
-        const now = Date.now(),
-          mula = ANCHOR + idx(now) * SLOT,
-          jenis = jenisSlot(now),
-          p = penugasan(),
-          st = p.map[me.id];
-        $('#penugasan').innerHTML = p.buka
-          .map((s) => {
-            const a = p.ons.find((x) => p.map[x.id] === s);
-            return `<tr><td>${s}</td><td>${
-              a ? a.nama : '<span class="bad">Kosong</span>'
-            }</td></tr>`;
-          })
-          .join('');
-        $('#stesenSaya').textContent = st || 'Punch In dahulu';
-        if (!st) {
-          $('#krit').textContent = '';
-          $('#rehatSaya').innerHTML = '';
-          return;
-        }
-        const c = new Date(now),
-          cur = c.getHours() * 60 + c.getMinutes();
-        const kritis = (KRITIKAL[st] || []).some((w) => {
-          const a = mnt(w.slice(0, 4)),
-            b = mnt(w.slice(5));
-          return a <= b ? cur >= a && cur < b : cur >= a || cur < b;
-        });
-        $('#krit').innerHTML = kritis
-          ? '<span class="bad">Waktu kritikal: jangan tinggalkan stesen</span>'
-          : 'Bukan waktu kritikal';
-        $('#rehatSaya').innerHTML =
-          slotSaya(st, p, jenis, mula)
-            .map(
-              (x) =>
-                `<li><span>${x.j}</span><span class="${
-                  now >= x.e ? 'mut' : now >= x.s ? 'ok' : ''
-                }">${x.a}-${x.b} ${
-                  now >= x.e ? '(selesai)' : now >= x.s ? '(sekarang)' : ''
-                }</span></li>`
-            )
-            .join('') || '<li class="mut">Tiada slot rehat</li>';
-      }
+function stesen() {
+  if (!me) return;
+  const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, jenis = jenisSlot(now), p = penugasan(), st = p.map[me.id];
+  $('#penugasan').innerHTML = p.buka.map(s => {
+    const a = p.ons.find(x => p.map[x.id] === s);
+    return `<tr><td>${s}</td><td>${a ? a.nama : '<span class="bad">Kosong</span>'}</td></tr>`;
+  }).join('');
+  $('#stesenSaya').textContent = st || 'Punch In dahulu';
+  if (!st) { $('#krit').textContent = ''; $('#rehatSaya').innerHTML = ''; return; }
+  const c = new Date(now), cur = c.getHours() * 60 + c.getMinutes();
+  const kritis = (KRITIKAL[st] || []).some(w => {
+    const a = mnt(w.slice(0, 4)), b = mnt(w.slice(5));
+    return a <= b ? cur >= a && cur < b : cur >= a || cur < b;
+  });
+  $('#krit').innerHTML = kritis ? '<span class="bad">Waktu kritikal: jangan tinggalkan stesen</span>' : 'Bukan waktu kritikal';
+  $('#rehatSaya').innerHTML = slotSaya(st, p, jenis, mula).map(x =>
+    `<li><span>${x.j}</span><span class="${now >= x.e ? 'mut' : now >= x.s ? 'ok' : ''}">${x.a}-${x.b} ${now >= x.e ? '(selesai)' : now >= x.s ? '(sekarang)' : ''}</span></li>`
+  ).join('') || '<li class="mut">Tiada slot rehat</li>';
+}
 
-      const dingat = new Set();
-      function ingatRehat() {
-        // notifikasi 5 minit sebelum dan bila tamat
-        if (!me) return;
-        const now = Date.now(),
-          mula = ANCHOR + idx(now) * SLOT,
-          jenis = jenisSlot(now),
-          p = penugasan(),
-          st = p.map[me.id];
-        if (!st) return;
-        slotSaya(st, p, jenis, mula).forEach((x) => {
-          const k = mula + x.j + x.a;
-          if (now >= x.s - 300000 && now < x.s && !dingat.has(k + 's')) {
-            dingat.add(k + 's');
-            notify(
-              {
-                jenis: 'info',
-                mesej: `${x.j} ${x.a}-${x.b} (stesen ${st}) bermula 5 minit lagi`,
-              },
-              true
-            );
-          }
-          if (now >= x.e && now < x.e + 120000 && !dingat.has(k + 'e')) {
-            dingat.add(k + 'e');
-            notify(
-              { jenis: 'info', mesej: `${x.j} tamat. Kembali ke stesen ${st}` },
-              true
-            );
-          }
-        });
-      }
+const dingat = new Set();
+function ingatRehat() { // notifikasi 5 minit sebelum dan bila tamat
+  if (!me) return;
+  const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, jenis = jenisSlot(now), p = penugasan(), st = p.map[me.id];
+  if (!st) return;
+  slotSaya(st, p, jenis, mula).forEach(x => {
+    const k = mula + x.j + x.a;
+    if (now >= x.s - 300000 && now < x.s && !dingat.has(k + 's')) {
+      dingat.add(k + 's');
+      notify({jenis: 'info', mesej: `${x.j} ${x.a}-${x.b} (stesen ${st}) bermula 5 minit lagi`}, true);
+    }
+    if (now >= x.e && now < x.e + 120000 && !dingat.has(k + 'e')) {
+      dingat.add(k + 'e');
+      notify({jenis: 'info', mesej: `${x.j} tamat. Kembali ke stesen ${st}`}, true);
+    }
+  });
+}
 
-      function rujukan() {
-        const t = (jenis) =>
-          `<h2 style="margin-top:10px">${jenis} (${
-            jenis === 'Siang' ? '0800-2000' : '2000-0800'
-          })</h2>
+function rujukan() {
+  const t = jenis => `<h2 style="margin-top:10px">${jenis} (${jenis === 'Siang' ? '0800-2000' : '2000-0800'})</h2>
     <table><tr><th>Stesen</th><th>Kritikal</th><th>Slot 1</th><th>Slot 2</th></tr>` +
-          Object.entries(REHAT[jenis])
-            .map(
-              ([s, r]) =>
-                `<tr><td>${s}</td><td>${
-                  KRITIKAL[s]
-                    .filter((w) => dalamSlot(jenis, mnt(w.slice(0, 4))))
-                    .join('<br>') || '-'
-                }</td>` +
-                r.map(([j, a, b]) => `<td>${j}<br>${a}-${b}</td>`).join('') +
-                '</tr>'
-            )
-            .join('') +
-          '</table>';
-        $('#rujukan').innerHTML =
-          t('Siang') +
-          t('Malam') +
-          '<p class="mut">5 orang: semua stesen jalan, MERS 2 ganti stesen yang rehat. 4 orang: MERS 2 tutup. 3 orang: SPI juga tutup (rehat perlu relief atau standby kerana minimum 3).</p>';
-      }
+    Object.entries(REHAT[jenis]).map(([s, r]) =>
+      `<tr><td>${s}</td><td>${KRITIKAL[s].filter(w => dalamSlot(jenis, mnt(w.slice(0, 4)))).join('<br>') || '-'}</td>` +
+      r.map(([j, a, b]) => `<td>${j}<br>${a}-${b}</td>`).join('') + '</tr>').join('') + '</table>';
+  $('#rujukan').innerHTML = t('Siang') + t('Malam') +
+    '<p class="mut">5 orang: semua stesen jalan, MERS 2 ganti stesen yang rehat. 4 orang: MERS 2 tutup. 3 orang: SPI juga tutup (rehat perlu relief atau standby kerana minimum 3).</p>';
+}
 
-      jadual();
-      rujukan();
-      setInterval(() => {
-        jadual();
-        ingatan();
-        ingatRehat();
-        stesen();
-      }, 30000);
+jadual();
+rujukan();
+setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); }, 30000);
 
-      boot();
-    </script>
-  </body>
+boot();
+</script>
+</body>
 </html>
