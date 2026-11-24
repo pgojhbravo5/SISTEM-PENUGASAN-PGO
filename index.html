@@ -93,11 +93,13 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .lg .who{flex:1;min-width:0}.lg .who b{display:block}.lg .who span{font-size:.85rem}
 .lg .when{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
 .lg .when b{font-variant-numeric:tabular-nums}.lg .when span{font-size:.8rem}
-/* Penapis bilangan bertugas */
 .seg{display:flex;gap:4px;padding:4px;border-radius:16px;background:var(--field);border:1px solid var(--bd);margin:4px 0 10px}
 .seg button{flex:1;width:auto;margin:0;padding:8px 4px;border:0;border-radius:12px;background:transparent;color:var(--mut);font-size:.85rem}
 .seg button.on{background:var(--card);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
 .rt td[colspan]{font-size:.75rem;font-weight:600}
+/* Footer kredit */
+.kredit{margin:6px 0 0;padding:10px 0;text-align:center;font-size:.75rem;line-height:1.6;color:var(--mut)}
+.kredit b{color:var(--tx);font-weight:600}
 </style>
 </head>
 <body>
@@ -183,6 +185,12 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <div class="row"><button id="bInfo">Notifikasi</button><button id="bAlarm" class="pri">Alarm</button></div>
 </div>
 </section>
+
+<footer class="kredit">
+  <div>Pembina sistem &amp; aplikasi: <b>PB Mohamad Aidil</b></div>
+  <div>Editor CSS: <b>PB Jevinson</b></div>
+  <div class="hak">&copy; 2026 PGO Johor</div>
+</footer>
 
 <nav class="tabs" aria-label="Menu utama">
   <button data-tab="t1" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>Utama</button>
