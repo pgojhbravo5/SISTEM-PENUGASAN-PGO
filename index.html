@@ -175,7 +175,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <section id="t1" class="tab on">
 <header class="hd">
   <div><h1>Syif PGO Johor</h1><p class="mut" style="margin:2px 0 0">Log masuk: <b id="kod"></b> · Syif <span id="mykump"></span></p></div>
-  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar">Keluar</a></div>
+  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar"> Log Keluar</a></div>
 </header>
 <button id="aktif" class="pri" style="margin:0 0 6px">Aktifkan bunyi dan notifikasi</button>
 <p id="pushStatus" class="mut" style="margin:0 0 12px"></p>
@@ -685,7 +685,7 @@ function slotSaya(st, p, jenis, mula) {
 function stesen() {
   if (!me) return;
   const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, jenis = jenisSlot(now), p = penugasan(), st = p.map[me.id];
-  $('#penugasan').innerHTML = STESEN_SEMUA.filter(s => p.buka.includes(s) || p.ons.some(x => p.map[x.id] === s)).map(s => {
+  $('#penugasan').innerHTML = STESEN_SEMUA.map(s => {
     const a = p.ons.find(x => p.map[x.id] === s);
     return `<div class="pt${a ? '' : ' kosong'}${a && a.id === me.id ? ' me' : ''}"><small>${s}</small><b>${a ? a.nama : 'Kosong'}</b></div>`;
   }).join('');
