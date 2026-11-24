@@ -906,7 +906,7 @@ function aiRehat() {
   if (!sl.length) return `Stesen ${st} tiada slot rehat.`;
   const sek = sl.find(x => now >= x.s && now < x.e), dpn = sl.find(x => x.s > now);
   const ayat = sek ? `Sekarang masa ${sek.j.toLowerCase()} anda, tamat ${jf(sek.b)} (${aiJm(sek.e - now)} lagi).`
-    : dpn ? `${dpn.j} seterusnya jam ${jf(dpn.a)}, lagi ${aiJm(dpn.s - now)}.` : 'Semua rehat untuk slot ini sudah selesai.';
+    : dpn ? `${dpn.j} seterusnya jam ${jf(dpn.a)}, lagi ${aiJm(dpn.s - now)}.` : 'Habis sudah masa rehat Bos, Kerja lah, Tiada suda masa rehat';
   return `Stesen ${st} (${jenis}).\n${ayat}\n` + sl.map(x => `• ${x.j} ${jf(x.a)}–${jf(x.b)}${now >= x.e ? ' (selesai)' : now >= x.s ? ' (sedang berlangsung)' : ''}`).join('\n');
 }
 function aiKritikal() {
