@@ -1117,7 +1117,7 @@ function chatRender(bawah) {
     if (hk !== hari) { hari = hk; h += `<div class="cdate">${esc(hk)}</div>`; }
     const sendiri = m.user_id === me.user_id;
     const isi = m.jenis === 'gambar' ? `<img src="${esc(m.url)}" loading="lazy" alt="Gambar" data-buka="${esc(m.url)}">`
-      : m.jenis === 'suara' ? `<audio controls preload="metadata" src="${esc(m.url)}"></audio>`
+      : m.jenis === 'suara' ? `<audio controls preload="metadata" src="${esc(m.url)}"></audio><a href="${esc(m.url)}" target="_blank" rel="noopener" style="font-size:.7rem;color:inherit;opacity:.7">Tidak berbunyi? Buka audio</a>`
       : `<span>${esc(m.mesej)}</span>`;
     h += `<div class="cm ${sendiri ? 'me' : 'lain'}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}${isi}<small>${jam(m.masa)}</small></div>`;
   });
@@ -1211,9 +1211,9 @@ async function suaraMula() {
   if (rakam) return suaraHenti(true); // tekan sekali lagi = hantar
   if (!navigator.mediaDevices || !window.MediaRecorder) return alert('Pelayar ini tidak menyokong rakaman suara.');
   let strim;
-  try { strim = await navigator.mediaDevices.getUserMedia({audio: true}); }
+  try { strim = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true, autoGainControl: true}}); }
   catch (_) { return alert('Benarkan akses mikrofon di tetapan pelayar.'); }
-  const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  const mime = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].find(t => MediaRecorder.isTypeSupported(t)) || ''; // mp4 dahulu: iPhone/Safari tidak boleh main webm
   const mr = new MediaRecorder(strim, mime ? {mimeType: mime} : undefined), kep = [];
   const r = rakam = {mr, mula: Date.now(), batal: false, tmr: null};
   mr.ondataavailable = e => { if (e.data.size) kep.push(e.data); };
@@ -1221,6 +1221,7 @@ async function suaraMula() {
     clearInterval(r.tmr); strim.getTracks().forEach(t => t.stop());
     rakam = null; suaraUI(false);
     if (r.batal || Date.now() - r.mula < 800) return; // terlalu pendek diabaikan
+    if (kep.reduce((n, b) => n + b.size, 0) < 1500) return alert('Rakaman kosong, tidak dihantar. Semak mikrofon dan pastikan tiada app lain (panggilan, WhatsApp) sedang guna mikrofon.');
     const tipe = (mr.mimeType || mime || 'audio/webm').split(';')[0];
     chatMuatNaik(new Blob(kep, {type: tipe}), tipe.includes('mp4') ? 'm4a' : tipe.includes('ogg') ? 'ogg' : 'webm', 'suara');
   };
