@@ -115,8 +115,9 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 #aiPanel.on{display:flex}
 .aih{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln)}
 .aih svg{width:42px;height:42px;flex:none}
-.aih div{min-width:0}.aih b{display:block;line-height:1.2}.aih small{color:var(--mut);font-size:.75rem}
-#aiPanel .aih button{width:34px;height:34px;margin:0 0 0 auto;padding:0;flex:none;border-radius:50%;font-size:1.2rem;line-height:1}
+.aih div{min-width:0}.aih b{display:block;line-height:1.2}.aih small{display:block;color:var(--mut);font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#aiPanel .aih button{width:34px;height:34px;margin:0;padding:0;flex:none;border-radius:50%;font-size:1.2rem;line-height:1}
+#aiPanel .aih .aipill{width:auto;height:auto;margin:0 0 0 auto;padding:4px 10px;border-radius:999px;font-size:.72rem;line-height:1.3;white-space:nowrap}
 #aiMsgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:140px;overscroll-behavior:contain}
 .aim{max-width:88%;padding:8px 12px;border-radius:14px;font-size:.88rem;white-space:pre-line;word-break:break-word}
 .aim.ai{align-self:flex-start;background:var(--field);border:1px solid var(--bd);border-bottom-left-radius:4px}
@@ -276,6 +277,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <div class="aih">
     <svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg>
     <div><b>Tupai Bomba</b><small>Pembantu syif anda</small></div>
+    <button type="button" id="aiAutoBtn" class="aipill" aria-pressed="true" aria-label="Hidup atau senyapkan cakap automatik">Auto: hidup</button>
     <button type="button" id="aiMinBtn" aria-label="Kecilkan">&minus;</button>
   </div>
   <div id="aiMsgs" aria-live="polite"></div>
@@ -283,6 +285,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
     <button type="button" data-q="statistik saya">Statistik saya</button>
     <button type="button" data-q="rehat seterusnya">Rehat seterusnya</button>
     <button type="button" data-q="berapa lama saya bertugas">Dah berapa lama?</button>
+    <button type="button" data-q="bila saya habis kerja">Bila habis?</button>
     <button type="button" data-q="siapa bertugas">Siapa bertugas</button>
     <button type="button" data-q="syif semasa">Syif</button>
     <button type="button" data-q="waktu kritikal">Waktu kritikal</button>
@@ -434,6 +437,7 @@ function render() {
   pilihanStesen();
   stesen();
   timer();
+  if (aiOk) aiAuto();
 }
 
 // ===== Timer tempoh bertugas (Punch In hingga Punch Out) =====
@@ -615,7 +619,7 @@ function ingatan() { // peringatan 15 minit sebelum pertukaran syif
   if (me && tamat - now <= 900000 && diingat !== tamat) {
     diingat = tamat;
     notify({jenis: 'info', mesej: `Syif bertukar jam ${jam(tamat)}: Syif ${kump(tamat)} ambil alih`}, true);
-    aiBicara(`Syif bertukar jam ${jam(tamat)}. Syif ${kump(tamat)} ambil alih. Siapkan serah tugas ya!`);
+    aiBicara(`Syif bertukar jam ${jam(tamat)}. Syif ${kump(tamat)} ambil alih. Siapkan serah tugas ya!` + (last[me.id] && last[me.id].jenis === 'IN' ? `\nHari ini anda dah bertugas ${aiJm(aiTindih(aiSesi(me.id), aiHari0(), Date.now()))}.` : ''));
   }
 }
 // ===== Stesen dan jadual rehat (tetap ikut stesen) =====
@@ -853,8 +857,7 @@ function aiKritikal() {
   if (!st) return 'Punch In dahulu supaya saya tahu stesen anda.';
   const w = KRITIKAL[st] || [];
   if (!w.length) return `Stesen ${st} tiada waktu kritikal tetap.`;
-  const c = new Date(), cur = c.getHours() * 60 + c.getMinutes();
-  const kini = w.some(x => { const a = mnt(x.slice(0, 4)), b = mnt(x.slice(5)); return a <= b ? cur >= a && cur < b : cur >= a || cur < b; });
+  const kini = aiKritis(st);
   return `Waktu kritikal stesen ${st}: ${w.map(x => jf(x.slice(0, 4)) + '–' + jf(x.slice(5))).join(', ')}.\n${kini ? 'Sekarang WAKTU KRITIKAL, jangan tinggalkan stesen.' : 'Sekarang bukan waktu kritikal.'}`;
 }
 function aiSiapa() {
@@ -880,7 +883,21 @@ function aiLog() {
   const m = logs.filter(x => x.anggota_id === me.id).slice(0, 4);
   return m.length ? 'Log terakhir anda:\n' + m.map(x => `• ${fmt(x.masa)} · Punch ${x.jenis}${x.stesen ? ' · ' + x.stesen : ''}`).join('\n') : 'Belum ada log untuk anda.';
 }
-const AI_BANTU = 'Saya Tupai Bomba, pembantu app ini. Tanya saya tentang:\n• statistik dan tempoh kerja anda (hari ini, 7 hari, jumlah)\n• dah berapa lama anda bertugas\n• rehat, makan, tidur seterusnya\n• waktu kritikal stesen anda\n• siapa bertugas dan stesen kosong\n• syif semasa dan giliran anda\n• log punch terakhir\nSaya juga akan ingatkan bila masa rehat dah dekat.';
+function aiHabis() { // bila habis kerja / balik
+  const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, tamat = mula + SLOT, dalam = !!(last[me.id] && last[me.id].jenis === 'IN');
+  const hingga = t => `jam ${jam(t)} (${aiJm(t - now)} lagi)`;
+  if (!me.kumpulan) return `Syif semasa tamat ${hingga(tamat)}.`;
+  if (kump(now) === me.kumpulan)
+    return dalam ? `Syif anda tamat ${hingga(tamat)}.\n${aiStatus()}` : `Syif anda (${jenisSlot(now)}) tamat ${hingga(tamat)}, tapi anda belum Punch In.`;
+  for (let k = 1; k < 6; k++) {
+    const t0 = mula + k * SLOT;
+    if (kump(t0) === me.kumpulan)
+      return `Giliran Syif ${me.kumpulan} anda belum bermula. Seterusnya ${new Date(t0).toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'short'})} jam ${jam(t0)} hingga ${jam(t0 + SLOT)}.` +
+        (dalam ? `\nAnda sedang Punch In di luar giliran. Syif semasa tamat ${hingga(tamat)}.` : '');
+  }
+  return `Syif semasa tamat ${hingga(tamat)}.`;
+}
+const AI_BANTU = 'Saya Tupai Bomba, pembantu app ini. Tanya saya tentang:\n• statistik dan tempoh kerja anda (hari ini, 7 hari, jumlah)\n• dah berapa lama anda bertugas\n• rehat, makan, tidur seterusnya\n• bila anda habis kerja\n• waktu kritikal stesen anda\n• siapa bertugas dan stesen kosong\n• syif semasa dan giliran anda\n• log punch terakhir\nSaya juga bercakap sendiri: peringatan rehat, jam bertugas, waktu kritikal, anggota bawah minimum dan lupa Punch In/Out. Taip "senyap" untuk diamkan.';
 
 function aiJawab(q) {
   if (!me) return 'Log masuk dahulu.';
@@ -889,18 +906,98 @@ function aiJawab(q) {
   const kata_ = (...k) => k.some(w => kata.has(w));
   if (kata_('hai', 'hi', 'helo', 'hello', 'hey', 'salam', 'assalamualaikum')) return `${aiSapa()}, ${me.nama}!\n${aiStatus()}`;
   if (kata_('tq', 'thanks', 'thank') || ada('terima kasih')) return 'Sama-sama! Kerja elok-elok, jaga keselamatan.';
+  if (kata_('senyap', 'diam', 'mute')) { aiSetSenyap(true); return 'Baik, saya senyap. Peringatan rehat dan syif tetap berbunyi. Taip "cakap" untuk hidupkan semula.'; }
+  if (kata_('cakap', 'bersuara')) { aiSetSenyap(false); return 'Okey! Saya akan bercakap sendiri bila ada info penting.'; }
   if (ada('rehat', 'makan', 'tidur', 'break', 'lunch')) return aiRehat();
   if (ada('kritikal')) return aiKritikal();
   if (ada('statistik', 'ringkasan', 'summary', 'laporan', 'prestasi')) return aiStatistik();
   if (ada('minggu', '7 hari', 'seminggu')) return aiMinggu();
   if (ada('hari ini', 'harini')) return aiHariIni();
+  if (ada('habis', 'balik', 'pulang', 'siap kerja', 'tamat kerja', 'selesai') || kata_('off')) return aiHabis();
   if (ada('syif', 'shift', 'giliran', 'jadual', 'tamat')) return aiSyif();
+  if (ada('pukul', 'jam berapa', 'tarikh', 'hari apa')) return `Sekarang jam ${jam(Date.now())}, ${new Date().toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'long'})}.`;
+  if (ada('nama saya', 'saya siapa', 'id saya')) return `Anda ${me.nama} (${me.kod || '-'}), Syif ${me.kumpulan || '-'}.`;
   if (ada('lama', 'jam', 'tempoh', 'durasi', 'status', 'sekarang')) return aiHariIni();
   if (ada('siapa', 'bertugas', 'orang', 'anggota', 'kawan', 'rakan', 'cukup', 'minimum', 'amaran')) return aiSiapa();
   if (ada('stesen')) { const st = penugasan().map[me.id]; return st ? `Anda di stesen ${st}.\n${aiKritikal()}` : 'Anda belum Punch In, jadi belum ada stesen.'; }
   if (ada('log', 'punch', 'terakhir', 'sejarah')) return aiLog();
   if (ada('tolong', 'bantu', 'help', 'menu', 'boleh buat')) return AI_BANTU;
-  return 'Maaf, saya hanya boleh jawab tentang data app ini (kerja, rehat, syif, stesen, log). Cuba tekan salah satu butang pantas, atau taip "tolong".';
+  return 'Maaf, saya belum faham soalan itu. Saya boleh jawab tentang kerja, rehat, syif, stesen dan log anda. Cuba: "bila saya habis kerja", "statistik saya" atau "rehat seterusnya". Taip "tolong" untuk senarai penuh.';
+}
+
+// ----- Cakap sendiri (proaktif) -----
+let aiSenyap = false, aiPrev = {masa: null, jenis: null, stesen: null}, aiPrevN = null, aiPrevKritis = null, aiAutoTs = 0;
+const aiDah = new Set();
+const AI_TIP_SIANG = ['Jangan lupa minum air.', 'Regangkan badan sekejap.', 'Semak peralatan stesen anda.', 'Rehatkan mata, pandang jauh 20 saat.'];
+const AI_TIP_MALAM = ['Jangan biar mengantuk, minum air dan regangkan badan.', 'Bangun berjalan sekejap supaya kekal peka.', 'Semak peralatan dan keadaan sekeliling stesen.', 'Pastikan kawasan stesen terang dan selamat.'];
+function aiHari0() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+function aiKritis(st) {
+  const c = new Date(), cur = c.getHours() * 60 + c.getMinutes();
+  return (KRITIKAL[st] || []).some(w => { const a = mnt(w.slice(0, 4)), b = mnt(w.slice(5)); return a <= b ? cur >= a && cur < b : cur >= a || cur < b; });
+}
+function aiRehatPendek() {
+  const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, p = penugasan(), st = p.map[me.id];
+  if (!st) return '';
+  const sl = slotSaya(st, p, jenisSlot(now), mula), sek = sl.find(x => now >= x.s && now < x.e), dpn = sl.find(x => x.s > now);
+  return sek ? `Sekarang ${sek.j.toLowerCase()}, tamat ${jf(sek.b)}.` : dpn ? `${dpn.j} seterusnya ${jf(dpn.a)} (${aiJm(dpn.s - now)} lagi).` : 'Rehat slot ini dah selesai.';
+}
+function aiRingkas() { // statistik ringkas yang terus diberi tanpa ditanya
+  const now = Date.now(), ss = aiSesi(me.id), h0 = aiHari0();
+  return [aiStatus(), `Hari ini: ${aiJm(aiTindih(ss, h0, now))} · 7 hari: ${aiJm(aiTindih(ss, h0 - 6 * 86400000, now))}`, aiRehatPendek()].filter(Boolean).join('\n');
+}
+function aiLabelAuto() { const b = $('#aiAutoBtn'); b.textContent = aiSenyap ? 'Auto: senyap' : 'Auto: hidup'; b.setAttribute('aria-pressed', String(!aiSenyap)); }
+function aiSetSenyap(v) { aiSenyap = v; aiLabelAuto(); try { localStorage.setItem('aiSenyap', v ? '1' : '0'); } catch (_) {} }
+function aiAutoCakap(kunci, t, segera) { // segera = lepas had jarak antara mesej automatik
+  if (aiSenyap || aiDah.has(kunci)) return false;
+  const now = Date.now();
+  if (!segera && now - aiAutoTs < 480000) return false; // mesej biasa: sekurang-kurangnya 8 minit antara satu sama lain
+  aiDah.add(kunci); aiAutoTs = now; aiBicara(t); return true;
+}
+function aiAuto() { // dipanggil setiap 30 saat dan bila data berubah
+  if (!aiOk || !me) return;
+  const now = Date.now(), l = last[me.id], dalam = !!(l && l.jenis === 'IN'), st = dalam ? l.stesen : null;
+  const p = penugasan(), n = p.ons.length, mula = ANCHOR + idx(now) * SLOT, lalu = now - mula, min = Math.floor(now / 60000);
+  // 1. Punch sendiri: ucapan dan ringkasan
+  let tukar = false;
+  if (l && l.masa !== aiPrev.masa) {
+    tukar = true;
+    if (l.jenis === 'OUT') {
+      const t = tempohTugas(me.id), ss = aiSesi(me.id), h0 = aiHari0();
+      aiAutoCakap('p' + l.masa, `Tamat bertugas.${t && t.tamat ? ` Sesi ini ${aiJm(t.tamat - t.mula)} (${jam(t.mula)}–${jam(t.tamat)}).` : ''}\nHari ini: ${aiJm(aiTindih(ss, h0, now))} · 7 hari: ${aiJm(aiTindih(ss, h0 - 6 * 86400000, now))}\nTerima kasih, rehat secukupnya!`, true);
+    } else {
+      aiAutoCakap('p' + l.masa, `${aiPrev.jenis === 'IN' ? 'Tukar ke stesen ' + l.stesen + '.' : 'Selamat bertugas di ' + l.stesen + '!'} ${aiRehatPendek()}${aiKritis(l.stesen) ? '\nSekarang waktu kritikal stesen ini.' : ''}`, true);
+    }
+  }
+  // 2. Bilangan anggota bertugas berubah
+  if (aiPrevN !== null && n !== aiPrevN && dalam && !tukar) {
+    const kosong = p.buka.filter(s => !p.ons.some(x => p.map[x.id] === s));
+    if (n < MIN) aiAutoCakap(`n${n}@${min}`, `Amaran: anggota bertugas tinggal ${n}, bawah minimum ${MIN}.${kosong.length ? '\nStesen kosong: ' + kosong.join(', ') : ''}`, true);
+    else if (aiPrevN < MIN) aiAutoCakap(`c${n}@${min}`, `Anggota bertugas dah cukup semula (${n} orang).`, true);
+  }
+  aiPrevN = n;
+  // 3. Masuk atau keluar waktu kritikal stesen sendiri
+  if (dalam && st) {
+    const k = aiKritis(st);
+    if (aiPrevKritis !== null && k !== aiPrevKritis && !tukar)
+      aiAutoCakap(`k${st}${k}@${min}`, k ? `Waktu kritikal stesen ${st} bermula. Jangan tinggalkan stesen.` : `Waktu kritikal stesen ${st} dah tamat.`, true);
+    aiPrevKritis = k;
+  } else aiPrevKritis = null;
+  // 4. Setiap jam bertugas: statistik terus + tip
+  if (dalam) {
+    const t = tempohTugas(me.id);
+    if (t && !t.tamat) {
+      const N = Math.floor((now - t.mula) / 3600000), tips = jenisSlot(now) === 'Malam' ? AI_TIP_MALAM : AI_TIP_SIANG;
+      if (N >= 1) aiAutoCakap(`jam${t.mula}-${N}`, `Dah ${N} jam anda bertugas (${aiJm(now - t.mula)}).\nHari ini: ${aiJm(aiTindih(aiSesi(me.id), aiHari0(), now))}. ${aiRehatPendek()}\n${tips[N % tips.length]}`);
+    }
+  }
+  // 5. Terlupa Punch In atau Punch Out
+  if (me.kumpulan) {
+    if (!dalam && kump(now) === me.kumpulan && lalu >= 600000 && lalu < 10800000 && !(l && new Date(l.masa).getTime() >= mula))
+      aiAutoCakap('masuk' + mula, `Syif ${me.kumpulan} anda dah bermula ${aiJm(lalu)} lalu, tapi anda belum Punch In. Jangan lupa ya!`, true);
+    if (dalam && kump(now) !== me.kumpulan && kump(mula - 1) === me.kumpulan && lalu >= 600000 && lalu < 7200000 && new Date(l.masa).getTime() < mula)
+      aiAutoCakap('keluar' + mula, `Syif anda dah tamat ${aiJm(lalu)} lalu, tapi anda masih Punch In. Jangan lupa Punch Out ya!`, true);
+  }
+  if (l) aiPrev = {masa: l.masa, jenis: l.jenis, stesen: l.stesen};
 }
 
 function aiTambah(siapa, teks) {
@@ -927,19 +1024,26 @@ function aiBuka(b) {
   $('#aiLaunch').style.display = b ? 'none' : 'grid';
   if (b) {
     $('#aiBubble').classList.remove('on'); $('#aiBadge').style.display = 'none';
-    if (me && !$('#aiMsgs').children.length) aiTambah('ai', `${aiSapa()}, ${me.nama}! Saya Tupai Bomba, pembantu syif anda.\n${aiStatus()}\nTanya saya apa-apa tentang kerja anda, atau tekan butang pantas di bawah.`);
+    if (me && !$('#aiMsgs').children.length) aiTambah('ai', `${aiSapa()}, ${me.nama}! Saya Tupai Bomba, pembantu syif anda.\n${aiRingkas()}\nTanya saya apa-apa, atau tekan butang pantas di bawah.`);
     setTimeout(() => { $('#aiMsgs').scrollTop = $('#aiMsgs').scrollHeight; }, 0);
   }
   try { localStorage.setItem('aiBuka', b ? '1' : '0'); } catch (_) {}
 }
 function aiMula() { // dipanggil sekali selepas log masuk
   if (aiOk) return; aiOk = true;
-  let b = false; try { b = localStorage.getItem('aiBuka') === '1'; } catch (_) {}
+  let b = false; try { b = localStorage.getItem('aiBuka') === '1'; aiSenyap = localStorage.getItem('aiSenyap') === '1'; } catch (_) {}
+  aiLabelAuto();
   aiBuka(b);
+  const l = last[me.id]; if (l) aiPrev = {masa: l.masa, jenis: l.jenis, stesen: l.stesen};
+  aiPrevN = bertugas().length;
+  const t = tempohTugas(me.id); // jam yang sudah berlalu tidak diulang
+  if (l && l.jenis === 'IN' && t && !t.tamat) aiDah.add(`jam${t.mula}-${Math.floor((Date.now() - t.mula) / 3600000)}`);
+  if (!b && !aiSenyap) setTimeout(() => aiAutoCakap('salam', `${aiSapa()}, ${me.nama}!\n${aiRingkas()}`, true), 1500);
 }
 $('#aiLaunch').onclick = () => aiBuka(true);
 $('#aiBubble').onclick = () => aiBuka(true);
 $('#aiMinBtn').onclick = () => aiBuka(false);
+$('#aiAutoBtn').onclick = () => { aiSetSenyap(!aiSenyap); aiTambah('ai', aiSenyap ? 'Baik, saya senyap. Peringatan rehat dan syif tetap berbunyi.' : 'Okey! Saya akan bercakap sendiri bila ada info penting.'); };
 $('#aiSend').onclick = aiKirim;
 $('#aiIn').onkeydown = e => { if (e.key === 'Enter') aiKirim(); else if (e.key === 'Escape') aiBuka(false); };
 document.querySelectorAll('#aiChips button').forEach(b => b.onclick = () => aiTanya(b.dataset.q));
@@ -959,7 +1063,7 @@ $('#bReset').onclick = async e => {
 
 jadual();
 rujukanN(5);
-setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); }, 30000);
+setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); aiAuto(); }, 30000);
 
 // Ketuk notifikasi alarm: buka skrin alarm yang berbunyi berulang
 if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'alarm') startAlarm(e.data.mesej); });
