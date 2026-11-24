@@ -52,7 +52,9 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <div class="card">
   <h2>Punch</h2>
   <p id="status" class="mut" style="margin:0"></p>
+  <select id="pilihStesen" aria-label="Pilih stesen"></select>
   <div class="row"><button id="bIn" class="in">Punch In</button><button id="bOut" class="out">Punch Out</button></div>
+  <button id="bTukar" style="display:none">Tukar stesen</button>
 </div>
 
 <div class="card">
@@ -89,14 +91,15 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <div class="card"><h2>Log terkini</h2><ul id="log"></ul></div>
 </div>
 
+<script src="config.js"></script>
 <script>
-// ====== TETAPAN ======
-const SUPABASE_URL = 'https://qkfzftexobaqqjhxhkxc.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_LvBgojqLPbRMwOLXo56NPQ_xUBSmzwu';
+// ====== TETAPAN: SUPABASE_URL, SUPABASE_KEY dan VAPID_PUBLIC diisi dalam config.js ======
 const MIN = 3; // minimum anggota bertugas
-const VAPID_PUBLIC = 'BA5r2LyXtJz8Vfu0MYn1lvGD4TV8KZn-rmDUugOupHqUKmuLpvwJqhwkkZcNJXVMFKp8v593z9WRYTHUSTvzjZI'; // dari: npx web-push generate-vapid-keys
 // =====================
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const KONFIG_OK = typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_KEY !== 'undefined' &&
+  !SUPABASE_URL.includes('XXXX') && !SUPABASE_KEY.includes('ANON_PUBLIC');
+const db = KONFIG_OK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const MSG_KONFIG = 'Tetapan Supabase belum diisi. Isi config.js dan deploy semula.';
 const $ = s => document.querySelector(s);
 let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false;
 $('#min').textContent = MIN;
@@ -107,10 +110,11 @@ const bertugas = () => anggota.filter(a => last[a.id] && last[a.id].jenis === 'I
 
 // ===== Login =====
 async function masuk() {
+  if (!db) { $('#lerr').textContent = MSG_KONFIG; return; }
   const id = $('#lid').value.trim().toLowerCase();
   $('#lerr').textContent = '';
   const {error} = await db.auth.signInWithPassword({email: id + '@pgo.local', password: $('#lpw').value});
-  if (error) $('#lerr').textContent = 'ID atau kata laluan salah';
+  if (error) $('#lerr').textContent = /invalid login/i.test(error.message) ? 'ID atau kata laluan salah' : 'Ralat: ' + error.message;
   else boot();
 }
 $('#bMasuk').onclick = masuk;
@@ -125,6 +129,7 @@ $('#keluar').onclick = async e => {
 };
 
 async function boot() {
+  if (!db) { $('#lerr').textContent = MSG_KONFIG; return; }
   const {data: {session}} = await db.auth.getSession();
   if (!session) { $('#login').style.display = 'block'; $('#app').style.display = 'none'; return; }
   $('#login').style.display = 'none'; $('#app').style.display = 'block';
@@ -159,23 +164,34 @@ function render() {
   $('#senarai').innerHTML = anggota.map(a => {
     const l = last[a.id], dalam = l && l.jenis === 'IN';
     return `<li><span>${a.nama} <span class="mut">${a.kumpulan === kump(Date.now()) ? '(syif semasa)' : ''}</span></span>
-      <span class="${dalam ? 'ok' : 'mut'}">${dalam ? 'Bertugas sejak ' + fmt(l.masa) : 'Tidak bertugas'}</span></li>`;
+      <span class="${dalam ? 'ok' : 'mut'}">${dalam ? 'Bertugas' + (l.stesen ? ' di ' + l.stesen : '') + ' sejak ' + fmt(l.masa) : 'Tidak bertugas'}</span></li>`;
   }).join('') || '<li class="mut">Tiada anggota.</li>';
   $('#log').innerHTML = logs.slice(0, 15).map(l =>
-    `<li><span>${nama(l.anggota_id)}</span><span class="${l.jenis === 'IN' ? 'ok' : 'bad'}">${l.jenis} · ${fmt(l.masa)}</span></li>`).join('');
+    `<li><span>${nama(l.anggota_id)}</span><span class="${l.jenis === 'IN' ? 'ok' : 'bad'}">${l.jenis}${l.stesen ? ' ' + l.stesen : ''} · ${fmt(l.masa)}</span></li>`).join('');
   const l = me && last[me.id], dalam = l && l.jenis === 'IN';
   $('#status').textContent = !me ? '' : dalam ? 'Status: bertugas sejak ' + fmt(l.masa) : 'Status: tidak bertugas';
   $('#bIn').disabled = !me || dalam;
   $('#bOut').disabled = !me || !dalam;
+  pilihanStesen();
   stesen();
 }
 
-async function punch(jenis) {
+async function punch(jenis, st) {
   if (!me) return;
-  const {error} = await db.from('punch').insert({anggota_id: me.id, jenis});
+  if (jenis === 'IN') {
+    if (!st) return alert('Pilih stesen dahulu');
+    const n = bertugas().filter(a => a.id !== me.id).length + 1;
+    if (!bukaStesen(n).includes(st) && !confirm(`Stesen ${st} ditutup bila ${n} orang bertugas. Teruskan?`)) return;
+  }
+  const {error} = await db.from('punch').insert({anggota_id: me.id, jenis, stesen: jenis === 'IN' ? st : null});
   if (error) alert('Gagal: ' + error.message);
 }
-$('#bIn').onclick = () => punch('IN');
+$('#bIn').onclick = () => punch('IN', $('#pilihStesen').value);
+$('#bTukar').onclick = () => {
+  const st = $('#pilihStesen').value;
+  if (last[me.id] && last[me.id].stesen === st) return alert('Anda sudah di stesen ini');
+  punch('IN', st);
+};
 $('#bOut').onclick = () => punch('OUT');
 
 async function hantar(jenis) {
@@ -322,12 +338,23 @@ function slotTs(mula, jenis, a, b) { // masa mula/tamat dalam slot semasa (ms)
   return [mula + ra * 60000, mula + rb * 60000];
 }
 
-function penugasan() { // ikut anggota yang Punch In, susun ikut ID, pusing +1 setiap syif
-  const ons = bertugas().sort((x, y) => (x.kod || '').localeCompare(y.kod || '')), n = ons.length;
-  const buka = n >= 5 ? ['PGO', 'SPI', 'RT', 'MERS 1', 'MERS 2'] : n === 4 ? ['PGO', 'SPI', 'RT', 'MERS 1'] : ['PGO', 'RT', 'MERS 1'];
-  const off = Math.floor(idx(Date.now()) / 3), map = {};
-  ons.forEach((a, p) => { const k = (p + off) % Math.max(n, buka.length); map[a.id] = k < buka.length ? buka[k] : 'Simpanan'; });
-  return {buka, map, ons};
+const STESEN_SEMUA = ['PGO', 'SPI', 'RT', 'MERS 1', 'MERS 2'];
+const KEUTAMAAN = ['PGO', 'RT', 'MERS 1', 'SPI', 'MERS 2']; // MERS 2 ditutup dahulu, kemudian SPI
+const bukaStesen = n => n >= 5 ? STESEN_SEMUA : n === 4 ? ['PGO', 'SPI', 'RT', 'MERS 1'] : ['PGO', 'RT', 'MERS 1'];
+
+function penugasan() { // ikut stesen yang dipilih anggota semasa Punch In
+  const ons = bertugas().sort((x, y) => (x.kod || '').localeCompare(y.kod || '')), map = {};
+  ons.forEach(a => map[a.id] = last[a.id].stesen || 'Belum pilih');
+  return {buka: bukaStesen(ons.length), map, ons};
+}
+
+function pilihanStesen() { // senarai pilihan: stesen yang sudah diambil orang lain dikunci
+  if (!me) return;
+  const sel = $('#pilihStesen'), cur = sel.value, l = last[me.id], dalam = l && l.jenis === 'IN', ambil = {};
+  bertugas().forEach(a => { if (a.id !== me.id && last[a.id].stesen) ambil[last[a.id].stesen] = a; });
+  sel.innerHTML = STESEN_SEMUA.map(s => `<option value="${s}"${ambil[s] ? ' disabled' : ''}>${s}${ambil[s] ? ' (' + ambil[s].nama + ')' : ''}</option>`).join('');
+  sel.value = cur && !ambil[cur] ? cur : dalam && l.stesen ? l.stesen : (KEUTAMAAN.find(s => !ambil[s]) || '');
+  $('#bTukar').style.display = dalam ? 'block' : 'none';
 }
 
 function slotSaya(st, p, jenis, mula) {
@@ -340,7 +367,7 @@ function slotSaya(st, p, jenis, mula) {
 function stesen() {
   if (!me) return;
   const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, jenis = jenisSlot(now), p = penugasan(), st = p.map[me.id];
-  $('#penugasan').innerHTML = p.buka.map(s => {
+  $('#penugasan').innerHTML = STESEN_SEMUA.filter(s => p.buka.includes(s) || p.ons.some(x => p.map[x.id] === s)).map(s => {
     const a = p.ons.find(x => p.map[x.id] === s);
     return `<tr><td>${s}</td><td>${a ? a.nama : '<span class="bad">Kosong</span>'}</td></tr>`;
   }).join('');
