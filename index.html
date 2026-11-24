@@ -481,7 +481,7 @@ function ingatan() { // peringatan 15 minit sebelum pertukaran syif
   }
 }
 // ===== Stesen dan jadual rehat (tetap ikut stesen) =====
-// 5 orang: semua stesen, MERS 2 ganti stesen yang rehat. 4 orang: MERS 2 tutup. 3 orang: SPI juga tutup.
+// 5 orang: semua stesen jalan, MERS 2 ada kerja sendiri (tidak ganti). 4 orang: MERS 2 tutup. 3 orang: SPI juga tutup.
 const REHAT = {
   Siang: {
     'RT': [['Rehat', '1000', '1030'], ['Makan', '1200', '1300']],
@@ -537,8 +537,6 @@ function pilihanStesen() { // senarai pilihan: stesen yang sudah diambil orang l
 
 function slotSaya(st, p, jenis, mula) {
   const r = (REHAT[jenis][st] || []).map(x => x.slice());
-  if (st === 'MERS 2' && p.buka.length === 5)
-    Object.entries(REHAT[jenis]).forEach(([s, v]) => { if (s !== 'MERS 2') v.forEach(([, a, b]) => r.push(['Ganti ' + s, a, b])); });
   return r.map(([j, a, b]) => { const [s, e] = slotTs(mula, jenis, a, b); return {j, a, b, s, e}; }).sort((x, y) => x.s - y.s);
 }
 
@@ -589,9 +587,9 @@ const IKON_SESI = {
 
 // ===== Rujukan ikut bilangan bertugas (penapis 5 / 4 / 3 orang) =====
 const NOTA_N = {
-  5: 'Semua stesen jalan. MERS 2 ganti stesen yang rehat.',
-  4: 'MERS 2 tutup. Stesen lain jalan seperti biasa.',
-  3: 'SPI dan MERS 2 tutup. Rehat perlu relief atau standby kerana minimum 3 orang.'
+  5: 'Semua 5 stesen jalan. MERS 2 ada kerja sendiri dan tidak ganti stesen lain. Bila satu stesen rehat, baki 4 orang masih cukup.',
+  4: 'MERS 2 tutup. Bila satu stesen rehat, baki 3 orang masih cukup minimum.',
+  3: 'SPI dan MERS 2 tutup. Rehat perlu relief atau standby kerana baki 2 orang bawah minimum 3.'
 };
 let nRuj = 5;
 function rujukanN(n) {
@@ -599,22 +597,15 @@ function rujukanN(n) {
   document.querySelectorAll('#segN button').forEach(b => b.classList.toggle('on', +b.dataset.n === n));
   const buka = bukaStesen(n), tutup = STESEN_SEMUA.filter(s => !buka.includes(s));
   const t = jenis => {
-    const base = jenis === 'Siang' ? 480 : 1200;
     let h = `<div class="sesi">${IKON_SESI[jenis]}<b>${jenis}</b><span class="mut">${jenis === 'Siang' ? '08:00–20:00' : '20:00–08:00'}</span></div>
     <table class="rt"><colgroup><col style="width:19%"><col style="width:27%"><col style="width:27%"><col style="width:27%"></colgroup>
       <tr><th>Stesen</th><th>Kritikal</th><th>Slot 1</th><th>Slot 2</th></tr>`;
     h += STESEN_SEMUA.map(s => {
       if (!buka.includes(s)) return `<tr><td>${s}</td><td colspan="3" class="mut">Ditutup</td></tr>`;
       const kr = KRITIKAL[s].filter(w => dalamSlot(jenis, mnt(w.slice(0, 4))));
-      return `<tr><td>${s}</td><td class="k">${kr.map(w => jf(w.slice(0, 4)) + '–' + jf(w.slice(5))).join('<br>') || '<span class="mut">-</span>'}</td>` +
+      return `<tr><td>${s}</td><td class="k">${kr.map(w => jf(w.slice(0, 4)) + '–' + jf(w.slice(5))).join('<br>') || '<span class="mut">' + (s === 'MERS 2' ? 'Kerja sendiri' : '-') + '</span>'}</td>` +
         REHAT[jenis][s].map(([nm, a, b]) => `<td class="${nm.toLowerCase()}"><small>${nm}</small>${jf(a)}–${jf(b)}</td>`).join('') + '</tr>';
     }).join('') + '</table>';
-    if (n === 5) { // MERS 2 ganti stesen yang rehat
-      const g = [];
-      Object.entries(REHAT[jenis]).forEach(([s, v]) => { if (s !== 'MERS 2') v.forEach(([, a, b]) => g.push([s, a, b])); });
-      g.sort((x, y) => ((mnt(x[1]) - base + 1440) % 1440) - ((mnt(y[1]) - base + 1440) % 1440));
-      h += `<div class="nota"><div><b>MERS 2 ganti</b>${g.map(([s, a, b]) => `${jf(a)}–${jf(b)} ${s}`).join(' · ')}</div></div>`;
-    }
     return h;
   };
   $('#rujN').innerHTML = t('Siang') + t('Malam') + `<div class="nota">
