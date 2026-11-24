@@ -40,6 +40,38 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .tabs button{flex:1;margin:0;width:auto;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:0;border-radius:22px;background:transparent;color:var(--tx);font-size:.72rem;font-weight:600;transition:background .2s,color .2s}
 .tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
+/* Jadual rujukan */
+:root{--c-rehat:#2f62c9;--c-makan:#a86400;--c-tidur:#7248bd}
+@media(prefers-color-scheme:dark){:root{--c-rehat:#7fa6ff;--c-makan:#f0b955;--c-tidur:#b995ff}}
+.sesi{display:flex;align-items:center;gap:8px;margin:14px 0 4px}.sesi:first-of-type{margin-top:2px}
+.sesi svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sesi b{font-size:1.02rem}
+.rt{table-layout:fixed;border-collapse:separate;border-spacing:0 4px}
+.rt th{border:0;padding:2px 6px;font-size:.72rem;font-weight:600;color:var(--mut)}
+.rt td{border:0;padding:8px 6px;background:var(--field);vertical-align:middle;font-size:.75rem;font-variant-numeric:tabular-nums;line-height:1.35;white-space:nowrap}
+.rt td:first-child{border-radius:10px 0 0 10px;font-weight:700;font-size:.82rem;padding-left:8px}
+.rt td:last-child{border-radius:0 10px 10px 0}
+.rt .k{color:var(--bad);font-weight:600}
+.rt small{display:block;font-size:.7rem;font-weight:700;margin-bottom:1px}
+.rt .rehat small{color:var(--c-rehat)}.rt .makan small{color:var(--c-makan)}.rt .tidur small{color:var(--c-tidur)}
+.nota{margin-top:12px;font-size:.85rem;color:var(--mut)}.nota div{padding:4px 0}.nota b{color:var(--tx);margin-right:6px}
+.rt.jd td:not(:first-child),.rt.jd th:not(:first-child){text-align:center}
+.rt.jd td:first-child{font-weight:600;font-size:.82rem}
+.rt.jd th small{display:block;font-weight:400;font-size:.68rem}
+.sf{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;font-weight:700;font-size:.9rem}
+.sf.A{background:rgba(179,38,30,.15);color:var(--pri)}.sf.B{background:rgba(47,98,201,.15);color:var(--c-rehat)}.sf.C{background:rgba(26,127,75,.16);color:var(--ok)}
+.sf.now{box-shadow:0 0 0 2px var(--pri)}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:600;white-space:nowrap;background:var(--field);border:1px solid var(--bd)}
+.chip.sk{color:var(--pri)}
+.lg .chip{margin-left:auto}
+.av.sm{width:38px;height:38px;font-size:.72rem}.av.off{background:rgba(120,130,145,.16);color:var(--mut)}
+/* Log terkini */
+.lg{align-items:center;justify-content:flex-start;gap:12px;padding:9px 0}
+.av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700}
+.av.in{background:rgba(26,127,75,.16);color:var(--ok)}.av.out{background:rgba(198,40,40,.14);color:var(--bad)}
+.lg .who{flex:1;min-width:0}.lg .who b{display:block}.lg .who span{font-size:.85rem}
+.lg .when{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
+.lg .when b{font-variant-numeric:tabular-nums}.lg .when span{font-size:.8rem}
 </style>
 </head>
 <body>
@@ -89,7 +121,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <h2>Jadual syif</h2>
   <div id="semasa" class="big" style="font-size:1.5rem"></div>
   <p id="seterus" class="mut" style="margin:4px 0 10px"></p>
-  <table id="jadual"></table>
+  <table id="jadual" class="rt jd"></table>
 </div>
 
 <div class="card">
@@ -210,13 +242,19 @@ function render() {
   $('#cnt').textContent = on.length;
   $('#cnt').className = 'big ' + (on.length >= MIN ? 'ok' : 'bad');
   $('#warn').textContent = on.length < MIN ? `Amaran: kurang daripada minimum ${MIN} orang` : '';
-  $('#senarai').innerHTML = anggota.map(a => {
-    const l = last[a.id], dalam = l && l.jenis === 'IN';
-    return `<li><span>${a.nama} <span class="mut">${a.kumpulan === kump(Date.now()) ? '(syif semasa)' : ''}</span></span>
-      <span class="${dalam ? 'ok' : 'mut'}">${dalam ? 'Bertugas' + (l.stesen ? ' di ' + l.stesen : '') + ' sejak ' + fmt(l.masa) : 'Tidak bertugas'}</span></li>`;
+  const sk = kump(Date.now()), msk = a => !!(last[a.id] && last[a.id].jenis === 'IN');
+  $('#senarai').innerHTML = [...anggota].sort((x, y) => (msk(y) - msk(x)) || ((y.kumpulan === sk) - (x.kumpulan === sk))).map(a => {
+    const l = last[a.id], dalam = msk(a);
+    return `<li class="lg"><span class="av sm ${dalam ? 'in' : 'off'}">${(a.kod || a.nama || '').slice(0, 3)}</span>
+      <div class="who"><b>${a.nama}</b><span class="${dalam ? 'ok' : 'mut'}">${dalam ? (l.stesen || 'Bertugas') + ' · sejak ' + jam(l.masa) : 'Tidak bertugas'}</span></div>
+      ${a.kumpulan === sk ? '<span class="chip sk">Syif semasa</span>' : ''}</li>`;
   }).join('') || '<li class="mut">Tiada anggota.</li>';
-  $('#log').innerHTML = logs.slice(0, 15).map(l =>
-    `<li><span>${nama(l.anggota_id)}</span><span class="${l.jenis === 'IN' ? 'ok' : 'bad'}">${l.jenis}${l.stesen ? ' ' + l.stesen : ''} · ${fmt(l.masa)}</span></li>`).join('');
+  $('#log').innerHTML = logs.slice(0, 15).map(l => {
+    const msk = l.jenis === 'IN';
+    return `<li class="lg"><span class="av ${msk ? 'in' : 'out'}">${l.jenis}</span>
+      <div class="who"><b>${nama(l.anggota_id)}</b><span class="mut">${msk ? 'Punch In' + (l.stesen ? ' · ' + l.stesen : '') : 'Punch Out'}</span></div>
+      <div class="when"><b>${jam(l.masa)}</b><span class="mut">${new Date(l.masa).toLocaleDateString('ms-MY', {day: '2-digit', month: 'short'})}</span></div></li>`;
+  }).join('') || '<li class="mut">Tiada log.</li>';
   const l = me && last[me.id], dalam = l && l.jenis === 'IN';
   $('#status').textContent = !me ? '' : dalam ? 'Status: bertugas sejak ' + fmt(l.masa) : 'Status: tidak bertugas';
   $('#bIn').disabled = !me || dalam;
@@ -384,12 +422,13 @@ function jadual() {
   const now = Date.now(), tamat = ANCHOR + (idx(now) + 1) * SLOT;
   $('#semasa').textContent = `Syif ${kump(now)} (${jenisSlot(now)})`;
   $('#seterus').textContent = `Hingga ${jam(tamat)}, kemudian Syif ${kump(tamat)} (${jenisSlot(tamat)})`;
-  const d0 = ANCHOR + Math.floor((now - ANCHOR) / 86400000) * 86400000;
-  let h = '<tr><th>Tarikh</th><th>Siang 0800-2000</th><th>Malam 2000-0800</th></tr>';
+  const d0 = ANCHOR + Math.floor((now - ANCHOR) / 86400000) * 86400000, ci = idx(now);
+  let h = '<colgroup><col style="width:40%"><col style="width:30%"><col style="width:30%"></colgroup><tr><th>Tarikh</th><th>Siang<small>08:00–20:00</small></th><th>Malam<small>20:00–08:00</small></th></tr>';
   for (let k = 0; k < 7; k++) {
-    const d = d0 + k * 86400000;
+    const d = d0 + k * 86400000, sa = kump(d), sb = kump(d + SLOT);
     h += `<tr><td>${new Date(d).toLocaleDateString('ms-MY', {weekday: 'short', day: 'numeric', month: 'short'})}</td>
-      <td><b>${kump(d)}</b></td><td><b>${kump(d + SLOT)}</b></td></tr>`;
+      <td><span class="sf ${sa}${idx(d) === ci ? ' now' : ''}">${sa}</span></td>
+      <td><span class="sf ${sb}${idx(d + SLOT) === ci ? ' now' : ''}">${sb}</span></td></tr>`;
   }
   $('#jadual').innerHTML = h;
 }
@@ -501,13 +540,23 @@ function ingatRehat() { // notifikasi 5 minit sebelum dan bila tamat
 }
 
 function rujukan() {
-  const t = jenis => `<h2 style="margin-top:10px">${jenis} (${jenis === 'Siang' ? '0800-2000' : '2000-0800'})</h2>
-    <table><tr><th>Stesen</th><th>Kritikal</th><th>Slot 1</th><th>Slot 2</th></tr>` +
-    Object.entries(REHAT[jenis]).map(([s, r]) =>
-      `<tr><td>${s}</td><td>${KRITIKAL[s].filter(w => dalamSlot(jenis, mnt(w.slice(0, 4)))).join('<br>') || '-'}</td>` +
-      r.map(([j, a, b]) => `<td>${j}<br>${a}-${b}</td>`).join('') + '</tr>').join('') + '</table>';
-  $('#rujukan').innerHTML = t('Siang') + t('Malam') +
-    '<p class="mut">5 orang: semua stesen jalan, MERS 2 ganti stesen yang rehat. 4 orang: MERS 2 tutup. 3 orang: SPI juga tutup (rehat perlu relief atau standby kerana minimum 3).</p>';
+  const j = h => h.slice(0, 2) + ':' + h.slice(2);
+  const ikon = {
+    Siang: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>',
+    Malam: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>'
+  };
+  const t = jenis => `<div class="sesi">${ikon[jenis]}<b>${jenis}</b><span class="mut">${jenis === 'Siang' ? '08:00–20:00' : '20:00–08:00'}</span></div>
+    <table class="rt"><colgroup><col style="width:19%"><col style="width:27%"><col style="width:27%"><col style="width:27%"></colgroup>
+    <tr><th>Stesen</th><th>Kritikal</th><th>Slot 1</th><th>Slot 2</th></tr>` +
+    Object.entries(REHAT[jenis]).map(([s, r]) => {
+      const kr = KRITIKAL[s].filter(w => dalamSlot(jenis, mnt(w.slice(0, 4))));
+      return `<tr><td>${s}</td><td class="k">${kr.map(w => j(w.slice(0, 4)) + '–' + j(w.slice(5))).join('<br>') || '<span class="mut">-</span>'}</td>` +
+        r.map(([n, a, b]) => `<td class="${n.toLowerCase()}"><small>${n}</small>${j(a)}–${j(b)}</td>`).join('') + '</tr>';
+    }).join('') + '</table>';
+  $('#rujukan').innerHTML = t('Siang') + t('Malam') + `<div class="nota">
+    <div><b>5 orang</b>Semua stesen jalan, MERS 2 ganti stesen yang rehat.</div>
+    <div><b>4 orang</b>MERS 2 tutup.</div>
+    <div><b>3 orang</b>SPI juga tutup (rehat perlu relief atau standby kerana minimum 3).</div></div>`;
 }
 
 jadual();
