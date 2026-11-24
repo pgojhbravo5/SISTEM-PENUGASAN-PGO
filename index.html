@@ -611,19 +611,12 @@ async function daftarPush() { // dipanggil setiap kali log masuk atau buka app; 
     if (!('Notification' in window) || Notification.permission !== 'granted') return st('Push belum aktif. Tekan butang Aktifkan di atas.');
     const reg = await navigator.serviceWorker.register('sw.js');
     await navigator.serviceWorker.ready;
-    const daftarSub = () => reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64(VAPID_PUBLIC)});
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      try { sub = await daftarSub(); }
-      catch (_) { await new Promise(r => setTimeout(r, 2500)); sub = await daftarSub(); } // cuba sekali lagi
-    }
+    const sub = (await reg.pushManager.getSubscription()) ||
+      await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64(VAPID_PUBLIC)});
     const j = sub.toJSON();
     const {error} = await db.rpc('daftar_push', {p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_kunci: j.keys.auth});
     st(error ? 'Push gagal didaftar: ' + error.message : 'Push aktif: notifikasi sampai walaupun app ditutup');
-  } catch (e) {
-    console.warn('Push:', e);
-    st(/push service/i.test(e.message || '') ? 'Push gagal: tidak dapat hubungi perkhidmatan Google (FCM). Semak internet, VPN atau DNS, kemudian tekan Reset.' : 'Push gagal: ' + (e.message || e));
-  }
+  } catch (e) { console.warn('Push:', e); st('Push gagal: ' + (e.message || e)); }
 }
 
 // ===== Realtime =====
