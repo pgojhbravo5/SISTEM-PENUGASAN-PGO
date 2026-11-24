@@ -14,12 +14,21 @@ self.addEventListener('push', e => {
     tag: alarm ? 'alarm' : undefined,
     renotify: alarm,
     requireInteraction: alarm,
+    silent: false, // benarkan bunyi lalai telefon
+    timestamp: Date.now(),
+    data: {jenis: alarm ? 'alarm' : 'info', mesej: d.mesej || ''},
     vibrate: alarm ? [500, 200, 500, 200, 500, 200, 500] : [200, 100, 200]
   }));
 });
 
 self.addEventListener('notificationclick', e => {
+  const dt = e.notification.data || {};
   e.notification.close();
-  e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true})
-    .then(l => (l.length ? l[0].focus() : self.clients.openWindow('./'))));
+  e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(l => {
+    if (l.length) {
+      if (dt.jenis === 'alarm') l[0].postMessage({type: 'alarm', mesej: dt.mesej}); // buka skrin alarm berbunyi
+      return l[0].focus();
+    }
+    return self.clients.openWindow(dt.jenis === 'alarm' ? './?alarm=' + encodeURIComponent(dt.mesej || '') : './');
+  }));
 });

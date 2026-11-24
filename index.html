@@ -509,6 +509,11 @@ jadual();
 rujukan();
 setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); }, 30000);
 
+// Ketuk notifikasi alarm: buka skrin alarm yang berbunyi berulang
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'alarm') startAlarm(e.data.mesej); });
+const qa = new URLSearchParams(location.search).get('alarm');
+if (qa) { startAlarm(qa); history.replaceState(null, '', location.pathname); }
+
 boot();
 </script>
 </body>
