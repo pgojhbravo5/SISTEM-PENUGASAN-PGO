@@ -61,6 +61,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <header><h1>Syif PGO Johor</h1><span id="conn" class="mut">○ Menyambung...</span></header>
 <p class="mut" style="margin:0 0 10px">Log masuk sebagai <b id="kod"></b> (Syif <span id="mykump"></span>) <a href="#" id="keluar">Keluar</a></p>
 <button id="aktif" class="pri" style="margin-bottom:12px">Aktifkan bunyi dan notifikasi</button>
+<p id="pushStatus" class="mut" style="margin:-4px 0 12px"></p>
 
 <div class="card">
   <h2>Punch</h2>
@@ -332,16 +333,20 @@ function bukaAudio() { // pelayar hanya benarkan bunyi selepas sentuhan pertama
 
 // ===== Web Push =====
 const b64 = k => Uint8Array.from(atob((k + '='.repeat((4 - k.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-async function daftarPush() { // dipanggil setiap kali log masuk atau buka app: mengemas kini "log masuk hari ini"
+async function daftarPush() { // dipanggil setiap kali log masuk atau buka app; status dipaparkan di bawah butang
+  const st = m => { const el = $('#pushStatus'); if (el) el.textContent = m; };
   try {
-    if (!me || !('serviceWorker' in navigator) || !('PushManager' in window) || Notification.permission !== 'granted') return;
+    if (!me) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return st('Push tidak disokong. iPhone: tambah ke Home Screen dan buka dari ikon itu.');
+    if (!('Notification' in window) || Notification.permission !== 'granted') return st('Push belum aktif. Tekan butang Aktifkan di atas.');
     const reg = await navigator.serviceWorker.register('sw.js');
     await navigator.serviceWorker.ready;
     const sub = (await reg.pushManager.getSubscription()) ||
       await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64(VAPID_PUBLIC)});
     const j = sub.toJSON();
-    await db.rpc('daftar_push', {p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_kunci: j.keys.auth});
-  } catch (e) { console.warn('Push:', e); }
+    const {error} = await db.rpc('daftar_push', {p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_kunci: j.keys.auth});
+    st(error ? 'Push gagal didaftar: ' + error.message : 'Push aktif: notifikasi sampai walaupun app ditutup');
+  } catch (e) { console.warn('Push:', e); st('Push gagal: ' + (e.message || e)); }
 }
 
 // ===== Realtime =====
