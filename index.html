@@ -99,11 +99,6 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
   <ul id="senarai"></ul>
 </div>
 
-<div class="card">
-  <h2>Hantar notifikasi</h2>
-  <input id="mesej" placeholder="Mesej untuk semua anggota">
-  <div class="row"><button id="bInfo">Notifikasi</button><button id="bAlarm" class="pri">Alarm</button></div>
-</div>
 </section>
 
 <!-- TAB 3: Jadual rujukan -->
@@ -116,11 +111,21 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <div class="card"><h2>Log terkini</h2><ul id="log"></ul></div>
 </section>
 
+<!-- TAB 5: Hantar notifikasi -->
+<section id="t5" class="tab">
+<div class="card">
+  <h2>Hantar notifikasi</h2>
+  <input id="mesej" placeholder="Mesej untuk semua anggota">
+  <div class="row"><button id="bInfo">Notifikasi</button><button id="bAlarm" class="pri">Alarm</button></div>
+</div>
+</section>
+
 <nav class="tabs" aria-label="Menu utama">
   <button data-tab="t1" class="on"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>Utama</button>
   <button data-tab="t2"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Jadual</button>
   <button data-tab="t3"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Rujukan</button>
   <button data-tab="t4"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Log</button>
+  <button data-tab="t5"><svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/></svg>Notifikasi</button>
 </nav>
 </div>
 
