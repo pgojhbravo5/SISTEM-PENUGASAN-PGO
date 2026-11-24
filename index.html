@@ -174,8 +174,17 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 
 <!-- TAB 4: Log terkini -->
 <section id="t4" class="tab">
-<div class="card"><h2>Log terkini</h2><ul id="log"></ul></div>
-</section>
+  <div class="card">
+    <h2>Log terkini</h2>
+    <!-- Penapis Log -->
+    <div class="seg" id="segLog" role="group" aria-label="Tapis jenis log">
+      <button data-log="all" class="on">Semua</button>
+      <button data-log="IN">Punch In</button>
+      <button data-log="OUT">Punch Out</button>
+    </div>
+    <ul id="log"></ul>
+  </div>
+  </section>
 
 <!-- TAB 5: Hantar notifikasi -->
 <section id="t5" class="tab">
@@ -212,6 +221,7 @@ const db = KONFIG_OK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const MSG_KONFIG = 'Tetapan Supabase belum diisi. Isi config.js dan deploy semula.';
 const $ = s => document.querySelector(s);
 let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false, sibuk = false;
+let logFilter = 'all'; // Tambah baris ini
 $('#min').textContent = MIN;
 
 // ===== Tab =====
@@ -293,7 +303,10 @@ function render() {
   $('#senaraiLain').innerHTML = lain.map(baris).join('');
   $('#nLain').textContent = lain.length;
   $('#lain').style.display = lain.length ? 'block' : 'none';
-  $('#log').innerHTML = logs.slice(0, 15).map(l => {
+  // Tapis log berdasarkan pilihan pengguna
+  const filteredLogs = logFilter === 'all' ? logs : logs.filter(l => l.jenis === logFilter);
+  
+  $('#log').innerHTML = filteredLogs.slice(0, 15).map(l => {
     const msk = l.jenis === 'IN';
     return `<li class="lg"><span class="av ${msk ? 'in' : 'out'}">${l.jenis}</span>
       <div class="who"><b>${nama(l.anggota_id)}</b><span class="mut">${msk ? 'Punch In' + (l.stesen ? ' · ' + l.stesen : '') : 'Punch Out'}</span></div>
@@ -624,6 +637,16 @@ function rujukanN(n) {
     ${tutup.length ? `<div><b>Ditutup</b>${tutup.join(', ')}</div>` : ''}</div>`;
 }
 document.querySelectorAll('#segN button').forEach(b => b.onclick = () => rujukanN(+b.dataset.n));
+
+// 👇 TAMPAL KOD FILTER LOG DI SINI 👇
+document.querySelectorAll('#segLog button').forEach(b => {
+  b.onclick = () => {
+    logFilter = b.dataset.log;
+    document.querySelectorAll('#segLog button').forEach(btn => btn.classList.toggle('on', btn === b));
+    render();
+  };
+});
+// 👆 HABIS KOD FILTER LOG 👆
 
 jadual();
 rujukanN(5);
