@@ -418,8 +418,11 @@ async function daftarPush() { // dipanggil setiap kali log masuk atau buka app; 
   const st = m => { const el = $('#pushStatus'); if (el) el.textContent = m; };
   try {
     if (!me) return;
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return st('Push tidak disokong. iPhone: tambah ke Home Screen dan buka dari ikon itu.');
-    if (!('Notification' in window) || Notification.permission !== 'granted') return st('Push belum aktif. Tekan butang Aktifkan di atas.');
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+    if (ios && !standalone) return st('iPhone: tekan Kongsi > Tambah ke Skrin Utama, buka dari ikon itu, kemudian tekan Aktifkan.');
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return st('Push tidak disokong pada pelayar ini.');
+        if (!('Notification' in window) || Notification.permission !== 'granted') return st('Push belum aktif. Tekan butang Aktifkan di atas.');
     const reg = await navigator.serviceWorker.register('sw.js');
     await navigator.serviceWorker.ready;
     const sub = (await reg.pushManager.getSubscription()) ||
