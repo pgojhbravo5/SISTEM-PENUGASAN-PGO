@@ -65,6 +65,27 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .chip.sk{color:var(--pri)}
 .lg .chip{margin-left:auto}
 .av.sm{width:38px;height:38px;font-size:.72rem}.av.off{background:rgba(120,130,145,.16);color:var(--mut)}
+/* Susun atur Utama dan Jadual */
+.hd{align-items:flex-start;margin-bottom:12px}.hr{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pill{padding:3px 10px;border-radius:999px;background:var(--field);border:1px solid var(--bd);font-size:.8rem;white-space:nowrap}
+.keluar{color:var(--mut);font-size:.82rem;text-decoration:none;padding:3px 12px;border-radius:999px;border:1px solid var(--bd);background:var(--field)}
+.ph,.sh,.sb{display:flex;justify-content:space-between;align-items:center;gap:8px}.sh{align-items:flex-start;margin-bottom:12px}.sb{margin-bottom:6px}
+.chip:empty{display:none}
+.chip.on,.chip.g{background:rgba(26,127,75,.16);color:var(--ok);border-color:transparent}
+.chip.k{background:rgba(198,40,40,.14);color:var(--bad);border-color:transparent}
+.chip.offc{color:var(--mut)}
+.row button{flex:1}
+.slot2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tl{border-radius:12px;padding:8px 12px;background:rgba(80,120,220,.14)}
+.tl.makan{background:rgba(230,160,40,.18)}.tl.tidur{background:rgba(130,90,210,.18)}.tl.ganti{background:rgba(120,130,145,.16)}
+.tl small{display:block;font-size:.75rem;font-weight:700;color:var(--c-rehat)}.tl.makan small{color:var(--c-makan)}.tl.tidur small{color:var(--c-tidur)}.tl.ganti small{color:var(--mut)}
+.tl b{font-variant-numeric:tabular-nums;font-size:1.05rem}
+.tl.selesai{opacity:.45}.tl.kini{box-shadow:0 0 0 2px var(--ok)}
+.pn{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px}
+.pt{border-radius:12px;padding:8px 12px;background:var(--field);border:1px solid var(--bd)}
+.pt small{display:block;color:var(--mut);font-size:.75rem}.pt.kosong b{color:var(--bad)}.pt.me{box-shadow:0 0 0 2px var(--pri)}
+.hero{display:flex;align-items:center;gap:14px;margin-bottom:12px}.sf.big{width:64px;height:64px;font-size:1.8rem;flex:none}
+.lain{margin-top:10px;border-top:1px solid var(--ln);padding-top:10px}.lain summary{cursor:pointer;font-weight:600;color:var(--mut);font-size:.9rem}
 /* Log terkini */
 .lg{align-items:center;justify-content:flex-start;gap:12px;padding:9px 0}
 .av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700}
@@ -90,28 +111,27 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 
 <!-- TAB 1: Syif PGO Johor + Stesen saya -->
 <section id="t1" class="tab on">
-<header><h1>Syif PGO Johor</h1><span id="conn" class="mut">○ Menyambung...</span></header>
-<p class="mut" style="margin:0 0 10px">Log masuk sebagai <b id="kod"></b> (Syif <span id="mykump"></span>) <a href="#" id="keluar">Keluar</a></p>
-<button id="aktif" class="pri" style="margin-bottom:12px">Aktifkan bunyi dan notifikasi</button>
-<p id="pushStatus" class="mut" style="margin:-4px 0 12px"></p>
+<header class="hd">
+  <div><h1>Syif PGO Johor</h1><p class="mut" style="margin:2px 0 0">Log masuk: <b id="kod"></b> · Syif <span id="mykump"></span></p></div>
+  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="keluar" class="keluar">Keluar</a></div>
+</header>
+<button id="aktif" class="pri" style="margin:0 0 6px">Aktifkan bunyi dan notifikasi</button>
+<p id="pushStatus" class="mut" style="margin:0 0 12px"></p>
 
 <div class="card">
-  <h2>Punch</h2>
-  <p id="status" class="mut" style="margin:0"></p>
+  <div class="ph"><h2 style="margin:0">Punch</h2><span id="status" class="chip"></span></div>
   <div id="timer" class="big mut" style="font-size:3.4rem;font-variant-numeric:tabular-nums;text-align:center;margin:14px 0 4px;letter-spacing:.02em">00:00:00</div>
   <p id="timerLbl" class="mut" style="margin:0 0 6px;text-align:center"></p>
   <select id="pilihStesen" aria-label="Pilih stesen"></select>
-  <div class="row"><button id="bIn" class="in">Punch In</button><button id="bOut" class="out">Punch Out</button></div>
-  <button id="bTukar" style="display:none">Tukar stesen</button>
+  <button id="bIn" class="in">Punch In</button>
+  <div class="row"><button id="bTukar" style="display:none">Tukar stesen</button><button id="bOut" class="out">Punch Out</button></div>
 </div>
 
 <div class="card">
-  <h2>Stesen saya</h2>
-  <div id="stesenSaya" class="big" style="font-size:1.6rem">-</div>
-  <p id="krit" class="mut" style="margin:4px 0 8px"></p>
-  <ul id="rehatSaya"></ul>
-  <h2 style="margin-top:14px">Penugasan semasa</h2>
-  <table id="penugasan"></table>
+  <div class="sh"><div><span class="mut">Stesen saya</span><div id="stesenSaya" class="big" style="font-size:1.8rem;margin-top:2px">-</div></div><span id="krit" class="chip"></span></div>
+  <div id="rehatSaya" class="slot2"></div>
+  <h2 style="margin-top:18px">Penugasan semasa</h2>
+  <div id="penugasan" class="pn"></div>
 </div>
 </section>
 
@@ -119,18 +139,16 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <section id="t2" class="tab">
 <div class="card">
   <h2>Jadual syif</h2>
-  <div id="semasa" class="big" style="font-size:1.5rem"></div>
-  <p id="seterus" class="mut" style="margin:4px 0 10px"></p>
+  <div class="hero"><span id="sfBadge" class="sf big"></span><div><div id="semasa" style="font-size:1.4rem;font-weight:700;line-height:1.2"></div><p id="seterus" class="mut" style="margin:4px 0 0"></p></div></div>
   <table id="jadual" class="rt jd"></table>
 </div>
 
 <div class="card">
-  <h2>Sedang bertugas</h2>
-  <div><span id="cnt" class="big">0</span> <span class="mut">orang (minimum <span id="min"></span>)</span></div>
+  <div class="sb"><div><h2 style="margin:0">Sedang bertugas</h2><span class="mut">minimum <span id="min"></span> orang</span></div><span id="cnt" class="big">0</span></div>
   <p id="warn" class="bad" style="font-weight:600;margin:6px 0"></p>
   <ul id="senarai"></ul>
+  <details id="lain" class="lain"><summary>Anggota lain (<span id="nLain">0</span>)</summary><ul id="senaraiLain"></ul></details>
 </div>
-
 </section>
 
 <!-- TAB 3: Jadual rujukan -->
@@ -243,12 +261,15 @@ function render() {
   $('#cnt').className = 'big ' + (on.length >= MIN ? 'ok' : 'bad');
   $('#warn').textContent = on.length < MIN ? `Amaran: kurang daripada minimum ${MIN} orang` : '';
   const sk = kump(Date.now()), msk = a => !!(last[a.id] && last[a.id].jenis === 'IN');
-  $('#senarai').innerHTML = [...anggota].sort((x, y) => (msk(y) - msk(x)) || ((y.kumpulan === sk) - (x.kumpulan === sk))).map(a => {
-    const l = last[a.id], dalam = msk(a);
+  const baris = a => { const l = last[a.id], dalam = msk(a);
     return `<li class="lg"><span class="av sm ${dalam ? 'in' : 'off'}">${(a.kod || a.nama || '').slice(0, 3)}</span>
       <div class="who"><b>${a.nama}</b><span class="${dalam ? 'ok' : 'mut'}">${dalam ? (l.stesen || 'Bertugas') + ' · sejak ' + jam(l.masa) : 'Tidak bertugas'}</span></div>
-      ${a.kumpulan === sk ? '<span class="chip sk">Syif semasa</span>' : ''}</li>`;
-  }).join('') || '<li class="mut">Tiada anggota.</li>';
+      ${a.kumpulan === sk ? '<span class="chip sk">Syif semasa</span>' : ''}</li>`; };
+  const lain = anggota.filter(a => !msk(a)).sort((x, y) => (y.kumpulan === sk) - (x.kumpulan === sk));
+  $('#senarai').innerHTML = on.map(baris).join('') || '<li class="mut">Tiada anggota bertugas</li>';
+  $('#senaraiLain').innerHTML = lain.map(baris).join('');
+  $('#nLain').textContent = lain.length;
+  $('#lain').style.display = lain.length ? 'block' : 'none';
   $('#log').innerHTML = logs.slice(0, 15).map(l => {
     const msk = l.jenis === 'IN';
     return `<li class="lg"><span class="av ${msk ? 'in' : 'out'}">${l.jenis}</span>
@@ -256,9 +277,11 @@ function render() {
       <div class="when"><b>${jam(l.masa)}</b><span class="mut">${new Date(l.masa).toLocaleDateString('ms-MY', {day: '2-digit', month: 'short'})}</span></div></li>`;
   }).join('') || '<li class="mut">Tiada log.</li>';
   const l = me && last[me.id], dalam = l && l.jenis === 'IN';
-  $('#status').textContent = !me ? '' : dalam ? 'Status: bertugas sejak ' + fmt(l.masa) : 'Status: tidak bertugas';
+  const stt = $('#status'); stt.textContent = !me ? '' : dalam ? 'Bertugas' : 'Tidak bertugas'; stt.className = 'chip ' + (dalam ? 'on' : 'offc');
   $('#bIn').disabled = !me || dalam;
   $('#bOut').disabled = !me || !dalam;
+  $('#bIn').style.display = dalam ? 'none' : 'block';
+  $('#bOut').style.display = dalam ? 'block' : 'none';
   pilihanStesen();
   stesen();
   timer();
@@ -283,10 +306,10 @@ function timer() {
   if (!t) { el.textContent = '00:00:00'; el.className = 'big mut'; lbl.textContent = 'Timer bermula bila Punch In'; return; }
   if (t.tamat) {
     el.textContent = hms(t.tamat - t.mula); el.className = 'big mut';
-    lbl.textContent = 'Tempoh bertugas terakhir (' + fmt(t.mula) + ' - ' + fmt(t.tamat) + ')';
+    lbl.textContent = 'Tempoh bertugas terakhir · ' + jam(t.mula) + '–' + jam(t.tamat);
   } else {
     el.textContent = hms(Date.now() - t.mula); el.className = 'big ok';
-    lbl.textContent = 'Masa bertugas berjalan sejak ' + fmt(t.mula);
+    lbl.textContent = 'Bertugas sejak ' + jam(t.mula);
   }
 }
 setInterval(timer, 1000);
@@ -420,8 +443,10 @@ const jam = t => new Date(t).toLocaleTimeString('ms-MY', {hour: '2-digit', minut
 
 function jadual() {
   const now = Date.now(), tamat = ANCHOR + (idx(now) + 1) * SLOT;
-  $('#semasa').textContent = `Syif ${kump(now)} (${jenisSlot(now)})`;
-  $('#seterus').textContent = `Hingga ${jam(tamat)}, kemudian Syif ${kump(tamat)} (${jenisSlot(tamat)})`;
+  const k0 = kump(now), sisa = tamat - now;
+  $('#sfBadge').className = 'sf big ' + k0; $('#sfBadge').textContent = k0;
+  $('#semasa').textContent = `Syif ${k0} · ${jenisSlot(now)}`;
+  $('#seterus').innerHTML = `Tamat ${jam(tamat)} · tinggal ${Math.floor(sisa / 3600000)}j ${Math.floor(sisa % 3600000 / 60000)}m<br>Seterusnya: Syif ${kump(tamat)} (${jenisSlot(tamat)})`;
   const d0 = ANCHOR + Math.floor((now - ANCHOR) / 86400000) * 86400000, ci = idx(now);
   let h = '<colgroup><col style="width:40%"><col style="width:30%"><col style="width:30%"></colgroup><tr><th>Tarikh</th><th>Siang<small>08:00–20:00</small></th><th>Malam<small>20:00–08:00</small></th></tr>';
   for (let k = 0; k < 7; k++) {
@@ -465,6 +490,7 @@ const KRITIKAL = {
   'MERS 1': ['1800-2000', '0400-0600'],
   'MERS 2': []
 };
+const jf = h => h.slice(0, 2) + ':' + h.slice(2);
 const mnt = h => +h.slice(0, 2) * 60 + +h.slice(2, 4);
 const dalamSlot = (jenis, a) => (a >= 480 && a < 1200) === (jenis === 'Siang');
 
@@ -506,19 +532,21 @@ function stesen() {
   const now = Date.now(), mula = ANCHOR + idx(now) * SLOT, jenis = jenisSlot(now), p = penugasan(), st = p.map[me.id];
   $('#penugasan').innerHTML = STESEN_SEMUA.filter(s => p.buka.includes(s) || p.ons.some(x => p.map[x.id] === s)).map(s => {
     const a = p.ons.find(x => p.map[x.id] === s);
-    return `<tr><td>${s}</td><td>${a ? a.nama : '<span class="bad">Kosong</span>'}</td></tr>`;
+    return `<div class="pt${a ? '' : ' kosong'}${a && a.id === me.id ? ' me' : ''}"><small>${s}</small><b>${a ? a.nama : 'Kosong'}</b></div>`;
   }).join('');
-  $('#stesenSaya').textContent = st || 'Punch In dahulu';
-  if (!st) { $('#krit').textContent = ''; $('#rehatSaya').innerHTML = ''; return; }
+  $('#stesenSaya').textContent = st || '-';
+  const kr = $('#krit');
+  if (!st) { kr.className = 'chip'; kr.textContent = 'Punch In dahulu'; $('#rehatSaya').innerHTML = ''; return; }
   const c = new Date(now), cur = c.getHours() * 60 + c.getMinutes();
   const kritis = (KRITIKAL[st] || []).some(w => {
     const a = mnt(w.slice(0, 4)), b = mnt(w.slice(5));
     return a <= b ? cur >= a && cur < b : cur >= a || cur < b;
   });
-  $('#krit').innerHTML = kritis ? '<span class="bad">Waktu kritikal: jangan tinggalkan stesen</span>' : 'Bukan waktu kritikal';
-  $('#rehatSaya').innerHTML = slotSaya(st, p, jenis, mula).map(x =>
-    `<li><span>${x.j}</span><span class="${now >= x.e ? 'mut' : now >= x.s ? 'ok' : ''}">${x.a}-${x.b} ${now >= x.e ? '(selesai)' : now >= x.s ? '(sekarang)' : ''}</span></li>`
-  ).join('') || '<li class="mut">Tiada slot rehat</li>';
+  kr.className = 'chip ' + (kritis ? 'k' : 'g'); kr.textContent = kritis ? 'Waktu kritikal' : 'Bukan waktu kritikal';
+  $('#rehatSaya').innerHTML = slotSaya(st, p, jenis, mula).map(x => {
+    const tp = x.j.startsWith('Ganti') ? 'ganti' : x.j.toLowerCase(), sl = now >= x.e ? ' selesai' : now >= x.s ? ' kini' : '';
+    return `<div class="tl ${tp}${sl}"><small>${x.j}${now >= x.e ? ' · selesai' : now >= x.s ? ' · sekarang' : ''}</small><b>${jf(x.a)}–${jf(x.b)}</b></div>`;
+  }).join('') || '<span class="mut">Tiada slot rehat</span>';
 }
 
 const dingat = new Set();
