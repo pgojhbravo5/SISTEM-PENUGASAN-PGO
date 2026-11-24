@@ -124,6 +124,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 <div class="card">
   <h2>Lokasi Punch In</h2>
   <p id="petaInfo" class="mut" style="margin:0 0 8px"></p>
+  <button id="bLokasi" class="pri" style="margin:0 0 10px">Dapatkan lokasi saya</button>
   <div id="peta" style="height:62vh;min-height:320px;border-radius:14px;overflow:hidden;position:relative;z-index:0;isolation:isolate"></div>
 </div>
 </section>
@@ -276,9 +277,13 @@ async function punch(jenis, st) {
     const row = {anggota_id: me.id, jenis, stesen: jenis === 'IN' ? st : null};
     if (jenis === 'IN') {
       toast('Mendapatkan lokasi...');
-      const g = await lokasi();
-      if (g) { row.lat = g.lat; row.lng = g.lng; }
-      else toast('Lokasi tidak diperoleh. Punch In direkod tanpa lokasi.');
+      let g = await lokasi();
+      if (!g && last[me.id] && last[me.id].jenis === 'IN') { // Tukar stesen: guna lokasi Punch In sebelum ini
+        const p = logs.find(x => x.anggota_id === me.id && x.jenis === 'IN' && x.lat != null);
+        if (p) g = {lat: p.lat, lng: p.lng};
+      }
+      if (!g) { alert('Lokasi diperlukan untuk Punch In. ' + mesejLokasi()); return; }
+      row.lat = g.lat; row.lng = g.lng;
     }
     const {error} = await db.from('punch').insert(row);
     if (error) alert('Gagal: ' + error.message);
@@ -354,9 +359,16 @@ function bukaAudio() { // pelayar hanya benarkan bunyi selepas sentuhan pertama
 
 // ===== Lokasi Punch In dan peta =====
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-const lokasi = () => new Promise(r => !navigator.geolocation ? r(null) :
-  navigator.geolocation.getCurrentPosition(p => r({lat: p.coords.latitude, lng: p.coords.longitude}), () => r(null),
-    {enableHighAccuracy: true, timeout: 10000, maximumAge: 30000}));
+let lokasiErr = null;
+const lokasi = () => new Promise(r => { lokasiErr = null; return !navigator.geolocation ? r(null) :
+  navigator.geolocation.getCurrentPosition(p => r({lat: p.coords.latitude, lng: p.coords.longitude}), e => { lokasiErr = e; r(null); },
+    {enableHighAccuracy: true, timeout: 10000, maximumAge: 30000}); });
+function mesejLokasi() {
+  if (window.self !== window.top) return 'Lokasi disekat kerana app dibuka dalam pratonton (iframe). Buka app dalam tab baharu atau guna alamat deploy (HTTPS).';
+  if (!window.isSecureContext) return 'Lokasi hanya berfungsi pada HTTPS.';
+  if (lokasiErr && lokasiErr.code === 1) return 'Akses lokasi disekat. Benarkan lokasi untuk laman ini pada tetapan pelayar, kemudian cuba lagi.';
+  return 'Lokasi tidak dapat dikesan. Hidupkan GPS dan cuba lagi.';
+}
 
 function petaRender(fit) {
   if (!window.L) { $('#petaInfo').textContent = 'Peta tidak dapat dimuatkan. Semak sambungan internet.'; return; }
@@ -368,19 +380,41 @@ function petaRender(fit) {
   peta.invalidateSize();
   lapisan.clearLayers();
   const pts = [];
-  bertugas().forEach(a => {
-    const l = last[a.id];
-    if (l.lat == null || l.lng == null) return;
+  let on = 0;
+  anggota.forEach(a => { // lokasi Punch In terakhir sentiasa kekal; merah = bertugas, kelabu = tidak bertugas
+    const l = logs.find(x => x.anggota_id === a.id && x.jenis === 'IN' && x.lat != null);
+    if (!l) return;
+    const dalam = last[a.id] && last[a.id].jenis === 'IN';
+    if (dalam) on++;
     pts.push([l.lat, l.lng]);
-    L.circleMarker([l.lat, l.lng], {radius: 9, color: '#fff', weight: 2, fillColor: '#b3261e', fillOpacity: 1})
+    L.circleMarker([l.lat, l.lng], {radius: 9, color: '#fff', weight: 2, fillColor: dalam ? '#b3261e' : '#8f9aa6', fillOpacity: 1})
       .bindTooltip(esc(a.kod || a.nama) + (l.stesen ? ' · ' + esc(l.stesen) : ''), {permanent: true, direction: 'top', offset: [0, -8]})
-      .bindPopup(`<b>${esc(a.nama)}</b><br>${esc(l.stesen || '-')}<br>Punch In ${fmt(l.masa)}`)
+      .bindPopup(`<b>${esc(a.nama)}</b><br>${esc(l.stesen || '-')}<br>Punch In ${fmt(l.masa)}<br>${dalam ? 'Sedang bertugas' : 'Tidak bertugas'}`)
       .addTo(lapisan);
   });
-  $('#petaInfo').textContent = pts.length ? `${pts.length} anggota bertugas dengan lokasi Punch In` : 'Tiada lokasi Punch In bagi anggota yang sedang bertugas';
+  $('#petaInfo').textContent = pts.length ? `Merah: bertugas (${on}). Kelabu: lokasi Punch In terakhir (tidak bertugas).` : 'Belum ada lokasi Punch In direkod. Tekan Dapatkan lokasi saya.';
   if (fit && pts.length === 1) peta.setView(pts[0], 16);
   else if (fit && pts.length > 1) peta.fitBounds(pts, {padding: [40, 40], maxZoom: 17});
 }
+
+let saya = null;
+$('#bLokasi').onclick = async () => {
+  const b = $('#bLokasi');
+  b.disabled = true; b.textContent = 'Mencari lokasi...';
+  const g = await lokasi();
+  b.disabled = false; b.textContent = 'Dapatkan lokasi saya';
+  petaRender(false);
+  if (!g) { $('#petaInfo').textContent = mesejLokasi(); return; }
+  if (saya) saya.remove();
+  saya = L.circleMarker([g.lat, g.lng], {radius: 9, color: '#fff', weight: 2, fillColor: '#2f6fe4', fillOpacity: 1})
+    .bindTooltip('Saya', {permanent: true, direction: 'top', offset: [0, -8]}).addTo(peta);
+  peta.setView([g.lat, g.lng], 16);
+  const l = me && last[me.id]; // sedang bertugas tetapi Punch In belum ada lokasi: simpan sekarang
+  if (l && l.jenis === 'IN' && l.lat == null) {
+    const {error} = await db.from('punch').insert({anggota_id: me.id, jenis: 'IN', stesen: l.stesen, lat: g.lat, lng: g.lng});
+    if (error) alert('Gagal simpan lokasi: ' + error.message); else toast('Lokasi Punch In disimpan');
+  }
+};
 
 // ===== Web Push =====
 const b64 = k => Uint8Array.from(atob((k + '='.repeat((4 - k.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
