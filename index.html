@@ -303,6 +303,30 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 [data-device=desktop] #aiLaunch{right:28px;bottom:28px}
 [data-device=desktop] #aiBubble{right:106px;bottom:40px;max-width:280px}
 [data-device=desktop] #aiPanel{left:auto;right:28px;margin:0;width:400px;max-width:none;bottom:108px;max-height:min(620px,calc(100dvh - 140px))}
+
+/* Butang ikon cetak PDF & paparan cetak */
+.ic-print{width:36px;height:36px;margin:0;padding:0;flex:none;display:grid;place-items:center;border-radius:10px}
+.ic-print svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.print-only{display:none}
+
+@media print {
+  @page { margin: 12mm; }
+  html, body { background: #fff !important; color: #111 !important; padding: 0 !important; margin: 0 !important; max-width: none !important; min-height: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  [data-device=desktop] body:has(#app[style*="block"]) { padding-left: 0 !important; }
+  .tabs, #aiLaunch, #aiBubble, #aiPanel, .kredit, #toast, #alarm, #konfirmasi, .tab:not(#t4) { display: none !important; }
+  #t4 { display: block !important; }
+  #t4 > .card, [data-device=desktop] #t4 > .card { display: block !important; background: #fff !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+  #t4 .fl, #t4 .fd, #t4 #segTrk, #t4 #fReset, #bPrintLog, #t4 .log-hd { display: none !important; }
+  .print-only { display: block !important; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #222; }
+  .print-only h2 { margin: 0 0 4px; font-size: 1.15rem; color: #111; }
+  .print-only p { margin: 0; font-size: .8rem; color: #444; line-height: 1.45; }
+  #logScore { background: #f7f8fa !important; border: 1px solid #d5dbe3 !important; margin: 0 0 14px !important; }
+  .ls-item, .ls-r { background: #fff !important; border-color: #d5dbe3 !important; color: #111 !important; }
+  .ls-rank { max-height: none !important; overflow: visible !important; display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 4px 10px !important; }
+  #log, [data-device=desktop] #t4 > .card > #log { max-height: none !important; overflow: visible !important; padding: 0 !important; }
+  #log li { break-inside: avoid; border-bottom: 1px solid #e2e6ec !important; }
+  .mut, .lg-side > span, .rk-val, .ls-hd span, .ls-item small { color: #555 !important; }
+}
 </style>
 <script>
 // Auto-detect peranti: desktop = skrin >=1024px + tetikus/trackpad. Paksa ujian: ?view=desktop atau ?view=mobile
@@ -430,10 +454,14 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 
 <!-- TAB 4: Log terkini -->
 <section id="t4" class="tab">
+  <div id="logPrintHd" class="print-only"></div>
   <div class="card">
-    <h2>Log terkini</h2>
+    <div class="sb log-hd">
+      <h2 style="margin:0">Log terkini</h2>
+      <button type="button" id="bPrintLog" class="ic-print" aria-label="Cetak PDF" title="Cetak PDF"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg></button>
+    </div>
     <!-- Penapis Log -->
-    <div class="fl">
+        <div class="fl">
       <select id="fJns" aria-label="Tapis jenis log">
         <option value="all">Semua</option>
         <option value="IN">Punch In</option>
@@ -553,7 +581,7 @@ const MSG_KONFIG = 'Tetapan Supabase belum diisi. Isi config.js dan deploy semul
 const $ = s => document.querySelector(s);
 let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false, sibuk = false;
 let chatMsgs = [], chatTdkBaca = 0, chatSedia = false, chatSibuk = false, chatReply = null;
-let logFilter = 'all', fAng = '', fStn = '', fDari = '', fHingga = ''; // penapis log: jenis, anggota, stesen, julat tarikh
+let logFilter = 'all', fAng = '', fStn = '', fDari = '', fHingga = '', logPrintAll = false; // penapis log & mod cetak penuh
 $('#min').textContent = MIN;
 
 // ===== Tab =====
@@ -704,8 +732,19 @@ const sesiAll = [], bukaAng = {};
   });
 
   const sesiTapis = tapisSesi(false);
-  const sesiRankSrc = tapisSesi(true); // kekal semua ID untuk kedudukan trofi
+  const sesiRankSrc = (logPrintAll && fAng) ? sesiTapis : tapisSesi(true); // mod cetak ikut penapis ID jika dipilih
   $('#logCnt').textContent = sesiTapis.length + ' sesi';
+
+  // Kepala ringkasan penapis (hanya terpapar dalam PDF/cetak)
+  const ph = $('#logPrintHd');
+  if (ph) {
+    const lblJns = logFilter === 'all' ? 'Semua' : logFilter === 'IN' ? 'Punch In' : 'Punch Out';
+    const lblAng = fAng ? nama(isNaN(+fAng) ? fAng : +fAng) : 'Semua anggota';
+    const lblStn = fStn || 'Semua stesen';
+    const lblTrk = (fDari || fHingga) ? `${fDari || 'Mula'} hingga ${fHingga || 'Kini'}` : 'Semua tarikh';
+    ph.innerHTML = `<h2>Laporan Log &amp; Skor Analitik · Syif PGO Johor</h2>
+      <p><b>Jenis:</b> ${lblJns} · <b>Anggota:</b> ${lblAng} · <b>Stesen:</b> ${lblStn} · <b>Tarikh:</b> ${lblTrk}<br>Dicetak: ${fmt(Date.now())}</p>`;
+  }
 
   // Analitik Score Box (sasaran 12 jam normal)
   const sesiSelesai = sesiTapis.filter(s => s.ms != null).map(s => s.ms);
@@ -755,8 +794,9 @@ const sesiAll = [], bukaAng = {};
     render();
   });
 
-  // Senarai log: Punch In (kiri) | Punch Out (kanan) | Masa log (hujung kanan)
-  $('#log').innerHTML = sesiTapis.slice(0, 50).map(s => {
+// Senarai log: Punch In (kiri) | Punch Out (kanan) | Masa log (hujung kanan)
+  $('#log').innerHTML = (logPrintAll ? sesiTapis : sesiTapis.slice(0, 50)).map(s => {
+    
     const a = anggota.find(x => x.id === s.anggota_id);
     const kod = (a && (a.kod || a.nama) || '?').slice(0, 3);
     const masaAkhir = s.outMasa || s.inMasa;
@@ -1222,6 +1262,18 @@ $('#fReset').onclick = e => {
   logFilter = 'all'; fAng = ''; fStn = ''; fDari = ''; fHingga = '';
   render();
 };
+
+$('#bPrintLog').onclick = () => {
+  logPrintAll = true;
+  render();
+  setTimeout(() => window.print(), 60);
+};
+window.addEventListener('beforeprint', () => {
+  if (!logPrintAll) { logPrintAll = true; render(); }
+});
+window.addEventListener('afterprint', () => {
+  if (logPrintAll) { logPrintAll = false; render(); }
+});
 
 // ===== Tupai Bomba: pembantu pintar (jawab berdasarkan data app + peringatan rehat) =====
 let aiTerbuka = false, aiOk = false, aiTt;
