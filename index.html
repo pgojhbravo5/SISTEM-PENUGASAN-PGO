@@ -1541,13 +1541,10 @@ async function aiTanya(q) {
   aiSibuk = true;
   const loadEl = aiTambah('ai', 'Tupai Bomba sedang berfikir...');
   try {
-    const res = await fetch('https://sistempenugasanpgo.vercel.app/api/tupai-ai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ soalan: q, konteks: aiKonteks(), sejarah: aiSejarah })
+    const {data, error} = await db.functions.invoke('tupai-ai', {
+      body: { soalan: q, konteks: aiKonteks(), sejarah: aiSejarah }
     });
-    const data = await res.json();
-    if (!res.ok || !data.jawapan) throw new Error(data.error || 'Tiada respons');
+    if (error || !data || !data.jawapan) throw new Error(error?.message || data?.error || 'Tiada respons');
 
     loadEl.textContent = data.jawapan;
     aiSejarah.push({ role: 'user', parts: [{ text: q }] });
@@ -1585,19 +1582,16 @@ function aiAnalisisTab(id) {
     // Elak panggil API berulang jika tab & isi skrin sama dalam tempoh 30 saat
     if (aiTabCache[id] && now - aiTabCache[id].t < 30000 && aiTabCache[id].s === skrin) return;
 
-    try {
-      const res = await fetch('https://sistempenugasanpgo.vercel.app/api/tupai-ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+try {
+      const {data, error} = await db.functions.invoke('tupai-ai', {
+        body: {
           soalan: 'Berikan 1 ulasan analisis automatik yang sangat padat (1 hingga 2 ayat ringkas sahaja, terus kepada isi tanpa mukadimah) tentang perkara paling penting pada tab yang sedang dibuka sekarang.',
           konteks: aiKonteks(),
           sejarah: []
-        })
+        }
       });
-      const data = await res.json();
-      if (!res.ok || !data.jawapan) throw new Error(data.error || ('HTTP ' + res.status));
-
+      if (error || !data || !data.jawapan) throw new Error(error?.message || data?.error || 'Tiada respons');
+      
       if (el.classList.contains('on')) {
         aiTabCache[id] = { t: Date.now(), s: skrin }; // simpan cache hanya bila berjaya
         aiBicara(data.jawapan);
