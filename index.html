@@ -161,8 +161,10 @@ body.chat .ch-h{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .cm small{display:block;text-align:right;font-size:.65rem;opacity:.65;margin-top:1px}
 .cm-foot{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:2px}
 .cm-foot small{margin-top:0}
-.cm-del{width:auto;margin:0;padding:0;border:0;background:transparent;color:inherit;font-size:.68rem;font-weight:600;opacity:.75;cursor:pointer;line-height:1}
-.cm-del:hover{opacity:1;text-decoration:underline}
+.cm-del{width:22px;height:22px;margin:0;padding:0;border:0;border-radius:6px;background:transparent;color:inherit;opacity:.7;cursor:pointer;display:grid;place-items:center;line-height:1}
+.cm-del svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cm-del:hover{opacity:1;background:rgba(0,0,0,.1)}
+.cm.me .cm-del:hover{background:rgba(255,255,255,.18)}
 .cm.lain{align-self:flex-start;background:var(--field);border:1px solid var(--bd);border-bottom-left-radius:4px}
 .cm.me{align-self:flex-end;background:var(--pri);color:#fff;border-bottom-right-radius:4px}
 .cdate{align-self:center;font-size:.7rem;color:var(--mut);background:var(--field);padding:2px 10px;border-radius:999px;margin:6px 0}
@@ -1450,7 +1452,7 @@ function chatRender(bawah) {
       : `<span>${esc(m.mesej)}</span>`;
       const isDev = me && String(me.kod || '').toUpperCase() === 'A02';
     const rp = m.reply_nama ? `<div class="cm-reply" data-reply="${esc(m.reply_id || '')}"><b>${esc(m.reply_nama)}</b><span>${esc(m.reply_isi || '')}</span></div>` : '';
-    const del = (sendiri || isDev) ? `<button type="button" class="cm-del" data-del="${m.id}">Padam</button>` : '';
+    const del = (sendiri || isDev) ? `<button type="button" class="cm-del" data-del="${m.id}" aria-label="Padam mesej" title="Padam"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg></button>` : '';
     h += `<div class="cm ${sendiri ? 'me' : 'lain'}" data-id="${m.id}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}${rp}${isi}<div class="cm-foot">${del}<small>${jam(m.masa)}</small></div></div>`;
     });
   el.innerHTML = h || '<p class="mut" style="text-align:center;margin:auto">Belum ada mesej. Mulakan perbualan!</p>';
