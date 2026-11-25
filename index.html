@@ -1487,14 +1487,59 @@ function aiAuto() { // dipanggil setiap 30 saat dan bila data berubah
   if (l) aiPrev = {masa: l.masa, jenis: l.jenis, stesen: l.stesen};
 }
 
+let aiSejarah = [], aiSibuk = false;
+
+function aiKonteks() {
+  if (!me) return 'Pengguna belum log masuk.';
+  return [
+    `Masa sekarang: ${jam(Date.now())}, ${new Date().toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}`,
+    `Pengguna: ${me.nama} (Kod: ${me.kod || '-'}, Syif: ${me.kumpulan || '-'})`,
+    `Status: ${aiStatus()}`,
+    `Syif: ${aiSyif()}`,
+    `Rehat: ${aiRehat()}`,
+    `Kritikal: ${aiKritikal()}`,
+    `Bertugas: ${aiSiapa()}`,
+    `Statistik: ${aiStatistik()}`
+  ].join('\n\n');
+}
+
 function aiTambah(siapa, teks) {
   const d = document.createElement('div'); d.className = 'aim ' + siapa; d.textContent = teks;
   const m = $('#aiMsgs'); m.appendChild(d); m.scrollTop = m.scrollHeight;
+  return d;
 }
-function aiTanya(q) {
-  q = (q || '').trim(); if (!q) return;
+
+async function aiTanya(q) {
+  q = (q || '').trim(); if (!q || aiSibuk) return;
   aiTambah('me', q);
-  setTimeout(() => aiTambah('ai', aiJawab(q)), 250);
+
+  if (/^(senyap|diam|mute|cakap|bersuara)$/i.test(q)) {
+    aiTambah('ai', aiJawab(q));
+    return;
+  }
+
+  aiSibuk = true;
+  const loadEl = aiTambah('ai', 'Tupai Bomba sedang berfikir...');
+  try {
+    const res = await fetch('/api/tupai-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ soalan: q, konteks: aiKonteks(), sejarah: aiSejarah })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.jawapan) throw new Error(data.error || 'Tiada respons');
+
+    loadEl.textContent = data.jawapan;
+    aiSejarah.push({ role: 'user', parts: [{ text: q }] });
+    aiSejarah.push({ role: 'model', parts: [{ text: data.jawapan }] });
+    if (aiSejarah.length > 10) aiSejarah = aiSejarah.slice(-10);
+  } catch (err) {
+    console.warn('Gemini fallback ke skrip:', err);
+    loadEl.textContent = aiJawab(q);
+  } finally {
+    aiSibuk = false;
+    const m = $('#aiMsgs'); m.scrollTop = m.scrollHeight;
+  }
 }
 function aiKirim() { const i = $('#aiIn'), v = i.value; i.value = ''; aiTanya(v); }
 function aiBicara(t) { // peringatan automatik daripada tupai
