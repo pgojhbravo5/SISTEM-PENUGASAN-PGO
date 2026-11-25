@@ -1571,20 +1571,19 @@ function aiBicara(t) { // peringatan automatik daripada tupai
   clearTimeout(aiTt); aiTt = setTimeout(() => b.classList.remove('on'), 12000);
 }
 
-// ===== Analisis automatik bila tukar tab =====
+// ===== Analisis automatik bila tukar tab & mula buka app =====
 let aiTabTmr = null, aiTabCache = {};
 function aiAnalisisTab(id) {
   clearTimeout(aiTabTmr);
-  if (!me || !aiOk || aiSenyap || id === 't6') return; // hormati butang "Auto: senyap" & abaikan tab Chat
+  if (!me || !aiOk || aiSenyap || !id || id === 't6') return;
 
   aiTabTmr = setTimeout(async () => {
     const el = document.getElementById(id);
     if (!el || !el.classList.contains('on') || aiSibuk) return;
 
     const skrin = aiSkrin(), now = Date.now();
-    // Elak panggil API berulang jika tab & isi skrin sama dalam tempoh 60 saat
-    if (aiTabCache[id] && now - aiTabCache[id].t < 60000 && aiTabCache[id].s === skrin) return;
-    aiTabCache[id] = { t: now, s: skrin };
+    // Elak panggil API berulang jika tab & isi skrin sama dalam tempoh 30 saat
+    if (aiTabCache[id] && now - aiTabCache[id].t < 30000 && aiTabCache[id].s === skrin) return;
 
     try {
       const res = await fetch('https://sistempenugasanpgo.vercel.app/api/tupai-ai', {
@@ -1597,13 +1596,16 @@ function aiAnalisisTab(id) {
         })
       });
       const data = await res.json();
-      if (res.ok && data.jawapan && el.classList.contains('on')) {
+      if (!res.ok || !data.jawapan) throw new Error(data.error || ('HTTP ' + res.status));
+
+      if (el.classList.contains('on')) {
+        aiTabCache[id] = { t: Date.now(), s: skrin }; // simpan cache hanya bila berjaya
         aiBicara(data.jawapan);
       }
     } catch (err) {
-      console.warn('Analisis tab automatik gagal:', err);
+      console.error('Analisis tab automatik gagal:', err);
     }
-  }, 800);
+  }, 600);
 }
 function aiBuka(b) {
   aiTerbuka = b;
@@ -1625,7 +1627,9 @@ function aiMula() { // dipanggil sekali selepas log masuk
   aiPrevN = bertugas().length;
   const t = tempohTugas(me.id); // jam yang sudah berlalu tidak diulang
   if (l && l.jenis === 'IN' && t && !t.tamat) aiDah.add(`jam${t.mula}-${Math.floor((Date.now() - t.mula) / 3600000)}`);
-  if (!b && !aiSenyap) setTimeout(() => aiAutoCakap('salam', `${aiSapa()}, ${me.nama}!\n${aiRingkas()}`, true), 1500);
+  // Terus auto-analisis tab yang sedang dibuka sebaik sahaja app sedia
+  const tabAktif = document.querySelector('.tab.on');
+  if (tabAktif && !aiSenyap) setTimeout(() => aiAnalisisTab(tabAktif.id), 1200);
 }
 // ===== Drag ikon Tupai Bomba ke seluruh skrin + simpan posisi =====
 (function () {
