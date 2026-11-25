@@ -33,6 +33,18 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 #toast{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top,0px));max-width:616px;margin-inline:auto;background:var(--tx);color:var(--bg);padding:12px;border-radius:14px;display:none;z-index:5}
 #alarm{position:fixed;inset:0;background:var(--pri);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:9;animation:b 1s steps(2) infinite}
 #alarm.on{display:flex}#alarm button{background:#fff;color:var(--pri);margin-top:24px;max-width:320px;font-size:1.2rem}
+
+/* ===== Modal pengesahan Paksa Punch Out ===== */
+#konfirmasi{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:8;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+#konfirmasi.on{display:flex}
+.kf-box{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;max-width:400px;width:100%;box-shadow:var(--sh);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+.kf-box h3{margin:0 0 8px;font-size:1.1rem}
+.kf-box p{margin:0 0 18px;color:var(--mut);font-size:.92rem;line-height:1.5}
+.kf-box p b{color:var(--tx)}
+.kf-row{display:flex;gap:8px}
+.kf-row button{flex:1;margin:0;width:auto}
+.kf-row #kfYa{background:var(--bad);color:#fff;border:0}
+
 @keyframes b{50%{filter:brightness(.7)}}
 @media(prefers-reduced-motion:reduce){#alarm{animation:none}}
 /* Tab bawah (glass) */
@@ -187,8 +199,20 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 </g></defs></svg>
 <div id="alarm"><div class="big">ALARM</div><p id="alarmMsg" style="font-size:1.3rem"></p><p id="alarmDari" style="font-size:1rem;opacity:.9"></p><button id="alarmOff">Matikan alarm</button></div>
 
+<!-- ===== Modal pengesahan Paksa Punch Out ===== -->
+<div id="konfirmasi" role="dialog" aria-modal="true" aria-labelledby="kfTajuk">
+  <div class="kf-box">
+    <h3 id="kfTajuk">Paksa Punch Out Semua?</h3>
+    <p>Semua anggota yang sedang <b>Punch In</b> akan dikeluarkan serentak. Tindakan ini tidak boleh dibatalkan.</p>
+    <div class="kf-row">
+      <button id="kfTidak" type="button">Batal</button>
+      <button id="kfYa" type="button">Teruskan</button>
+    </div>
+  </div>
+</div>
+
 <div id="login" class="card" style="margin-top:12vh">
-  <h1>Syif PGO Johor</h1>
+    <h1>Syif PGO Johor</h1>
   <input id="lid" placeholder="ID (contoh: A01)" autocapitalize="characters" autocomplete="username">
   <input id="lpw" type="password" placeholder="Kata laluan" autocomplete="current-password">
   <button id="bMasuk" class="pri">Log masuk</button>
@@ -220,6 +244,13 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   <div id="rehatSaya" class="slot2"></div>
   <h2 style="margin-top:18px">Dalam Stesen</h2>
   <div id="penugasan" class="pn"></div>
+</div>
+
+<!-- ===== Pentadbir: Paksa Punch Out Semua ===== -->
+<div class="card">
+  <h2>Pentadbir</h2>
+  <p class="mut" style="margin:0 0 8px;font-size:.85rem">Tindakan segera untuk <b>semua</b> anggota yang sedang Punch In.</p>
+  <button id="bPaksa" type="button" style="background:var(--bad);color:#fff;border:0">Paksa Punch Out Semua</button>
 </div>
 </section>
 
@@ -546,6 +577,32 @@ async function hantar(jenis) {
 }
 $('#bInfo').onclick = () => hantar('info');
 $('#bAlarm').onclick = () => hantar('alarm');
+
+// ===== Paksa Punch Out Semua (pentadbir) =====
+$('#bPaksa').onclick = () => { $('#konfirmasi').classList.add('on'); $('#kfTidak').focus(); };
+$('#kfTidak').onclick = () => $('#konfirmasi').classList.remove('on');
+$('#konfirmasi').onclick = e => { if (e.target.id === 'konfirmasi') $('#konfirmasi').classList.remove('on'); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#konfirmasi').classList.remove('on'); });
+
+$('#kfYa').onclick = async () => {
+  const ya = $('#kfYa'), b = $('#bPaksa'), label = ya.textContent;
+  ya.disabled = true; b.disabled = true; ya.textContent = 'Memproses...';
+  try {
+    const {data, error} = await db.rpc('paksa_punch_out_semua');
+    $('#konfirmasi').classList.remove('on');
+    if (error) {
+      alert('Gagal paksa punch out: ' + error.message);
+    } else {
+      toast(`${data || 0} anggota telah dipaksa Punch Out`);
+      beep(300);
+      await load();
+    }
+  } catch (err) {
+    alert('Ralat: ' + (err.message || err));
+  } finally {
+    ya.disabled = false; b.disabled = false; ya.textContent = label;
+  }
+};
 
 // ===== Bunyi, alarm, notifikasi =====
 function beep(ms = 200) {
