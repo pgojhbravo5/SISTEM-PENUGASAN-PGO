@@ -1,0 +1,108 @@
+/* ==========================================================
+   Sistem Syif PGO: paparan DESKTOP (lebar >= 1024px)
+   Telefon tidak terjejas. Dimuat melalui <link media="(min-width:1024px)">
+   ========================================================== */
+
+/* ---- Rangka: sidebar kiri + kandungan di kanan ---- */
+body{max-width:none;margin:0;padding:28px 32px;min-height:100vh}
+#app{padding-left:236px} /* ruang untuk sidebar, hanya wujud selepas log masuk */
+#app>.tab,#app>.kredit{max-width:1180px;margin-inline:auto}
+html{scrollbar-width:thin}
+
+/* ---- Menu bawah jadi sidebar ---- */
+.tabs{left:16px;top:16px;bottom:16px;right:auto;width:224px;max-width:none;margin:0;
+  flex-direction:column;gap:6px;padding:14px;border-radius:26px;overflow-y:auto}
+.tabs::before{content:"Syif PGO Johor";display:block;padding:8px 14px 16px;margin-bottom:6px;
+  font-size:1.05rem;font-weight:800;letter-spacing:.01em;border-bottom:1px solid var(--ln)}
+.tabs::after{content:"\00A9  2026 PGO Johor";margin-top:auto;padding:10px 14px 2px;
+  font-size:.72rem;color:var(--mut)}
+.tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:14px;
+  padding:12px 14px;border-radius:16px;font-size:.95rem;text-align:left}
+.tabs svg{width:22px;height:22px}
+.tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
+.tdot{position:static;margin-left:auto;box-shadow:none}
+
+/* ---- Kad lebih selesa ---- */
+.card{padding:20px;border-radius:22px;margin-bottom:0}
+h1{font-size:1.5rem}
+h2{font-size:1.08rem;margin-bottom:12px}
+select,input,button{margin-top:10px}
+
+/* ---- Login ---- */
+#login{max-width:420px;margin:16vh auto 0;padding:28px}
+
+/* ---- Notifikasi / toast di penjuru kanan atas ---- */
+#toast{left:auto;right:24px;top:24px;margin:0;max-width:380px}
+
+/* ---- Tab 1: Utama (2 lajur) ---- */
+#t1.on{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+#t1 .hd,#t1 #aktif,#t1 #pushStatus{grid-column:1/-1;margin:0}
+#t1 .hd{margin-bottom:2px}
+#t1 #aktif{width:auto;justify-self:start;padding:10px 22px}
+#t1 #timer{font-size:4.2rem!important}
+#t1 .pn{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+#t1 .card:last-child{grid-column:1/-1;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+#t1 .card:last-child h2{margin:0}
+#t1 .card:last-child p{flex:1;margin:0!important;min-width:220px}
+#t1 .card:last-child button{width:auto;margin:0;padding:10px 24px}
+
+/* ---- Tab 2: Jadual syif + Sedang bertugas ---- */
+#t2.on{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.hero{gap:18px}
+.sf.big{width:72px;height:72px;font-size:2rem}
+
+/* ---- Tab 3: Rujukan ---- */
+#t3 .seg{max-width:420px}
+.rt td{font-size:.8rem;padding:10px 8px}
+.rt th{font-size:.76rem}
+
+/* ---- Tab 4: Log dengan penapis di atas, senarai 2 lajur ---- */
+#t4 .card{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);column-gap:20px;align-items:end}
+#t4 .card>h2,#t4 .card>ul{grid-column:1/-1}
+#t4 .fl,#t4 .fd,#t4 .seg,#t4 .sb{margin:0 0 10px}
+#t4 .fl select{padding:10px 8px;font-size:.88rem}
+#t4 .fd input{padding:10px 8px}
+#t4 .sb{align-self:center;padding-bottom:0}
+#log{columns:2;column-gap:36px}
+#log li{break-inside:avoid}
+
+/* ---- Tab 5: Notifikasi + Status pengguna ---- */
+#t5.on{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+
+/* ---- Tab 6: Chat ---- */
+body.chat{padding-top:28px}
+#chatCard{max-width:880px;margin-inline:auto;height:calc(100vh - 56px);height:calc(100dvh - 56px);
+  border-radius:22px!important;border-top:1px solid var(--bd)!important}
+body.chat .ch-h{padding-top:14px}
+.cm{max-width:68%}
+.cm img{max-height:340px}
+
+/* ---- Tupai Bomba di penjuru kanan bawah ---- */
+#aiLaunch{right:28px;bottom:28px}
+#aiBubble{right:106px;bottom:44px;max-width:300px}
+#aiPanel{left:auto;right:28px;margin:0;bottom:28px;width:400px;max-width:none;
+  max-height:min(620px,calc(100dvh - 56px))}
+
+/* ---- Footer kredit ---- */
+.kredit{margin-top:24px}
+
+/* ---- Interaksi tetikus ---- */
+@media (hover:hover){
+  button:not(:disabled):hover{filter:brightness(1.06)}
+  .tabs button:not(.on):hover{background:var(--field)}
+  .seg button:not(.on):hover{background:var(--field)}
+  .lg:hover{background:var(--field);border-radius:12px}
+  .lg{padding-inline:8px;margin-inline:-8px}
+  #aiLaunch:hover{transform:scale(1.06)}
+}
+
+/* ---- Skrin sangat lebar ---- */
+@media (min-width:1360px){
+  #t3 #rujN{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px}
+  #t3 #rujN>:nth-child(1){grid-column:1;grid-row:1}
+  #t3 #rujN>:nth-child(2){grid-column:1;grid-row:2}
+  #t3 #rujN>:nth-child(3){grid-column:2;grid-row:1}
+  #t3 #rujN>:nth-child(4){grid-column:2;grid-row:2}
+  #t3 #rujN>.nota{grid-column:1/-1;grid-row:3}
+  #t3 #rujN .sesi{margin-top:2px}
+}
