@@ -116,6 +116,35 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .fd{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
 .fd label{font-size:.75rem;color:var(--mut);font-weight:600;min-width:0}
 .fd input{margin-top:2px;padding:8px 6px;font-size:.85rem;min-width:0}
+/* Score box analitik log */
+.lscore{margin:10px 0 8px;padding:12px;border-radius:14px;background:var(--field);border:1px solid var(--bd)}
+.ls-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.ls-hd b{font-size:.88rem}.ls-hd span{font-size:.72rem;color:var(--mut)}
+.ls-bar{height:8px;border-radius:999px;background:var(--ln);overflow:hidden;margin:6px 0 10px}
+.ls-bar i{display:block;height:100%;border-radius:999px;background:var(--ok);transition:width .3s ease}
+.ls-bar i.mid{background:var(--c-makan)}.ls-bar i.low{background:var(--bad)}
+.ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ls-item{padding:6px 8px;border-radius:10px;background:var(--card);border:1px solid var(--bd);text-align:center}
+.ls-item small{display:block;font-size:.68rem;color:var(--mut)}
+.ls-item b{font-size:.85rem;font-variant-numeric:tabular-nums}
+.lg-dur{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:.7rem;font-weight:600;background:var(--field);border:1px solid var(--bd);color:var(--tx)}
+.lg-dur.ok{color:var(--ok);border-color:transparent;background:rgba(26,127,75,.16)}
+.lg-dur.low{color:var(--bad);border-color:transparent;background:rgba(198,40,40,.14)}
+/* Kedudukan ID & trofi dalam Score Box */
+.ls-rank{margin-top:10px;padding-top:8px;border-top:1px solid var(--ln);display:flex;flex-direction:column;gap:4px;max-height:175px;overflow-y:auto}
+.ls-r{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin:0;padding:6px 8px;border-radius:10px;border:1px solid transparent;background:var(--card);color:var(--tx);font-size:.78rem;text-align:left;cursor:pointer}
+.ls-r.on{border-color:var(--pri);background:rgba(179,38,30,.12)}
+.ls-r .rk-id{display:flex;align-items:center;gap:6px;min-width:0;font-weight:600}
+.ls-r .rk-tr{width:18px;text-align:center;flex:none;font-size:.9rem}
+.ls-r .rk-val{font-variant-numeric:tabular-nums;color:var(--mut);font-size:.74rem;white-space:nowrap}
+/* Susunan Punch In (kiri) & Punch Out (kanan) */
+.lg-pair{flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
+.lg-side{min-width:0}
+.lg-side b{display:block;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-side span{display:block;font-size:.76rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-tag{display:inline-block;font-size:.66rem;font-weight:700;padding:1px 6px;border-radius:6px;margin-right:4px}
+.lg-tag.in{background:rgba(26,127,75,.16);color:var(--ok)}
+.lg-tag.out{background:rgba(198,40,40,.14);color:var(--bad)}
 
 
 /* Tupai Bomba (pembantu) */
@@ -247,10 +276,10 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 [data-device=desktop] #rujN>table:nth-of-type(2){grid-column:2;grid-row:2}
 [data-device=desktop] #rujN>.nota{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:1fr 1fr;column-gap:32px}
 
-/* Tab 4 Log: penapis (kiri) + senarai log boleh scroll (kanan) */
-[data-device=desktop] #t4>.card{display:grid;grid-template-columns:320px minmax(0,1fr);grid-template-rows:repeat(5,auto) 1fr;column-gap:32px;align-items:start}
+/* Tab 4 Log: penapis + score box (kiri) + senarai log boleh scroll (kanan) */
+[data-device=desktop] #t4>.card{display:grid;grid-template-columns:320px minmax(0,1fr);grid-template-rows:repeat(6,auto) 1fr;column-gap:32px;align-items:start}
 [data-device=desktop] #t4>.card>*{grid-column:1}
-[data-device=desktop] #t4>.card>#log{grid-column:2;grid-row:1/7;max-height:calc(100dvh - 130px);overflow-y:auto;padding-right:6px}
+[data-device=desktop] #t4>.card>#log{grid-column:2;grid-row:1/8;max-height:calc(100dvh - 130px);overflow-y:auto;padding-right:6px}
 [data-device=desktop] #t4 .fl{grid-template-columns:1fr}
 
 /* Tab 5 Notif: hantar (kiri) + status pengguna 3 lajur (kanan) */
@@ -423,8 +452,9 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
       <button data-d="13">14 hari</button>
     </div>
     <div class="sb"><span id="logCnt" class="mut"></span><a href="#" id="fReset" class="keluar">Set semula</a></div>
+    <div id="logScore" class="lscore"></div>
     <ul id="log"></ul>
-  </div>
+    </div>
   </section>
 
 <!-- TAB 5: Hantar notifikasi -->
@@ -633,15 +663,121 @@ function render() {
       (!fStn || l.stesen === fStn) &&
       t >= t0 && t < t1;
   });
-  $('#logCnt').textContent = filteredLogs.length + ' rekod';
+// Bina pasangan sesi IN -> OUT mengikut kronologi
+const sesiAll = [], bukaAng = {};
+  [...logs].reverse().forEach(x => {
+    const ts = new Date(x.masa).getTime();
+    if (x.jenis === 'IN') {
+      if (!bukaAng[x.anggota_id]) {
+        bukaAng[x.anggota_id] = {anggota_id: x.anggota_id, inMasa: x.masa, inTs: ts, stesen: x.stesen || '', outMasa: null, outTs: null, ms: null};
+      } else if (x.stesen) {
+        bukaAng[x.anggota_id].stesen = x.stesen;
+      }
+    } else if (x.jenis === 'OUT') {
+      const s = bukaAng[x.anggota_id];
+      if (s) {
+        s.outMasa = x.masa; s.outTs = ts; s.ms = Math.max(0, ts - s.inTs);
+        sesiAll.push(s);
+        delete bukaAng[x.anggota_id];
+      } else {
+        sesiAll.push({anggota_id: x.anggota_id, inMasa: null, inTs: null, stesen: '', outMasa: x.masa, outTs: ts, ms: null});
+      }
+    }
+  });
+  Object.values(bukaAng).forEach(s => sesiAll.push(s));
+  sesiAll.sort((a, b) => (b.outTs || b.inTs) - (a.outTs || a.inTs));
 
-  $('#log').innerHTML = filteredLogs.slice(0, 50).map(l => {
-    const msk = l.jenis === 'IN';
-    return `<li class="lg"><span class="av ${msk ? 'in' : 'out'}">${l.jenis}</span>
-      <div class="who"><b>${nama(l.anggota_id)}</b><span class="mut">${msk ? 'Punch In' + (l.stesen ? ' · ' + l.stesen : '') : 'Punch Out'}</span></div>
-      <div class="when"><b>${jam(l.masa)}</b><span class="mut">${new Date(l.masa).toLocaleDateString('ms-MY', {day: '2-digit', month: 'short'})}</span></div></li>`;
+  const fmtDur = ms => {
+    const m = Math.round(ms / 60000);
+    return m < 60 ? `${m}m` : `${Math.floor(m / 60)}j ${m % 60}m`;
+  };
+  const TARGET_MS = 12 * 3600000;
+
+  // Tapis sesi untuk senarai & analitik
+  const tapisSesi = (abaikanAng = false) => sesiAll.filter(s => {
+    const t = s.outTs || s.inTs;
+    const jnsOk = logFilter === 'all' || (logFilter === 'IN' && s.inMasa) || (logFilter === 'OUT' && s.outMasa);
+    return jnsOk &&
+      (abaikanAng || !fAng || String(s.anggota_id) === fAng) &&
+      (!fStn || s.stesen === fStn) &&
+      t >= t0 && t < t1;
+  });
+
+  const sesiTapis = tapisSesi(false);
+  const sesiRankSrc = tapisSesi(true); // kekal semua ID untuk kedudukan trofi
+  $('#logCnt').textContent = sesiTapis.length + ' sesi';
+
+  // Analitik Score Box (sasaran 12 jam normal)
+  const sesiSelesai = sesiTapis.filter(s => s.ms != null).map(s => s.ms);
+  const jumMs = sesiSelesai.reduce((a, b) => a + b, 0);
+  const purataMs = sesiSelesai.length ? jumMs / sesiSelesai.length : 0;
+  const skor = sesiSelesai.length ? Math.min(100, Math.round((purataMs / TARGET_MS) * 100)) : 0;
+  const capai12 = sesiSelesai.filter(ms => ms >= TARGET_MS).length;
+  const clsSkor = skor >= 90 ? '' : skor >= 70 ? 'mid' : 'low';
+
+  // Kedudukan mengikut ID (Top 3: Emas, Perak, Gangsa; lain tiada trofi)
+  const mapRank = {};
+  sesiRankSrc.forEach(s => {
+    if (s.ms == null) return;
+    if (!mapRank[s.anggota_id]) mapRank[s.anggota_id] = {id: s.anggota_id, jum: 0, bil: 0};
+    mapRank[s.anggota_id].jum += s.ms;
+    mapRank[s.anggota_id].bil += 1;
+  });
+  const rankList = Object.values(mapRank).map(r => ({
+    ...r,
+    purata: r.jum / r.bil,
+    skor: Math.min(100, Math.round(((r.jum / r.bil) / TARGET_MS) * 100))
+  })).sort((a, b) => b.skor - a.skor || b.jum - a.jum);
+
+  const trofi = ['🥇', '🥈', '🥉'];
+  const rankHtml = rankList.length ? `<div class="ls-rank">${rankList.map((r, i) => {
+    const a = anggota.find(x => x.id === r.id);
+    const label = a ? (a.kod || a.nama) : '?';
+    const aktif = String(r.id) === fAng ? ' on' : '';
+    return `<button type="button" class="ls-r${aktif}" data-aid="${r.id}">
+      <span class="rk-id"><span class="rk-tr">${i < 3 ? trofi[i] : ''}</span>${label}</span>
+      <span class="rk-val">${r.skor}% · ${fmtDur(r.purata)}</span>
+    </button>`;
+  }).join('')}</div>` : '';
+
+  $('#logScore').innerHTML = `
+    <div class="ls-hd"><b>Skor Analitik · ${skor}%</b><span>Sasaran 12j normal</span></div>
+    <div class="ls-bar"><i class="${clsSkor}" style="width:${skor}%"></i></div>
+    <div class="ls-grid">
+      <div class="ls-item"><small>Purata</small><b>${sesiSelesai.length ? fmtDur(purataMs) : '-'}</b></div>
+      <div class="ls-item"><small>Jumlah</small><b>${sesiSelesai.length ? fmtDur(jumMs) : '-'}</b></div>
+      <div class="ls-item"><small>Capai 12j</small><b>${capai12}/${sesiSelesai.length}</b></div>
+    </div>${rankHtml}`;
+
+  // Klik mana-mana ID dalam senarai kedudukan untuk tapis (klik sekali lagi untuk batal)
+  $('#logScore').querySelectorAll('.ls-r').forEach(b => b.onclick = () => {
+    fAng = fAng === b.dataset.aid ? '' : b.dataset.aid;
+    render();
+  });
+
+  // Senarai log: Punch In (kiri) | Punch Out (kanan) | Masa log (hujung kanan)
+  $('#log').innerHTML = sesiTapis.slice(0, 50).map(s => {
+    const a = anggota.find(x => x.id === s.anggota_id);
+    const kod = (a && (a.kod || a.nama) || '?').slice(0, 3);
+    const masaAkhir = s.outMasa || s.inMasa;
+    const durCls = s.ms != null ? (s.ms >= TARGET_MS ? 'ok' : s.ms < 8 * 3600000 ? 'low' : '') : '';
+    const kiri = s.inMasa
+      ? `<b><span class="lg-tag in">IN</span>${jam(s.inMasa)}</b><span>${nama(s.anggota_id)}${s.stesen ? ' · ' + s.stesen : ''}</span>`
+      : `<b><span class="lg-tag in">IN</span>-</b><span>${nama(s.anggota_id)}</span>`;
+    const kanan = s.outMasa
+      ? `<b><span class="lg-tag out">OUT</span>${jam(s.outMasa)}${s.ms != null ? `<span class="lg-dur ${durCls}">${fmtDur(s.ms)}</span>` : ''}</b><span>Sesi selesai</span>`
+      : `<b><span class="lg-tag out">OUT</span>-</b><span class="ok">Sedang bertugas</span>`;
+    return `<li class="lg">
+      <span class="av sm ${s.outMasa ? 'out' : 'in'}">${kod}</span>
+      <div class="lg-pair">
+        <div class="lg-side">${kiri}</div>
+        <div class="lg-side">${kanan}</div>
+      </div>
+      <div class="when"><b>${jam(masaAkhir)}</b><span class="mut">${new Date(masaAkhir).toLocaleDateString('ms-MY', {day: '2-digit', month: 'short'})}</span></div>
+    </li>`;
   }).join('') || '<li class="mut">Tiada log.</li>';
-  const l = me && last[me.id], dalam = l && l.jenis === 'IN';
+  
+const l = me && last[me.id], dalam = l && l.jenis === 'IN';
   const stt = $('#status'); stt.textContent = !me ? '' : dalam ? 'Bertugas' : 'Tidak bertugas'; stt.className = 'chip ' + (dalam ? 'on' : 'offc');
   $('#bIn').disabled = !me || dalam;
   $('#bOut').disabled = !me || !dalam;
