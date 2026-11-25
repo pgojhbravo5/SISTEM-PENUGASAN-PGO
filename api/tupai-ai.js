@@ -43,16 +43,16 @@ PANDUAN MENJAWAB:
 
 DATA LANGSUNG APLIKASI SEKARANG:
 ${konteks || 'Tiada data langsung.'}`;
-  
+
       const contents = [
         ...(Array.isArray(sejarah) ? sejarah.slice(-6) : []),
         { role: 'user', parts: [{ text: soalan }] },
       ];
   
-      const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
         {
-          method: 'POST',
+            method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             system_instruction: { parts: [{ text: systemInstruction }] },
