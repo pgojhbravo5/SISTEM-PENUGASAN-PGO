@@ -592,6 +592,7 @@ function bukaTab(id) {
   window.scrollTo(0, 0);
   document.body.classList.toggle('chat', id === 't6');
   if (id === 't6') { chatTandaDibaca(); chatRender(true); }
+  else if (typeof aiAnalisisTab === 'function') { aiAnalisisTab(id); }
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
 document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
@@ -1565,9 +1566,44 @@ function aiBicara(t) { // peringatan automatik daripada tupai
   aiTambah('ai', t);
   if (aiTerbuka) return;
   $('#aiBadge').style.display = 'block';
-  const b = $('#aiBubble'); b.textContent = t.length > 110 ? t.slice(0, 107) + '…' : t; b.classList.add('on');
+  const b = $('#aiBubble'); b.textContent = t.length > 180 ? t.slice(0, 177) + '…' : t; b.classList.add('on');
   const l = $('#aiLaunch'); l.classList.remove('wig'); void l.offsetWidth; l.classList.add('wig');
-  clearTimeout(aiTt); aiTt = setTimeout(() => b.classList.remove('on'), 10000);
+  clearTimeout(aiTt); aiTt = setTimeout(() => b.classList.remove('on'), 12000);
+}
+
+// ===== Analisis automatik bila tukar tab =====
+let aiTabTmr = null, aiTabCache = {};
+function aiAnalisisTab(id) {
+  clearTimeout(aiTabTmr);
+  if (!me || !aiOk || aiSenyap || id === 't6') return; // hormati butang "Auto: senyap" & abaikan tab Chat
+
+  aiTabTmr = setTimeout(async () => {
+    const el = document.getElementById(id);
+    if (!el || !el.classList.contains('on') || aiSibuk) return;
+
+    const skrin = aiSkrin(), now = Date.now();
+    // Elak panggil API berulang jika tab & isi skrin sama dalam tempoh 60 saat
+    if (aiTabCache[id] && now - aiTabCache[id].t < 60000 && aiTabCache[id].s === skrin) return;
+    aiTabCache[id] = { t: now, s: skrin };
+
+    try {
+      const res = await fetch('https://sistempenugasanpgo.vercel.app/api/tupai-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          soalan: 'Berikan 1 ulasan analisis automatik yang sangat padat (1 hingga 2 ayat ringkas sahaja, terus kepada isi tanpa mukadimah) tentang perkara paling penting pada tab yang sedang dibuka sekarang.',
+          konteks: aiKonteks(),
+          sejarah: []
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.jawapan && el.classList.contains('on')) {
+        aiBicara(data.jawapan);
+      }
+    } catch (err) {
+      console.warn('Analisis tab automatik gagal:', err);
+    }
+  }, 800);
 }
 function aiBuka(b) {
   aiTerbuka = b;
