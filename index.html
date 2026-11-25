@@ -159,6 +159,10 @@ body.chat .ch-h{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .cm{max-width:82%;padding:7px 11px;border-radius:16px;word-break:break-word;white-space:pre-wrap}
 .cm b{display:block;font-size:.72rem;color:var(--pri)}
 .cm small{display:block;text-align:right;font-size:.65rem;opacity:.65;margin-top:1px}
+.cm-foot{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:2px}
+.cm-foot small{margin-top:0}
+.cm-del{width:auto;margin:0;padding:0;border:0;background:transparent;color:inherit;font-size:.68rem;font-weight:600;opacity:.75;cursor:pointer;line-height:1}
+.cm-del:hover{opacity:1;text-decoration:underline}
 .cm.lain{align-self:flex-start;background:var(--field);border:1px solid var(--bd);border-bottom-left-radius:4px}
 .cm.me{align-self:flex-end;background:var(--pri);color:#fff;border-bottom-right-radius:4px}
 .cdate{align-self:center;font-size:.7rem;color:var(--mut);background:var(--field);padding:2px 10px;border-radius:999px;margin:6px 0}
@@ -1444,11 +1448,14 @@ function chatRender(bawah) {
     const isi = m.jenis === 'gambar' ? `<img src="${esc(m.url)}" loading="lazy" alt="Gambar" data-buka="${esc(m.url)}">`
       : m.jenis === 'suara' ? `<audio controls preload="metadata" src="${esc(m.url)}"></audio><a href="${esc(m.url)}" target="_blank" rel="noopener" style="font-size:.7rem;color:inherit;opacity:.7">Tidak berbunyi? Buka audio</a>`
       : `<span>${esc(m.mesej)}</span>`;
-      const rp = m.reply_nama ? `<div class="cm-reply" data-reply="${esc(m.reply_id || '')}"><b>${esc(m.reply_nama)}</b><span>${esc(m.reply_isi || '')}</span></div>` : '';
-    h += `<div class="cm ${sendiri ? 'me' : 'lain'}" data-id="${m.id}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}${rp}${isi}<small>${jam(m.masa)}</small></div>`;
-  });
+      const isDev = me && String(me.kod || '').toUpperCase() === 'A02';
+    const rp = m.reply_nama ? `<div class="cm-reply" data-reply="${esc(m.reply_id || '')}"><b>${esc(m.reply_nama)}</b><span>${esc(m.reply_isi || '')}</span></div>` : '';
+    const del = (sendiri || isDev) ? `<button type="button" class="cm-del" data-del="${m.id}">Padam</button>` : '';
+    h += `<div class="cm ${sendiri ? 'me' : 'lain'}" data-id="${m.id}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}${rp}${isi}<div class="cm-foot">${del}<small>${jam(m.masa)}</small></div></div>`;
+    });
   el.innerHTML = h || '<p class="mut" style="text-align:center;margin:auto">Belum ada mesej. Mulakan perbualan!</p>';
   el.querySelectorAll('.cm').forEach(pasangSwipe);
+  el.querySelectorAll('.cm-del').forEach(b => b.onclick = e => { e.stopPropagation(); chatPadam(b.dataset.del); });
   el.querySelectorAll('.cm-reply').forEach(r => {
     r.onclick = e => {
       e.stopPropagation();
@@ -1505,7 +1512,7 @@ function pasangSwipe(cm) {
     if (ok) chatAktifReply(cm);
     dx = 0; mode = '';
   };
-  const bukan = e => e.target.closest('img,audio,a,.cm-reply');
+  const bukan = e => e.target.closest('img,audio,a,.cm-reply,.cm-del');
   cm.addEventListener('touchstart', e => { if (!bukan(e)) mula(e.touches[0].clientX, e.touches[0].clientY); }, {passive: true});
   cm.addEventListener('touchmove', e => { gerak(e.touches[0].clientX, e.touches[0].clientY); }, {passive: true});
   cm.addEventListener('touchend', tamat);
@@ -1557,11 +1564,34 @@ async function chatHantar() {
   chatTerima(data); chatRender(true);
   $('#rbBatal').click();
 }
+function chatBuangLokal(id) {
+  const sebelum = chatMsgs.length;
+  chatMsgs = chatMsgs.filter(x => String(x.id) !== String(id));
+  if (chatMsgs.length !== sebelum) chatRender(false);
+}
+
+async function chatPadam(id) {
+  if (!me || chatSibuk) return;
+  if (!confirm('Padam mesej ini?')) return;
+  chatSibuk = true;
+  try {
+    const isDev = String(me.kod || '').toUpperCase() === 'A02';
+    let q = db.from('chat').delete().eq('id', id);
+    if (!isDev) q = q.eq('user_id', me.user_id);
+    const {error} = await q;
+    if (error) return alert('Gagal padam: ' + error.message);
+    chatBuangLokal(id);
+  } finally { chatSibuk = false; }
+}
+
 async function chatMula() {
   if (chatSedia) return;
   if (!(await chatMuat())) return;
   chatSedia = true;
-  db.channel('chat-grup').on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'chat'}, p => chatTerima(p.new)).subscribe();
+  db.channel('chat-grup')
+    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'chat'}, p => chatTerima(p.new))
+    .on('postgres_changes', {event: 'DELETE', schema: 'public', table: 'chat'}, p => chatBuangLokal(p.old.id))
+    .subscribe();
 }
 
 // ----- Gambar dan suara -----
