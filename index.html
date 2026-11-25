@@ -119,7 +119,8 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 
 
 /* Tupai Bomba (pembantu) */
-#aiLaunch{position:fixed;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;width:66px;height:66px;margin:0;padding:4px;border-radius:50%;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);display:grid;place-items:center;animation:aibob 3s ease-in-out infinite}
+#aiLaunch{position:fixed;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;width:66px;height:66px;margin:0;padding:4px;border-radius:50%;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);display:grid;place-items:center;animation:aibob 3s ease-in-out infinite;touch-action:none;user-select:none;cursor:grab}
+#aiLaunch.drag{animation:none;cursor:grabbing}
 #aiLaunch svg{width:100%;height:100%;display:block}
 #aiLaunch.wig{animation:aiwig .6s ease 3}
 #aiBadge{position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;background:var(--bad);border:2px solid var(--bg);display:none}
@@ -215,10 +216,10 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 [data-device=desktop] #t1>.card,[data-device=desktop] #t2>.card,[data-device=desktop] #t3>.card,[data-device=desktop] #t4>.card,[data-device=desktop] #t5>.card{margin-bottom:20px}
 
 /* Tab 1 Utama: kiri Punch + Pentadbir, kanan Stesen saya */
-[data-device=desktop] #t1.on{grid-template-columns:minmax(340px,440px) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr;grid-template-areas:"hd hd" "ak st" "ps st" "pc st" "ad st" "sp st"}
-[data-device=desktop] #t1>.hd{grid-area:hd;margin-bottom:20px}
-[data-device=desktop] #t1>#aktif{grid-area:ak;margin:0 0 8px}
-[data-device=desktop] #t1>#pushStatus{grid-area:ps;margin:0 0 12px}
+[data-device=desktop] #t1.on{grid-template-columns:minmax(340px,440px) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr;grid-template-areas:"hd hd" "ak ak" "ps ps" "pc st" "ad st" "sp st"}
+[data-device=desktop] #t1>.hd{grid-area:hd;margin-bottom:12px}
+[data-device=desktop] #t1>#aktif{grid-area:ak;margin:0 0 8px;width:fit-content}
+[data-device=desktop] #t1>#pushStatus{grid-area:ps;margin:0 0 16px}
 [data-device=desktop] #t1>div:nth-of-type(1){grid-area:pc}
 [data-device=desktop] #t1>div:nth-of-type(2){grid-area:st}
 [data-device=desktop] #t1>div:nth-of-type(3){grid-area:ad}
@@ -1332,9 +1333,78 @@ function aiMula() { // dipanggil sekali selepas log masuk
   if (l && l.jenis === 'IN' && t && !t.tamat) aiDah.add(`jam${t.mula}-${Math.floor((Date.now() - t.mula) / 3600000)}`);
   if (!b && !aiSenyap) setTimeout(() => aiAutoCakap('salam', `${aiSapa()}, ${me.nama}!\n${aiRingkas()}`, true), 1500);
 }
-$('#aiLaunch').onclick = () => aiBuka(true);
+// ===== Drag ikon Tupai Bomba ke seluruh skrin + simpan posisi =====
+(function () {
+  const el = $('#aiLaunch');
+  let drag = false, gerak = false, x0 = 0, y0 = 0, l0 = 0, t0 = 0;
+
+  function letak(x, y) {
+    const pad = 8;
+    const maxX = Math.max(pad, window.innerWidth - el.offsetWidth - pad);
+    const maxY = Math.max(pad, window.innerHeight - el.offsetHeight - pad);
+    const nx = Math.min(maxX, Math.max(pad, x));
+    const ny = Math.min(maxY, Math.max(pad, y));
+    el.style.left = nx + 'px';
+    el.style.top = ny + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    return {x: nx, y: ny};
+  }
+
+  // Pulihkan posisi terakhir jika ada
+  try {
+    const p = JSON.parse(localStorage.getItem('aiPos') || 'null');
+    if (p && typeof p.x === 'number' && typeof p.y === 'number') letak(p.x, p.y);
+  } catch (_) {}
+
+  el.addEventListener('pointerdown', e => {
+    if (e.button && e.button !== 0) return;
+    const r = el.getBoundingClientRect();
+    drag = true; gerak = false;
+    x0 = e.clientX; y0 = e.clientY;
+    l0 = r.left; t0 = r.top;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('drag');
+  });
+
+  el.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if (!gerak && Math.hypot(dx, dy) < 6) return;
+    gerak = true;
+    letak(l0 + dx, t0 + dy);
+  });
+
+  function tamatDrag(e) {
+    if (!drag) return;
+    drag = false;
+    el.classList.remove('drag');
+    try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (gerak) {
+      const r = el.getBoundingClientRect();
+      try { localStorage.setItem('aiPos', JSON.stringify({x: r.left, y: r.top})); } catch (_) {}
+    } else {
+      aiBuka(true);
+    }
+  }
+
+  el.addEventListener('pointerup', tamatDrag);
+  el.addEventListener('pointercancel', tamatDrag);
+
+  // Pastikan ikon kekal dalam skrin bila saiz skrin berubah
+  window.addEventListener('resize', () => {
+    if (el.style.left) letak(parseFloat(el.style.left), parseFloat(el.style.top));
+  });
+})();
+
 $('#aiBubble').onclick = () => aiBuka(true);
 $('#aiMinBtn').onclick = () => aiBuka(false);
+
+// Tutup pop-up Tupai Bomba bila klik di luar modal
+document.addEventListener('pointerdown', e => {
+  if (!aiTerbuka) return;
+  if (!e.target.closest('#aiPanel, #aiLaunch, #aiBubble')) aiBuka(false);
+});
 $('#aiAutoBtn').onclick = () => { aiSetSenyap(!aiSenyap); aiTambah('ai', aiSenyap ? 'Baik, saya senyap. Peringatan rehat dan syif tetap berbunyi.' : 'Okey! Saya akan bercakap sendiri bila ada info penting.'); };
 $('#aiSend').onclick = aiKirim;
 $('#aiIn').onkeydown = e => { if (e.key === 'Enter') aiKirim(); else if (e.key === 'Escape') aiBuka(false); };
