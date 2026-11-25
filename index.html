@@ -174,6 +174,26 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 .cf .ic.rec{background:var(--bad);color:#fff;border:0;animation:b 1s steps(2) infinite}
 .cm img{display:block;max-width:100%;max-height:260px;border-radius:12px;margin:2px 0;cursor:pointer}
 .cm audio{display:block;width:220px;max-width:100%;height:36px;margin:2px 0}
+
+/* ===== Reply (swipe kiri/kanan) ===== */
+#chatMsgs{overflow-x:hidden}
+.cm{position:relative;touch-action:pan-y;transition:transform .18s ease,box-shadow .18s ease}
+.cm.reply{box-shadow:0 0 0 2px var(--pri)}
+.cm.me.reply{box-shadow:0 0 0 2px #fff}
+.cm.hl{animation:cmhl 1s ease}
+@keyframes cmhl{0%,100%{background:initial}30%{background:rgba(179,38,30,.28)}}
+.cm-reply{padding:4px 8px;margin-bottom:6px;border-left:3px solid var(--pri);background:rgba(0,0,0,.06);border-radius:6px;font-size:.78rem;cursor:pointer;overflow:hidden}
+.cm.me .cm-reply{background:rgba(255,255,255,.2);border-left-color:#fff}
+.cm-reply b{display:block;color:var(--pri);font-size:.7rem;font-weight:700;margin-bottom:1px}
+.cm.me .cm-reply b{color:#fff;opacity:.95}
+.cm-reply span{display:block;color:inherit;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reply-bar{display:none;padding:8px 12px;border-top:1px solid var(--ln);background:var(--card);gap:8px;align-items:center}
+.reply-bar.on{display:flex}
+#chatCard:has(.reply-bar.on) .cf{border-top:0}
+.reply-bar .rb-info{flex:1;min-width:0;font-size:.8rem}
+.reply-bar .rb-info b{display:block;color:var(--pri);font-size:.72rem;margin-bottom:1px}
+.reply-bar .rb-info span{display:block;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reply-bar #rbBatal{width:34px;height:34px;padding:0;border-radius:50%;flex:none;margin:0;font-size:1rem;line-height:1}
 </style>
 </head>
 <body>
@@ -343,6 +363,11 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <div class="card" id="chatCard">
   <div class="ch-h"><h2 style="margin:0">Chat kumpulan</h2><span class="mut">Semua anggota</span></div>
   <div id="chatMsgs"></div>
+  <!-- ===== Bar balas (muncul bila swipe) ===== -->
+  <div class="reply-bar" id="replyBar">
+    <div class="rb-info"><b id="rbNama"></b><span id="rbIsi"></span></div>
+    <button id="rbBatal" type="button" aria-label="Batal balas">✕</button>
+  </div>
   <div class="cf">
     <button id="chatImg" class="ic" type="button" aria-label="Hantar gambar"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg></button>
     <input id="chatFile" type="file" accept="image/*" hidden>
@@ -404,7 +429,7 @@ const db = KONFIG_OK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const MSG_KONFIG = 'Tetapan Supabase belum diisi. Isi config.js dan deploy semula.';
 const $ = s => document.querySelector(s);
 let anggota = [], logs = [], last = {}, me = null, ac = null, alarmTimer = null, subscribed = false, sibuk = false;
-let chatMsgs = [], chatTdkBaca = 0, chatSedia = false, chatSibuk = false;
+let chatMsgs = [], chatTdkBaca = 0, chatSedia = false, chatSibuk = false, chatReply = null;
 let logFilter = 'all', fAng = '', fStn = '', fDari = '', fHingga = ''; // penapis log: jenis, anggota, stesen, julat tarikh
 $('#min').textContent = MIN;
 
@@ -1263,10 +1288,79 @@ function chatRender(bawah) {
     const isi = m.jenis === 'gambar' ? `<img src="${esc(m.url)}" loading="lazy" alt="Gambar" data-buka="${esc(m.url)}">`
       : m.jenis === 'suara' ? `<audio controls preload="metadata" src="${esc(m.url)}"></audio><a href="${esc(m.url)}" target="_blank" rel="noopener" style="font-size:.7rem;color:inherit;opacity:.7">Tidak berbunyi? Buka audio</a>`
       : `<span>${esc(m.mesej)}</span>`;
-    h += `<div class="cm ${sendiri ? 'me' : 'lain'}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}${isi}<small>${jam(m.masa)}</small></div>`;
+      const rp = m.reply_nama ? `<div class="cm-reply" data-reply="${esc(m.reply_id || '')}"><b>${esc(m.reply_nama)}</b><span>${esc(m.reply_isi || '')}</span></div>` : '';
+    h += `<div class="cm ${sendiri ? 'me' : 'lain'}" data-id="${m.id}">${sendiri ? '' : `<b>${esc(chatNama(m))}</b>`}${rp}${isi}<small>${jam(m.masa)}</small></div>`;
   });
   el.innerHTML = h || '<p class="mut" style="text-align:center;margin:auto">Belum ada mesej. Mulakan perbualan!</p>';
+  el.querySelectorAll('.cm').forEach(pasangSwipe);
+  el.querySelectorAll('.cm-reply').forEach(r => {
+    r.onclick = e => {
+      e.stopPropagation();
+      const target = el.querySelector(`.cm[data-id="${r.dataset.reply}"]`);
+      if (target) { target.scrollIntoView({behavior: 'smooth', block: 'center'}); target.classList.add('hl'); setTimeout(() => target.classList.remove('hl'), 1200); }
+    };
+  });
   if (bawah || dekat) el.scrollTop = el.scrollHeight;
+}
+
+// ===== Swipe kiri/kanan untuk balas + fungsi aktifkan reply =====
+function chatAktifReply(cm) {
+  const m = chatMsgs.find(x => String(x.id) === cm.dataset.id);
+  if (!m) return;
+  chatReply = {
+    id: m.id,
+    nama: chatNama(m),
+    isi: m.jenis === 'gambar' ? '📷 Gambar' : m.jenis === 'suara' ? '🎤 Mesej suara' : (m.mesej || ''),
+    jenis: m.jenis || 'teks'
+  };
+  $('#rbNama').textContent = 'Membalas ' + chatReply.nama;
+  $('#rbIsi').textContent = chatReply.isi;
+  $('#replyBar').classList.add('on');
+  $('#chatIn').focus();
+}
+
+function pasangSwipe(cm) {
+  if (cm.dataset.swipeReady) return;
+  cm.dataset.swipeReady = '1';
+  let x0 = 0, y0 = 0, dx = 0, mode = '';
+  const aras = 60;
+  const mula = (x, y) => { x0 = x; y0 = y; dx = 0; mode = ''; };
+  const gerak = (x, y) => {
+    if (mode === 'y') return;
+    const ddx = x - x0, ddy = y - y0;
+    if (!mode) {
+      if (Math.abs(ddx) < 6 && Math.abs(ddy) < 6) return;
+      mode = Math.abs(ddx) > Math.abs(ddy) * 1.5 ? 'x' : 'y';
+      if (mode === 'y') return;
+      document.body.style.userSelect = 'none';
+    }
+    dx = Math.max(-100, Math.min(100, ddx));
+    cm.style.transition = 'none';
+    cm.style.transform = `translateX(${dx}px)`;
+    cm.classList.toggle('reply', Math.abs(dx) >= aras);
+  };
+  const tamat = () => {
+    document.body.style.userSelect = '';
+    if (mode !== 'x') { mode = ''; return; }
+    const ok = Math.abs(dx) >= aras;
+    cm.style.transition = 'transform .18s ease';
+    cm.style.transform = '';
+    cm.classList.remove('reply');
+    if (ok) chatAktifReply(cm);
+    dx = 0; mode = '';
+  };
+  const bukan = e => e.target.closest('img,audio,a,.cm-reply');
+  cm.addEventListener('touchstart', e => { if (!bukan(e)) mula(e.touches[0].clientX, e.touches[0].clientY); }, {passive: true});
+  cm.addEventListener('touchmove', e => { gerak(e.touches[0].clientX, e.touches[0].clientY); }, {passive: true});
+  cm.addEventListener('touchend', tamat);
+  cm.addEventListener('mousedown', e => {
+    if (bukan(e)) return;
+    mula(e.clientX, e.clientY);
+    const mv = ev => gerak(ev.clientX, ev.clientY);
+    const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); tamat(); };
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+  });
 }
 function chatTerima(m) {
   if (chatMsgs.some(x => x.id === m.id)) return;
@@ -1299,10 +1393,13 @@ async function chatHantar() {
   const i = $('#chatIn'), v = i.value.trim();
   if (!v || !me || chatSibuk) return;
   chatSibuk = true; i.value = '';
-  const {data, error} = await db.from('chat').insert({nama: me.nama, mesej: v}).select().single();
+  const row = {nama: me.nama, mesej: v};
+  if (chatReply) { row.reply_id = chatReply.id; row.reply_nama = chatReply.nama; row.reply_isi = chatReply.isi.slice(0, 200); row.reply_jenis = chatReply.jenis; }
+  const {data, error} = await db.from('chat').insert(row).select().single();
   chatSibuk = false;
   if (error) { i.value = v; return alert('Gagal hantar: ' + error.message); }
   chatTerima(data); chatRender(true);
+  $('#rbBatal').click();
 }
 async function chatMula() {
   if (chatSedia) return;
@@ -1320,9 +1417,12 @@ async function chatMuatNaik(blob, ext, jenis) { // muat naik ke Storage, kemudia
     const up = await db.storage.from('chat-media').upload(path, blob, {contentType: blob.type.split(';')[0], cacheControl: '31536000'});
     if (up.error) throw up.error;
     const url = db.storage.from('chat-media').getPublicUrl(path).data.publicUrl;
-    const {data, error} = await db.from('chat').insert({nama: me.nama, mesej: '', jenis, url}).select().single();
+    const row = {nama: me.nama, mesej: '', jenis, url};
+    if (chatReply) { row.reply_id = chatReply.id; row.reply_nama = chatReply.nama; row.reply_isi = chatReply.isi.slice(0, 200); row.reply_jenis = chatReply.jenis; }
+    const {data, error} = await db.from('chat').insert(row).select().single();
     if (error) throw error;
     chatTerima(data); chatRender(true);
+    $('#rbBatal').click();
   } catch (e) { alert('Gagal hantar: ' + (e.message || e)); }
   finally { chatSibuk = false; }
 }
@@ -1385,6 +1485,9 @@ async function suaraMula() {
 }
 $('#chatMic').onclick = suaraMula;
 $('#chatBatal').onclick = () => suaraHenti(false);
+
+// ===== Batal balas =====
+$('#rbBatal').onclick = () => { chatReply = null; $('#replyBar').classList.remove('on'); };
 
 $('#chatSend').onclick = chatHantar;
 $('#chatIn').onkeydown = e => { if (e.key === 'Enter') chatHantar(); };
