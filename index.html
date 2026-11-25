@@ -165,7 +165,9 @@ body.chat .ch-h{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .cf input{margin:0;flex:1;min-width:0}.cf button{width:auto;margin:0;padding:10px 16px}
 body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{display:none!important}
 .tabs button{position:relative}
-.tdot{position:absolute;top:3px;left:calc(50% + 4px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--bad);color:#fff;font:700 .62rem/1 system-ui;font-style:normal;display:none;place-items:center}
+.tdot{position:absolute;top:2px;left:calc(50% + 4px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font:700 .65rem/18px system-ui;font-style:normal;display:none;place-items:center;box-shadow:0 0 0 2px var(--bg),0 2px 6px rgba(0,0,0,.25);animation:dotp 1.6s ease-in-out infinite}
+@keyframes dotp{50%{transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){.tdot{animation:none}}
 /* Chat: gambar dan suara */
 .cf .ic{width:42px;height:42px;padding:0;flex:none;display:grid;place-items:center;border-radius:50%}
 .cf .ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -412,7 +414,7 @@ function bukaTab(id) {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
   window.scrollTo(0, 0);
   document.body.classList.toggle('chat', id === 't6');
-  if (id === 't6') { chatTdkBaca = 0; chatDot(); chatRender(true); }
+  if (id === 't6') { chatTandaDibaca(); chatRender(true); }
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
 document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
@@ -1231,6 +1233,24 @@ document.querySelectorAll('#aiChips button').forEach(b => b.onclick = () => aiTa
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const chatKini = () => $('#t6').classList.contains('on');
 function chatDot() { const d = $('#chatDot'); d.style.display = chatTdkBaca ? 'grid' : 'none'; d.textContent = chatTdkBaca > 9 ? '9+' : chatTdkBaca; }
+
+// ===== Unread persistence (kekal selepas reload) =====
+const chatKeyRead = () => 'chatRead_' + (me ? me.user_id : 'x');
+
+function chatTandaDibaca() { // dipanggil bila buka tab chat / terima mesej semasa di chat
+  if (!me) return;
+  chatTdkBaca = 0; chatDot();
+  try { localStorage.setItem(chatKeyRead(), String(Date.now())); } catch (_) {}
+}
+
+function chatInitUnread() { // hitung unread berdasarkan timestamp terakhir dibaca
+  if (!me) return;
+  if (chatKini()) { chatTandaDibaca(); return; }
+  let lastRead = 0;
+  try { lastRead = +localStorage.getItem(chatKeyRead()) || 0; } catch (_) {}
+  chatTdkBaca = chatMsgs.filter(m => m.user_id !== me.user_id && new Date(m.masa).getTime() > lastRead).length;
+  chatDot();
+}
 function chatNama(m) { const a = anggota.find(x => x.user_id === m.user_id); return a ? a.nama : (m.nama || '?'); }
 function chatRender(bawah) {
   if (!me) return;
@@ -1253,10 +1273,15 @@ function chatTerima(m) {
   chatMsgs.push(m);
   if (chatMsgs.length > 200) chatMsgs.shift();
   chatRender(false);
-  if (m.user_id !== me.user_id && !chatKini()) {
-    chatTdkBaca++; chatDot();
-    toast(`Chat · ${chatNama(m)}: ${m.jenis === 'gambar' ? '📷 Gambar' : m.jenis === 'suara' ? '🎤 Mesej suara' : m.mesej}`);
-    beep(120);
+  if (m.user_id !== me.user_id) {
+    if (chatKini()) {
+      // sedang baca — tanda dibaca supaya tak dikira bila keluar & balik
+      try { localStorage.setItem(chatKeyRead(), String(Date.now())); } catch (_) {}
+    } else {
+      chatTdkBaca++; chatDot();
+      toast(`Chat · ${chatNama(m)}: ${m.jenis === 'gambar' ? '📷 Gambar' : m.jenis === 'suara' ? '🎤 Mesej suara' : m.mesej}`);
+      beep(120);
+    }
   }
 }
 async function chatMuat() {
@@ -1267,6 +1292,7 @@ async function chatMuat() {
   }
   chatMsgs = (data || []).reverse();
   chatRender(true);
+  chatInitUnread();   // ← TAMBAH
   return true;
 }
 async function chatHantar() {
