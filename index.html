@@ -314,12 +314,27 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 
 <!-- TAB 5: Hantar notifikasi -->
 <section id="t5" class="tab">
-<div class="card">
-  <h2>Hantar notifikasi</h2>
-  <input id="mesej" placeholder="Mesej untuk semua anggota">
-  <div class="row"><button id="bInfo">Notifikasi</button><button id="bAlarm" class="pri">Alarm</button></div>
-</div>
-</section>
+  <div class="card">
+    <h2>Hantar notifikasi</h2>
+    <input id="mesej" placeholder="Mesej untuk semua anggota">
+    <div class="row"><button id="bInfo">Notifikasi</button><button id="bAlarm" class="pri">Alarm</button></div>
+  </div>
+  
+  <!-- ===== Status pengguna (Live / Offline / Tiada ID) ===== -->
+  <div class="card">
+    <h2>Status pengguna</h2>
+    <p class="mut" style="margin:0 0 12px;font-size:.82rem">Live = app sedang dibuka & tersambung ke sistem.</p>
+  
+    <h3 style="margin:0 0 6px;font-size:.92rem"><span class="ok">●</span> Live sekarang (<span id="pOnline">0</span>)</h3>
+    <ul id="pOnlineList"><li class="mut">Memuat...</li></ul>
+  
+    <h3 style="margin:14px 0 6px;font-size:.92rem"><span class="mut">○</span> Offline (ada ID) (<span id="pOffline">0</span>)</h3>
+    <ul id="pOfflineList"><li class="mut">Memuat...</li></ul>
+  
+    <h3 style="margin:14px 0 6px;font-size:.92rem"><span class="mut">—</span> Tiada ID (<span id="pNoId">0</span>)</h3>
+    <ul id="pNoIdList"><li class="mut">Memuat...</li></ul>
+  </div>
+  </section>
 
 <!-- TAB 6: Chat kumpulan -->
 <section id="t6" class="tab">
@@ -420,13 +435,13 @@ $('#bMasuk').onclick = masuk;
 $('#lpw').onkeydown = e => { if (e.key === 'Enter') masuk(); };
 $('#keluar').onclick = async e => {
   e.preventDefault();
+  try { if (presenceCh) await presenceCh.untrack(); } catch (_) {}
   try {
     const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription();
     if (sub) { await db.rpc('padam_push', {p_endpoint: sub.endpoint}); await sub.unsubscribe(); }
   } catch (_) {}
   await db.auth.signOut(); location.reload();
 };
-
 async function boot() {
   if (!db) { $('#lerr').textContent = MSG_KONFIG; return; }
   const {data: {session}} = await db.auth.getSession();
@@ -444,8 +459,8 @@ async function boot() {
   chatMula();
   if (!subscribed) { subscribed = true; langgan(); }
   daftarPush();
+  presenceMula();
 }
-
 // ===== Data =====
 async function load() {
   const [a, p] = await Promise.all([
@@ -516,8 +531,8 @@ function render() {
   stesen();
   timer();
   if (aiOk) aiAuto();
+  presenceRender();
 }
-
 // ===== Timer tempoh bertugas (Punch In hingga Punch Out) =====
 function tempohTugas(id) { // 'Tukar stesen' tidak menetapkan semula timer
   const mine = logs.filter(x => x.anggota_id === id); // terbaru dahulu
@@ -703,6 +718,56 @@ function langgan() {
     });
 }
 
+// ===== Presence: siapa sedang live (online) =====
+let presenceCh = null, onlineUsers = new Set();
+
+function presenceMula() {
+  if (presenceCh || !me || !db) return;
+  const key = me.user_id + '-' + Math.random().toString(36).slice(2, 8);
+  presenceCh = db.channel('presence-pgo', {config: {presence: {key}}});
+  presenceCh
+    .on('presence', {event: 'sync'}, () => {
+      const state = presenceCh.presenceState();
+      onlineUsers = new Set();
+      Object.values(state).forEach(arr => arr.forEach(p => { if (p.user_id) onlineUsers.add(p.user_id); }));
+      presenceRender();
+    })
+    .subscribe(async status => {
+      if (status === 'SUBSCRIBED') {
+        try { await presenceCh.track({user_id: me.user_id, nama: me.nama, masa: Date.now()}); } catch (_) {}
+      }
+    });
+}
+
+function presenceRender() {
+  if (!me) return;
+  const elOn = $('#pOnline');
+  if (!elOn) return;               // HTML belum ada → keluar selamat
+  const withId = anggota.filter(a => a.user_id);
+  const withoutId = anggota.filter(a => !a.user_id);
+  const susun = arr => arr.sort((x, y) => (x.kod || '').localeCompare(y.kod || ''));
+  const online = susun(withId.filter(a => onlineUsers.has(a.user_id)));
+  const offline = susun(withId.filter(a => !onlineUsers.has(a.user_id)));
+  susun(withoutId);
+
+  elOn.textContent = online.length;
+  $('#pOffline').textContent = offline.length;
+  $('#pNoId').textContent = withoutId.length;
+
+  const baris = (a, status) => {
+    const l = last[a.id], dalam = l && l.jenis === 'IN';
+    const avClass = status === 'online' ? 'in' : status === 'offline' ? 'out' : 'off';
+    return `<li class="lg">
+      <span class="av sm ${avClass}">${(a.kod || a.nama || '').slice(0, 3)}</span>
+      <div class="who"><b>${a.nama}</b><span class="mut">${a.kod || '-'}${dalam ? ' · ' + (l.stesen || '-') : ''}</span></div>
+      ${dalam ? '<span class="chip on">Bertugas</span>' : ''}
+    </li>`;
+  };
+
+  $('#pOnlineList').innerHTML = online.map(a => baris(a, 'online')).join('') || '<li class="mut">Tiada</li>';
+  $('#pOfflineList').innerHTML = offline.map(a => baris(a, 'offline')).join('') || '<li class="mut">Tiada</li>';
+  $('#pNoIdList').innerHTML = withoutId.map(a => baris(a, 'noid')).join('') || '<li class="mut">Tiada</li>';
+}
 // ===== Rotasi syif: slot 12 jam, urutan B → C → A =====
 // Rujukan: 23 Nov 2026 jam 0800 = Syif B (siang)
 const ANCHOR = new Date('2026-11-23T08:00:00+08:00').getTime(), SLOT = 43200000, URUTAN = ['B', 'C', 'A'];
@@ -1320,6 +1385,11 @@ setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); aiAuto(); }, 30
 if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'alarm') startAlarm(e.data.mesej, e.data.dari); });
 const qp = new URLSearchParams(location.search), qa = qp.get('alarm');
 if (qa) { startAlarm(qa, qp.get('dari')); history.replaceState(null, '', location.pathname); }
+
+// Keluar dari presence bila tab ditutup supaya status offline cepat
+window.addEventListener('beforeunload', () => {
+  if (presenceCh) { try { presenceCh.untrack(); } catch (_) {} }
+});
 
 boot();
 </script>
