@@ -548,6 +548,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   </div>
   <div id="aiMsgs" aria-live="polite"></div>
   <div class="aic" id="aiChips">
+    <button type="button" data-q="Analisis apa yang terpapar di skrin sekarang">Analisis skrin</button>
     <button type="button" data-q="statistik saya">Statistik saya</button>
     <button type="button" data-q="rehat seterusnya">Rehat seterusnya</button>
     <button type="button" data-q="berapa lama saya bertugas">Dah berapa lama?</button>
@@ -1489,6 +1490,23 @@ function aiAuto() { // dipanggil setiap 30 saat dan bila data berubah
 
 let aiSejarah = [], aiSibuk = false;
 
+function aiSkrin() {
+  const tabAktif = document.querySelector('.tab.on');
+  const btnAktif = document.querySelector('.tabs button.on');
+  const namaTab = btnAktif ? btnAktif.textContent.replace(/\d+\+?$/, '').trim() : 'Tidak diketahui';
+  if (!tabAktif) return 'Tiada tab aktif.';
+
+  // Ambil teks yang kelihatan pada tab semasa dan kemaskan ruang kosong
+  let teks = (tabAktif.innerText || '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+
+  // Hadkan panjang teks supaya respons AI kekal laju & tepat
+  if (teks.length > 2500) teks = teks.slice(0, 2500) + '\n...(dipendekkan)';
+  return `Tab dibuka sekarang: ${namaTab}\nKandungan skrin:\n${teks}`;
+}
+
 function aiKonteks() {
   if (!me) return 'Pengguna belum log masuk.';
   return [
@@ -1499,7 +1517,8 @@ function aiKonteks() {
     `Rehat: ${aiRehat()}`,
     `Kritikal: ${aiKritikal()}`,
     `Bertugas: ${aiSiapa()}`,
-    `Statistik: ${aiStatistik()}`
+    `Statistik: ${aiStatistik()}`,
+    `=== PAPARAN SKRIN / TAB SEMASA ===\n${aiSkrin()}`
   ].join('\n\n');
 }
 
