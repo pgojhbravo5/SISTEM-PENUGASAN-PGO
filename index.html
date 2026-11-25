@@ -147,7 +147,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .lg-tag.out{background:rgba(198,40,40,.14);color:var(--bad)}
 
 
-/* Tupai Bomba (pembantu) */
+/* Tupai PGO (pembantu) */
 #aiLaunch{position:fixed;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;width:66px;height:66px;margin:0;padding:4px;border-radius:50%;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);display:grid;place-items:center;animation:aibob 3s ease-in-out infinite;touch-action:none;user-select:none;cursor:grab}
 #aiLaunch.drag{animation:none;cursor:grabbing}
 #aiLaunch svg{width:100%;height:100%;display:block}
@@ -299,7 +299,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 [data-device=desktop] body.chat .ch-h{padding-top:14px}
 [data-device=desktop] .cm{max-width:min(72%,620px)}
 
-/* Tupai Bomba: sudut kanan bawah */
+/* Tupai PGO: sudut kanan bawah */
 [data-device=desktop] #aiLaunch{right:28px;bottom:28px}
 [data-device=desktop] #aiBubble{right:106px;bottom:40px;max-width:280px}
 [data-device=desktop] #aiPanel{left:auto;right:28px;margin:0;width:400px;max-width:none;bottom:108px;max-height:min(620px,calc(100dvh - 140px))}
@@ -536,13 +536,13 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   <div class="hak">&copy; 2026 PGO Johor</div>
 </footer>
 
-<!-- Pembantu: Tupai Bomba -->
+<!-- Pembantu: Tupai PGO -->
 <div id="aiBubble" role="status"></div>
-<button type="button" id="aiLaunch" aria-label="Buka Tupai Bomba"><svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg><i id="aiBadge"></i></button>
-<section id="aiPanel" aria-label="Tupai Bomba">
+<button type="button" id="aiLaunch" aria-label="Buka Tupai PGO"><svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg><i id="aiBadge"></i></button>
+<section id="aiPanel" aria-label="Tupai PGO">
   <div class="aih">
     <svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg>
-    <div><b>Tupai Bomba</b><small>Pembantu syif anda</small></div>
+    <div><b>Tupai PGO</b><small>Pembantu syif anda</small></div>
     <button type="button" id="aiAutoBtn" class="aipill" aria-pressed="true" aria-label="Hidup atau senyapkan cakap automatik">Auto: hidup</button>
     <button type="button" id="aiMinBtn" aria-label="Kecilkan">&minus;</button>
   </div>
@@ -1277,7 +1277,7 @@ window.addEventListener('afterprint', () => {
   if (logPrintAll) { logPrintAll = false; render(); }
 });
 
-// ===== Tupai Bomba: pembantu pintar (jawab berdasarkan data app + peringatan rehat) =====
+// ===== Tupai PGO: pembantu pintar (jawab berdasarkan data app + peringatan rehat) =====
 let aiTerbuka = false, aiOk = false, aiTt;
 const aiJm = ms => { const m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? `${m} minit` : `${Math.floor(m / 60)} jam ${m % 60} minit`; };
 const aiTindih = (ss, a, b) => ss.reduce((n, x) => n + Math.max(0, Math.min(x.t, b) - Math.max(x.m, a)), 0);
@@ -1386,7 +1386,7 @@ function aiHabis() { // bila habis kerja / balik
   }
   return `Syif semasa tamat ${hingga(tamat)}.`;
 }
-const AI_BANTU = 'Saya Tupai Bomba, pembantu app ini. Tanya saya tentang:\n• statistik dan tempoh kerja anda (hari ini, 7 hari, jumlah)\n• dah berapa lama anda bertugas\n• rehat, makan, tidur seterusnya\n• bila anda habis kerja\n• waktu kritikal stesen anda\n• siapa bertugas dan stesen kosong\n• syif semasa dan giliran anda\n• log punch terakhir\nSaya juga bercakap sendiri: peringatan rehat, jam bertugas, waktu kritikal, anggota bawah minimum dan lupa Punch In/Out. Taip "senyap" untuk diamkan.';
+const AI_BANTU = 'Saya Tupai PGO, pembantu app ini. Tanya saya tentang:\n• statistik dan tempoh kerja anda (hari ini, 7 hari, jumlah)\n• dah berapa lama anda bertugas\n• rehat, makan, tidur seterusnya\n• bila anda habis kerja\n• waktu kritikal stesen anda\n• siapa bertugas dan stesen kosong\n• syif semasa dan giliran anda\n• log punch terakhir\nSaya juga bercakap sendiri: peringatan rehat, jam bertugas, waktu kritikal, anggota bawah minimum dan lupa Punch In/Out. Taip "senyap" untuk diamkan.';
 
 function aiJawab(q) {
   if (!me) return 'Log masuk dahulu.';
@@ -1539,7 +1539,7 @@ async function aiTanya(q) {
   }
 
   aiSibuk = true;
-  const loadEl = aiTambah('ai', 'Tupai Bomba sedang berfikir...');
+  const loadEl = aiTambah('ai', 'Tupai PGO sedang berfikir...');
   try {
     const {data, error} = await db.functions.invoke('tupai-ai', {
       body: { soalan: q, konteks: aiKonteks(), sejarah: aiSejarah }
@@ -1607,7 +1607,7 @@ function aiBuka(b) {
   $('#aiLaunch').style.display = b ? 'none' : 'grid';
   if (b) {
     $('#aiBubble').classList.remove('on'); $('#aiBadge').style.display = 'none';
-    if (me && !$('#aiMsgs').children.length) aiTambah('ai', `${aiSapa()}, ${me.nama}! Saya Tupai Bomba, pembantu syif anda.\n${aiRingkas()}\nTanya saya apa-apa, atau tekan butang pantas di bawah.`);
+    if (me && !$('#aiMsgs').children.length) aiTambah('ai', `${aiSapa()}, ${me.nama}! Saya Tupai PGO, pembantu syif anda.\n${aiRingkas()}\nTanya saya apa-apa, atau tekan butang pantas di bawah.`);
     setTimeout(() => { $('#aiMsgs').scrollTop = $('#aiMsgs').scrollHeight; }, 0);
   }
   try { localStorage.setItem('aiBuka', b ? '1' : '0'); } catch (_) {}
@@ -1625,7 +1625,7 @@ function aiMula() { // dipanggil sekali selepas log masuk
   const tabAktif = document.querySelector('.tab.on');
   if (tabAktif && !aiSenyap) setTimeout(() => aiAnalisisTab(tabAktif.id), 1200);
 }
-// ===== Drag ikon Tupai Bomba ke seluruh skrin + simpan posisi =====
+// ===== Drag ikon Tupai PGO ke seluruh skrin + simpan posisi =====
 (function () {
   const el = $('#aiLaunch');
   let drag = false, gerak = false, x0 = 0, y0 = 0, l0 = 0, t0 = 0;
@@ -1692,7 +1692,7 @@ function aiMula() { // dipanggil sekali selepas log masuk
 $('#aiBubble').onclick = () => aiBuka(true);
 $('#aiMinBtn').onclick = () => aiBuka(false);
 
-// Tutup pop-up Tupai Bomba bila klik di luar modal
+// Tutup pop-up Tupai PGO bila klik di luar modal
 document.addEventListener('pointerdown', e => {
   if (!aiTerbuka) return;
   if (!e.target.closest('#aiPanel, #aiLaunch, #aiBubble')) aiBuka(false);
