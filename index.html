@@ -1521,7 +1521,7 @@ async function aiTanya(q) {
   aiSibuk = true;
   const loadEl = aiTambah('ai', 'Tupai Bomba sedang berfikir...');
   try {
-    const res = await fetch('/api/tupai-ai', {
+    const res = await fetch('https://sistempenugasanpgo.vercel.app/api/tupai-ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ soalan: q, konteks: aiKonteks(), sejarah: aiSejarah })
