@@ -586,12 +586,18 @@ let logFilter = 'all', fAng = '', fStn = '', fDari = '', fHingga = '', logPrintA
 $('#min').textContent = MIN;
 
 // ===== Tab =====
+function kosongkanAppBadge() {
+  if ('clearAppBadge' in navigator) {
+    navigator.clearAppBadge().catch(() => {});
+  }
+}
+
 function bukaTab(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === id));
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
   window.scrollTo(0, 0);
   document.body.classList.toggle('chat', id === 't6');
-  if (id === 't6') { chatTandaDibaca(); chatRender(true); }
+  if (id === 't6') { kosongkanAppBadge(); chatTandaDibaca(); chatRender(true); }
   else if (typeof aiAnalisisTab === 'function') { aiAnalisisTab(id); }
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
@@ -1965,7 +1971,12 @@ $('#rbBatal').onclick = () => { chatReply = null; $('#replyBar').classList.remov
 
 $('#chatSend').onclick = chatHantar;
 $('#chatIn').onkeydown = e => { if (e.key === 'Enter') chatHantar(); };
-document.addEventListener('visibilitychange', () => { if (!document.hidden && chatSedia) chatMuat(); }); // kejar mesej yang terlepas
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    if (chatKini()) kosongkanAppBadge();
+    if (chatSedia) chatMuat();
+  }
+}); // kejar mesej yang terlepas
 
 // ===== Reset penuh (butang Reset di bawah status Live) =====
 $('#bReset').onclick = async e => {
@@ -1984,10 +1995,17 @@ jadual();
 rujukanN(5);
 setInterval(() => { jadual(); ingatan(); ingatRehat(); stesen(); aiAuto(); }, 30000);
 
-// Ketuk notifikasi alarm: buka skrin alarm yang berbunyi berulang
-if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'alarm') startAlarm(e.data.mesej, e.data.dari); });
-const qp = new URLSearchParams(location.search), qa = qp.get('alarm');
+// Ketuk notifikasi alarm / chat: buka skrin alarm atau tab chat
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (!e.data) return;
+    if (e.data.type === 'alarm') startAlarm(e.data.mesej, e.data.dari);
+    if (e.data.type === 'open-chat') bukaTab('t6');
+  });
+}
+const qp = new URLSearchParams(location.search), qa = qp.get('alarm'), qt = qp.get('tab');
 if (qa) { startAlarm(qa, qp.get('dari')); history.replaceState(null, '', location.pathname); }
+else if (qt && document.getElementById(qt)) { bukaTab(qt); history.replaceState(null, '', location.pathname); }
 
 // Keluar dari presence bila tab ditutup supaya status offline cepat
 window.addEventListener('beforeunload', () => {
