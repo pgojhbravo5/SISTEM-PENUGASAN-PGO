@@ -260,6 +260,36 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 .leaflet-container{font:inherit}
 .tabs button{font-size:.66rem;padding:8px 2px}
 [data-device=desktop] #peta{height:calc(100dvh - 230px)}
+
+/* Dashboard analitik gaya graf */
+.lscore{padding:0;background:none;border:0}
+.ds{padding:14px;border-radius:16px;background:linear-gradient(160deg,#1a2550,#121a38);color:#e8ecf8;box-shadow:var(--sh)}
+.ds-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.ds-hd b{font-size:.9rem}.ds-hd span{font-size:.7rem;color:#9fb0d6}
+.ds-x{width:auto;margin:0;padding:3px 10px;border-radius:999px;font-size:.7rem;background:rgba(255,255,255,.1);color:#e8ecf8;border:0}
+.ds-top{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center}
+.ds-ring{width:110px;height:110px}
+.ds-big{fill:#fff;font:700 15px system-ui}.ds-sm{fill:#9fb0d6;font:8px system-ui}
+.ds-tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ds-t{padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.07)}
+.ds-t small{display:block;font-size:.62rem;color:#9fb0d6}.ds-t b{font-size:.82rem;font-variant-numeric:tabular-nums}
+.ds-lg{display:flex;align-items:center;gap:6px;margin:6px 0 4px;font-size:.66rem;color:#9fb0d6}
+.ds-lg i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.ds-cap{margin:10px 0 2px;font-size:.72rem;font-weight:600;color:#cfd9f5}
+.ds-svg{width:100%;height:auto;display:block}.ds-svg text{fill:#9fb0d6;font:8px system-ui}
+.ds-tabs{display:flex;gap:4px;margin:12px 0 6px;padding:3px;border-radius:12px;background:rgba(255,255,255,.07)}
+.ds-tabs button{flex:1;margin:0;width:auto;padding:6px 4px;border:0;border-radius:9px;background:transparent;color:#9fb0d6;font-size:.74rem}
+.ds-tabs button.on{background:rgba(255,255,255,.16);color:#fff}
+.ds-board{display:flex;flex-direction:column;gap:4px;max-height:230px;overflow-y:auto}
+.ds-r{display:grid;grid-template-columns:24px 34px 1fr auto;align-items:center;gap:8px;width:100%;margin:0;padding:6px 8px;border:1px solid transparent;border-radius:10px;background:rgba(255,255,255,.05);color:#e8ecf8;font-size:.76rem;text-align:left}
+.ds-r.on{border-color:#ff4f8b;background:rgba(255,79,139,.14)}
+.ds-m{text-align:center}.ds-id{font-weight:700}
+.ds-bar{height:8px;border-radius:2px;overflow:hidden;background:repeating-linear-gradient(90deg,rgba(255,255,255,.1) 0 3px,transparent 3px 5px)}
+.ds-bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--c) 0 3px,transparent 3px 5px)}
+.ds-v{font-variant-numeric:tabular-nums;color:#9fb0d6;font-size:.7rem;white-space:nowrap}
+.ds-sm2{margin:6px 0;color:#9fb0d6;font-size:.75rem}
+@media print{.ds{background:#fff!important;color:#111!important;box-shadow:none}.ds *{color:#111!important}.ds-big{fill:#111}}
+
 /* ===== Paparan Desktop (auto: html[data-device="desktop"]) ===== */
 [data-device=desktop] body{max-width:none;margin:0;padding:24px 28px}
 [data-device=desktop] body:has(#app[style*="block"]){padding-left:252px}
@@ -1177,55 +1207,12 @@ const sesiAll = [], bukaAng = {};
       <p><b>Jenis:</b> ${lblJns} · <b>Anggota:</b> ${lblAng} · <b>Stesen:</b> ${lblStn} · <b>Tarikh:</b> ${lblTrk}<br>Dicetak: ${fmt(Date.now())}</p>`;
   }
 
-  // Analitik Score Box (sasaran 12 jam normal)
-  const sesiSelesai = sesiTapis.filter(s => s.ms != null).map(s => s.ms);
-  const jumMs = sesiSelesai.reduce((a, b) => a + b, 0);
-  const purataMs = sesiSelesai.length ? jumMs / sesiSelesai.length : 0;
-  const skor = sesiSelesai.length ? Math.min(100, Math.round((purataMs / TARGET_MS) * 100)) : 0;
-  const capai12 = sesiSelesai.filter(ms => ms >= TARGET_MS).length;
-  const clsSkor = skor >= 90 ? '' : skor >= 70 ? 'mid' : 'low';
+  // Dashboard analitik log
+  $('#logScore').innerHTML = dashLog(sesiTapis, sesiRankSrc, fmtDur, TARGET_MS);
+  $('#logScore').querySelectorAll('[data-aid]').forEach(b => b.onclick = () => { fAng = fAng === b.dataset.aid ? '' : b.dataset.aid; render(); });
+  $('#logScore').querySelectorAll('[data-skt]').forEach(b => b.onclick = () => { window._skorTab = b.dataset.skt; render(); });
 
-  // Kedudukan mengikut ID (Top 3: Emas, Perak, Gangsa; lain tiada trofi)
-  const mapRank = {};
-  sesiRankSrc.forEach(s => {
-    if (s.ms == null) return;
-    if (!mapRank[s.anggota_id]) mapRank[s.anggota_id] = {id: s.anggota_id, jum: 0, bil: 0};
-    mapRank[s.anggota_id].jum += s.ms;
-    mapRank[s.anggota_id].bil += 1;
-  });
-  const rankList = Object.values(mapRank).map(r => ({
-    ...r,
-    purata: r.jum / r.bil,
-    skor: Math.min(100, Math.round(((r.jum / r.bil) / TARGET_MS) * 100))
-  })).sort((a, b) => b.skor - a.skor || b.jum - a.jum);
-
-  const trofi = ['🥇', '🥈', '🥉'];
-  const rankHtml = rankList.length ? `<div class="ls-rank">${rankList.map((r, i) => {
-    const a = anggota.find(x => x.id === r.id);
-    const label = a ? (a.kod || a.nama) : '?';
-    const aktif = String(r.id) === fAng ? ' on' : '';
-    return `<button type="button" class="ls-r${aktif}" data-aid="${r.id}">
-      <span class="rk-id"><span class="rk-tr">${i < 3 ? trofi[i] : ''}</span>${label}</span>
-      <span class="rk-val">${r.skor}% · ${fmtDur(r.purata)}</span>
-    </button>`;
-  }).join('')}</div>` : '';
-
-  $('#logScore').innerHTML = `
-    <div class="ls-hd"><b>Skor Analitik · ${skor}%</b><span>Sasaran 12j normal</span></div>
-    <div class="ls-bar"><i class="${clsSkor}" style="width:${skor}%"></i></div>
-    <div class="ls-grid">
-      <div class="ls-item"><small>Purata</small><b>${sesiSelesai.length ? fmtDur(purataMs) : '-'}</b></div>
-      <div class="ls-item"><small>Jumlah</small><b>${sesiSelesai.length ? fmtDur(jumMs) : '-'}</b></div>
-      <div class="ls-item"><small>Capai 12j</small><b>${capai12}/${sesiSelesai.length}</b></div>
-    </div>${rankHtml}`;
-
-  // Klik mana-mana ID dalam senarai kedudukan untuk tapis (klik sekali lagi untuk batal)
-  $('#logScore').querySelectorAll('.ls-r').forEach(b => b.onclick = () => {
-    fAng = fAng === b.dataset.aid ? '' : b.dataset.aid;
-    render();
-  });
-
-// Senarai log: Punch In (kiri) | Punch Out (kanan) | Masa log (hujung kanan)
+  // Senarai log: Punch In (kiri) | Punch Out (kanan) | Masa log (hujung kanan)
   $('#log').innerHTML = (logPrintAll ? sesiTapis : sesiTapis.slice(0, 50)).map(s => {
     
     const a = anggota.find(x => x.id === s.anggota_id);
@@ -1818,6 +1805,67 @@ function rujukanN(n) {
     ${tutup.length ? `<div><b>Ditutup</b>${tutup.join(', ')}</div>` : ''}</div>`;
 }
 document.querySelectorAll('#segN button').forEach(b => b.onclick = () => rujukanN(+b.dataset.n));
+
+// ===== Dashboard analitik log (gaya graf) =====
+function dashLog(ses, rankSrc, fmtDur, TARGET) {
+  const C = {g: '#2fe0a5', p: '#ff4f8b', c: '#5fd3e8', a: '#f2b84b'};
+  const sel = fAng ? anggota.find(x => String(x.id) === fAng) : null;
+  const done = ses.filter(s => s.ms != null).sort((x, y) => x.outTs - y.outTs);
+  const jum = done.reduce((n, s) => n + s.ms, 0), pur = done.length ? jum / done.length : 0;
+  const skor = Math.min(100, Math.round(pur / TARGET * 100));
+  const capai = done.filter(s => s.ms >= TARGET).length, pc = done.length ? Math.round(capai / done.length * 100) : 0;
+  const maks = Math.max(0, ...done.map(s => s.ms)), pendek = done.length ? Math.min(...done.map(s => s.ms)) : 0;
+  const stn = {}; done.forEach(s => { if (s.stesen) stn[s.stesen] = (stn[s.stesen] || 0) + s.ms; });
+  const top = Object.entries(stn).sort((x, y) => y[1] - x[1])[0];
+
+  // Cincin berkembar: luar = skor purata, dalam = peratus sesi capai 12j
+  const ring = (r, p, col) => { const k = 2 * Math.PI * r;
+    return `<circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="9"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${k * p / 100} ${k}" transform="rotate(-90 50 50)"/>`; };
+  const rings = `<svg viewBox="0 0 100 100" class="ds-ring">${ring(42, skor, C.g)}${ring(29, pc, C.p)}<text x="50" y="48" text-anchor="middle" class="ds-big">${skor}%</text><text x="50" y="60" text-anchor="middle" class="ds-sm">skor</text></svg>`;
+  const tile = (k, v, c) => `<div class="ds-t"><small>${k}</small><b${c ? ` style="color:${c}"` : ''}>${v}</b></div>`;
+  const tiles = tile('Purata', done.length ? fmtDur(pur) : '-') + tile('Jumlah', done.length ? fmtDur(jum) : '-') +
+    tile('Terpanjang', done.length ? fmtDur(maks) : '-', C.g) + tile('Terpendek', done.length ? fmtDur(pendek) : '-', C.p) +
+    tile('Capai 12j', `${capai}/${done.length}`, C.c) + tile('Stesen utama', top ? top[0] : '-', C.a);
+
+  // Graf kawasan/garis: tempoh 14 sesi terakhir
+  const pts = done.slice(-14), W = 300, H = 110, P = 8, mx = Math.max(TARGET, maks);
+  const xy = (i, ms) => [P + (pts.length > 1 ? i * (W - 2 * P) / (pts.length - 1) : (W - 2 * P) / 2), H - P - ms / mx * (H - 2 * P)];
+  const ln = pts.map((s, i) => xy(i, s.ms).map(v => v.toFixed(1)).join(',')).join(' ');
+  const yT = (H - P - TARGET / mx * (H - 2 * P)).toFixed(1);
+  const trend = pts.length ? `<svg viewBox="0 0 ${W} ${H}" class="ds-svg"><defs><linearGradient id="dsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C.g}" stop-opacity=".55"/><stop offset="1" stop-color="${C.g}" stop-opacity="0"/></linearGradient></defs>
+    <line x1="${P}" x2="${W - P}" y1="${yT}" y2="${yT}" stroke="${C.p}" stroke-dasharray="4 3"/>
+    <polygon points="${xy(0, 0)[0]},${H - P} ${ln} ${xy(pts.length - 1, 0)[0]},${H - P}" fill="url(#dsg)"/>
+    <polyline points="${ln}" fill="none" stroke="${C.g}" stroke-width="2" stroke-linejoin="round"/>
+    ${pts.map((s, i) => { const [x, y] = xy(i, s.ms); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="${s.ms >= TARGET ? C.g : C.p}"/>`; }).join('')}</svg>` : '<p class="ds-sm2">Belum ada sesi selesai</p>';
+
+  // Graf bar: jumlah jam kerja 7 hari lepas
+  const hari = [...Array(7)].map((_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 6 + i); return {t: d.getTime(), ms: 0, lbl: d.getDate()}; });
+  done.forEach(s => { const h = hari.find(x => s.outTs >= x.t && s.outTs < x.t + 86400000); if (h) h.ms += s.ms; });
+  const bmx = Math.max(TARGET, ...hari.map(x => x.ms)), bw = (W - 2 * P) / 7, bh = 76, yB = (84 - TARGET / bmx * bh).toFixed(1);
+  const bars = `<svg viewBox="0 0 300 100" class="ds-svg">${hari.map((x, i) => { const h = x.ms / bmx * bh;
+    return `<rect x="${(P + i * bw + 5).toFixed(1)}" y="${(84 - h).toFixed(1)}" width="${(bw - 10).toFixed(1)}" height="${Math.max(h, x.ms ? 2 : 0).toFixed(1)}" rx="2" fill="${x.ms >= TARGET ? C.g : C.p}"/><text x="${(P + i * bw + bw / 2).toFixed(1)}" y="96" text-anchor="middle">${x.lbl}</text>`; }).join('')}
+    <line x1="${P}" x2="${W - P}" y1="${yB}" y2="${yB}" stroke="${C.a}" stroke-dasharray="3 3" opacity=".7"/></svg>`;
+
+  // Scoreboard (abaikan penapis ID supaya semua ID sentiasa kelihatan)
+  const m = {};
+  rankSrc.forEach(s => { if (s.ms == null) return; const r = m[s.anggota_id] || (m[s.anggota_id] = {id: s.anggota_id, jum: 0, c12: 0}); r.jum += s.ms; if (s.ms >= TARGET) r.c12++; });
+  const tab = window._skorTab || 'aktif', val = r => tab === 'aktif' ? r.jum : r.c12;
+  const rk = Object.values(m).sort((x, y) => val(y) - val(x) || y.jum - x.jum), mxv = Math.max(1, ...rk.map(val));
+  const urut = sel ? Object.values(m).sort((x, y) => y.jum - x.jum).findIndex(r => r.id === sel.id) : -1;
+  const medal = ['🥇', '🥈', '🥉'];
+  const board = rk.map((r, i) => { const a = anggota.find(x => x.id === r.id);
+    return `<button type="button" class="ds-r${String(r.id) === fAng ? ' on' : ''}" data-aid="${r.id}"><span class="ds-m">${medal[i] || i + 1}</span><span class="ds-id">${esc(a ? a.kod || a.nama : '?')}</span><span class="ds-bar"><i style="width:${val(r) / mxv * 100}%;--c:${tab === 'aktif' ? C.c : C.g}"></i></span><span class="ds-v">${tab === 'aktif' ? fmtDur(r.jum) : r.c12 + '× 12j'}</span></button>`; }).join('') || '<p class="ds-sm2">Tiada data</p>';
+
+  return `<div class="ds">
+    <div class="ds-hd"><b>Analisis · ${sel ? esc(sel.kod || sel.nama) : 'Semua ID'}</b>${sel ? `<button type="button" class="ds-x" data-aid="${sel.id}">Semua ID ✕</button>` : '<span>Tekan ID di bawah</span>'}</div>
+    <div class="ds-top">${rings}<div class="ds-tiles">${tiles}</div></div>
+    <div class="ds-lg"><i style="background:${C.g}"></i>Skor purata<i style="background:${C.p}"></i>Sesi capai 12j (${pc}%)</div>
+    ${urut >= 0 ? `<div class="ds-cap">Kedudukan jam kerja: #${urut + 1} daripada ${Object.keys(m).length} ID</div>` : ''}
+    <div class="ds-cap">Trend tempoh sesi · garis merah = 12j</div>${trend}
+    <div class="ds-cap">Jam kerja 7 hari lepas · garis kuning = 12j</div>${bars}
+    <div class="ds-tabs"><button type="button" data-skt="aktif" class="${tab === 'aktif' ? 'on' : ''}">Paling aktif</button><button type="button" data-skt="capai" class="${tab === 'capai' ? 'on' : ''}">Capai 12 jam</button></div>
+    <div class="ds-board">${board}</div></div>`;
+}
 
 // ===== Penapis log =====
 $('#fJns').onchange = e => { logFilter = e.target.value; render(); };
