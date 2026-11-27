@@ -56,7 +56,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
 
 /* ===== Motion tab: kandungan naik 0.1 saat ===== */
-.tab.on{animation:tabmasuk .5s ease-out}
+.tab.on{animation:tabmasuk .1s ease-out}
 @keyframes tabmasuk{from{opacity:0;transform:translateY(12px)}}
 @media(prefers-reduced-motion:reduce){.tab.on{animation:none}}
 
@@ -81,7 +81,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .sf{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;font-weight:700;font-size:.9rem}
 .sf.A{background:rgba(179,38,30,.15);color:var(--pri)}.sf.B{background:rgba(47,98,201,.15);color:var(--c-rehat)}.sf.C{background:rgba(26,127,75,.16);color:var(--ok)}
 .sf.now{box-shadow:0 0 0 2px var(--pri)}
-.sf{width:48px;height:48px}.sf svg{width:40px;height:40px;display:block}
+.sf{width:62px;height:62px;background:none!important}.sf svg{width:56px;height:56px;display:block}
 .chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:600;white-space:nowrap;background:var(--field);border:1px solid var(--bd)}
 .chip.sk{color:var(--pri)}
 .lg .chip{margin-left:auto}
@@ -108,7 +108,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .pt{display:flex;flex-direction:column}
 .pt:not(.kosong) b{margin-bottom:8px}
 .pt-out{margin-top:auto;padding:6px 4px;font-size:.75rem;border-radius:10px;background:var(--bad);color:#fff;border:0}
-.hero{display:flex;align-items:center;gap:14px;margin-bottom:12px}.sf.big{width:80px;height:80px;flex:none}.sf.big svg{width:68px;height:68px}
+.hero{display:flex;align-items:center;gap:14px;margin-bottom:12px}.sf.big{width:116px;height:116px;flex:none}.sf.big svg{width:116px;height:116px}
 .lain{margin-top:10px;border-top:1px solid var(--ln);padding-top:10px}.lain summary{cursor:pointer;font-weight:600;color:var(--mut);font-size:.9rem}
 /* Log terkini */
 .lg{align-items:center;justify-content:flex-start;gap:12px;padding:9px 0}
@@ -374,6 +374,18 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 @media(prefers-reduced-motion:reduce){#bomba *{animation:none!important}.bb-asap{opacity:.4}}
 @media print{#bomba{display:none}}
 
+/* ===== Pratonton gambar + kapsyen sebelum hantar ===== */
+#gbPratonton{position:fixed;inset:0;z-index:8;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(10,12,18,.78)}
+#gbPratonton.on{display:flex}
+.gb-kotak{width:100%;max-width:440px;max-height:100%;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:18px;border:1px solid var(--bd);background:linear-gradient(var(--card),var(--card)),var(--bg)}
+.gb-kotak h3{margin:0;font-size:1rem}
+#gbImej{min-height:0;max-width:100%;max-height:56vh;max-height:56dvh;object-fit:contain;border-radius:12px;align-self:center}
+.gb-kotak input,.gb-kotak button{margin:0}
+.gb-butang{display:flex;gap:8px}
+.cm .cm-kap{display:block;margin-top:4px}
+
+#login .bhsBtn{width:auto;display:block;margin:4px auto 0;padding:4px 14px;border-radius:999px;font-size:.82rem;color:var(--mut)}
+
 /* ===== Zoom in / zoom out ===== */
 .tab:not(#t7){zoom:var(--z,1)}
 .zm{display:flex;gap:4px}
@@ -401,7 +413,11 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 </head>
 <body>
 <div id="toast"></div>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="tupai">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<!-- Gambar latar logo syif A/B/C (tukar teks data: ini untuk guna gambar lain) -->
+<clipPath id="bulatSyif"><circle cx="32" cy="32" r="30"/></clipPath>
+<image id="gambarSyif" x="2" y="2" width="60" height="60" href="data:image/jpeg;base64,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"/>
+<g id="tupai">
   <path d="M44 64C66 66 75 42 69 23C67 15 61 9 56 11C60 21 60 31 54 39C50 45 46 47 42 49Z" fill="#b8692c"/>
   <path d="M48 58C62 58 69 42 65 27C61 37 56 45 46 52Z" fill="#e0924f"/>
   <path d="M66 24C64 18 61 14 58 12" stroke="#f7dcb8" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -475,6 +491,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   <input id="lpw" type="password" placeholder="Kata laluan" autocomplete="current-password">
   <button id="bMasuk" class="pri">Log masuk</button>
   <p id="lerr" class="bad"></p>
+  <button type="button" class="bhsBtn" data-asal>🌐 English</button>
 </div>
 
 <div id="app">
@@ -483,7 +500,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <section id="t1" class="tab on">
 <header class="hd">
   <div><h1>Syif PGO Johor</h1><p class="mut" style="margin:2px 0 0">Log masuk: <b id="kod"></b> · Syif <span id="mykump"></span></p></div>
-  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar"> Log Keluar</a><div class="zm" role="group" aria-label="Saiz paparan"><button type="button" id="zKurang" aria-label="Zoom out">−</button><button type="button" id="zAsal" aria-label="Saiz asal">100%</button><button type="button" id="zTambah" aria-label="Zoom in">+</button></div></div>
+  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar"> Log Keluar</a><a href="#" class="keluar bhsBtn" data-asal>🌐 English</a><div class="zm" role="group" aria-label="Saiz paparan"><button type="button" id="zKurang" aria-label="Zoom out">−</button><button type="button" id="zAsal" aria-label="Saiz asal">100%</button><button type="button" id="zTambah" aria-label="Zoom in">+</button></div></div>
 </header>
 <button id="aktif" class="pri" style="margin:0 0 6px">Aktifkan bunyi dan notifikasi</button>
 <p id="pushStatus" class="mut" style="margin:0 0 12px"></p>
@@ -613,6 +630,14 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   </div>
 </div>
 </section>
+<div id="gbPratonton" role="dialog" aria-modal="true" aria-label="Pratonton gambar">
+  <div class="gb-kotak">
+    <h3>Hantar gambar</h3>
+    <img id="gbImej" alt="Pratonton gambar">
+    <input id="gbKapsyen" maxlength="500" placeholder="Tambah kapsyen (pilihan)..." autocomplete="off" enterkeyhint="send">
+    <div class="gb-butang"><button type="button" id="gbBatal">Batal</button><button type="button" id="gbHantar" class="pri">Hantar</button></div>
+  </div>
+</div>
 <!-- TAB 7: Peta Punch In -->
 <section id="t7" class="tab">
   <div class="card">
@@ -671,6 +696,211 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   <button data-tab="t7"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 12 3.5 6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>Peta</button>
 </nav>
 </div>
+
+<!-- ===== Bahasa: Melayu / English ===== -->
+<script>
+const BHS = (() => { try { return localStorage.getItem('bhs') === 'en' ? 'en' : 'ms'; } catch (_) { return 'ms'; } })();
+const LOKAL = BHS === 'en' ? 'en-GB' : 'ms-MY'; // format tarikh dan masa
+// Setiap baris: ['teks Melayu', 'English']. {0}, {1} = bahagian yang berubah (nama, masa, nombor)
+const KAMUS_EN = [
+  // Log masuk, kepala dan menu
+  ['Kata laluan', 'Password'], ['ID (contoh: A01)', 'ID (e.g. A01)'], ['Log masuk', 'Log in'], ['Log masuk:', 'Logged in:'], ['· Syif', '· Shift'], ['· Syif {0}', '· Shift {0}'],
+  ['○ Menyambung...', '○ Connecting...'], ['Log Keluar', 'Log Out'], ['Saiz paparan', 'Display size'], ['Saiz asal', 'Original size'],
+  ['Menu utama', 'Main menu'], ['Utama', 'Home'], ['Jadual', 'Schedule'], ['Rujukan', 'Reference'], ['Notif', 'Alerts'], ['Peta', 'Map'],
+  ['ID atau kata laluan salah', 'Wrong ID or password'], ['Ralat: {0}', 'Error: {0}'],
+  ['Tetapan Supabase belum diisi. Isi config.js dan deploy semula.', 'Supabase settings are missing. Fill in config.js and redeploy.'],
+  ['Akaun ini belum dipautkan dengan anggota. Anggota dibaca: {0}, ID akaun: {1}', 'This account is not linked to a member. Members read: {0}, account ID: {1}'],
+  ['Gagal baca jadual anggota: {0}', 'Failed to read the member table: {0}'],
+  // Punch dan stesen
+  ['Pilih stesen', 'Select station'], ['Tukar stesen', 'Change station'], ['Stesen saya', 'My station'], ['Dalam Stesen', 'On Station'],
+  ['Tidak bertugas', 'Off duty'], ['Bertugas', 'On duty'], ['Menunggu', 'Waiting'], ['Menunggu {0}', 'Waiting {0}'], ['{0} · sejak {1}', '{0} · since {1}'],
+  ['Syif semasa', 'Current shift'], ['Tiada anggota bertugas', 'No one on duty'], ['Anggota lain (', 'Other members ('],
+  ['Sedang bertugas', 'On duty now'], ['minimum', 'minimum'], ['orang', 'people'], ['{0} orang', '{0} people'],
+  ['Amaran: kurang daripada minimum {0} orang', 'Warning: below the minimum of {0} people'],
+  ['Timer bermula bila Punch In', 'Timer starts when you Punch In'], ['Tempoh bertugas terakhir · {0}', 'Last duty period · {0}'],
+  ['Menunggu giliran sejak {0}', 'Waiting for your turn since {0}'], ['Bertugas sejak {0}', 'On duty since {0}'],
+  ['Pilih stesen dahulu', 'Select a station first'], ['Menyemak lokasi...', 'Checking location...'],
+  ['Stesen ini sudah ada orang yang menunggu. Pilih stesen lain.', 'Someone is already waiting for this station. Choose another station.'],
+  ['Stesen ini sedang diduduki. Pilih stesen yang kosong.', 'This station is occupied. Choose an empty station.'],
+  ['Stesen {0} ditutup bila {1} orang bertugas. Teruskan?', 'Station {0} is closed when {1} people are on duty. Continue?'],
+  ['Gagal: {0}', 'Failed: {0}'], ['Anda sudah di stesen ini', 'You are already at this station'], ['Anda pasti mahu Punch Out?', 'Are you sure you want to Punch Out?'],
+  ['Belum pilih', 'Not selected'], ['{0} (menunggu: {1})', '{0} (waiting: {1})'], ['{0} ({1} · anda menunggu)', '{0} ({1} · you are waiting)'],
+  ['Kosong', 'Empty'], ['{0} · menunggu', '{0} · waiting'], ['Menunggu giliran', 'Waiting for turn'], ['Punch In dahulu', 'Punch In first'],
+  ['Paksa Keluar', 'Force Out'], ['Paksa Punch Out {0}', 'Force Punch Out {0}'], ['Paksa Punch Out?', 'Force Punch Out?'], ['Paksa Punch Out {0}?', 'Force Punch Out {0}?'],
+  ['{0} akan di-Punch Out.', '{0} will be punched out.'], ['{0} yang menunggu akan ambil alih stesen.', '{0}, who is waiting, will take over the station.'], ['Stesen {0} akan kosong.', 'Station {0} will be empty.'],
+  ['Batal', 'Cancel'], ['Teruskan', 'Continue'], ['Memproses...', 'Processing...'], ['Gagal paksa punch out: {0}', 'Force punch out failed: {0}'],
+  ['{0} ({1}) telah dipaksa Punch Out', '{0} ({1}) has been forced to Punch Out'], ['Tiada tindakan: status stesen {0} sudah berubah', 'No action: the status of station {0} has changed'],
+  // Lokasi dan peta
+  ['Pelayar ini tidak menyokong GPS.', 'This browser does not support GPS.'],
+  ['Akses lokasi ditolak. Benarkan Lokasi (Precise) untuk app ini di tetapan pelayar.', 'Location access denied. Allow Precise Location for this app in your browser settings.'],
+  ['Lokasi tidak dapat dikesan. Hidupkan GPS dan cuba lagi.', 'Location not detected. Turn on GPS and try again.'],
+  ['GPS lambat bertindak balas. Cuba lagi di kawasan terbuka.', 'GPS is slow to respond. Try again in an open area.'],
+  ['GPS kurang tepat (±{0} m). Cuba lagi di kawasan terbuka.', 'GPS is not accurate enough (±{0} m). Try again in an open area.'],
+  ['Anda {0} km dari Ibu Pejabat. Punch In hanya dibenarkan dalam {1} km.', 'You are {0} km from Headquarters. Punch In is only allowed within {1} km.'],
+  ['Auto Punch Out: anda {0} km dari Ibu Pejabat (had {1} km)', 'Auto Punch Out: you are {0} km from Headquarters (limit {1} km)'],
+  ['Peta tidak dapat dimuat. Semak sambungan internet.', 'The map could not load. Check your internet connection.'],
+  ['Peta Punch In', 'Punch In Map'], ['Julat peta', 'Map range'], ['{0} lokasi', '{0} locations'], ['(sudah Punch Out)', '(already punched out)'],
+  ['Hijau = sedang bertugas, kelabu = sudah Punch Out. Bulatan merah = kawasan Ibu Pejabat.', 'Green = on duty, grey = punched out. Red circle = Headquarters area.'],
+  // Jadual dan rujukan
+  ['Jadual syif', 'Shift schedule'], ['Siang', 'Day'], ['Malam', 'Night'], ['Tarikh', 'Date'], ['Syif', 'Shift'], ['Syif PGO Johor', 'Syif PGO Johor'], ['Syif {0}', 'Shift {0}'], ['Syif {0} · {1}', 'Shift {0} · {1}'],
+  ['Tamat {0} · tinggal {1}j {2}m', 'Ends {0} · {1}h {2}m left'], ['Seterusnya: Syif {0} ({1})', 'Next: Shift {0} ({1})'],
+  ['Rujukan ikut bilangan bertugas', 'Reference by number on duty'], ['Bilangan anggota bertugas', 'Number of members on duty'],
+  ['Stesen', 'Station'], ['Kritikal', 'Critical'], ['Ditutup', 'Closed'], ['Kerja sendiri', 'Own duties'], ['Rehat', 'Break'], ['Makan', 'Meal'], ['Ganti {0}', 'Cover {0}'],
+  ['Waktu kritikal', 'Critical time'], ['Bukan waktu kritikal', 'Not critical time'], ['{0} · selesai', '{0} · done'], ['{0} · sekarang', '{0} · now'], ['Tiada slot rehat', 'No break slots'],
+  ['Semua 5 stesen beroperasi. Stesen MERS 2 mempunyai tugas tersendiri dan tidak menggantikan stesen lain. Apabila seorang anggota berehat, baki 4 orang masih mencukupi.', 'All 5 stations are operating. Station MERS 2 has its own duties and does not cover other stations. When one member is on break, the remaining 4 are still enough.'],
+  ['Stesen MERS 2 ditutup. Apabila seorang anggota berehat, baki 3 orang masih memenuhi minimum 3 orang. Tugas di Stesen MERS 2 akan diambil alih oleh Stesen RT.', 'Station MERS 2 is closed. When one member is on break, the remaining 3 still meet the minimum of 3. Station RT takes over the MERS 2 duties.'],
+  ['Stesen SPI dan MERS 2 ditutup. Rehat memerlukan anggota pengganti atau anggota sedia kerana baki 2 orang tidak memenuhi minimum 3 orang. Tugas di Stesen SPI akan diambil alih oleh Stesen RT dan PGO, manakala tugas di Stesen MERS 2 akan diambil alih oleh Stesen RT.', 'Stations SPI and MERS 2 are closed. Breaks need a relief or standby member because the remaining 2 do not meet the minimum of 3. Stations RT and PGO take over the SPI duties, while Station RT takes over the MERS 2 duties.'],
+  // Log
+  ['Log terkini', 'Recent log'], ['Cetak PDF', 'Print PDF'], ['Tapis jenis log', 'Filter log type'], ['Tapis anggota', 'Filter member'], ['Tapis stesen', 'Filter station'],
+  ['Semua', 'All'], ['Semua anggota', 'All members'], ['Semua stesen', 'All stations'], ['Semua tarikh', 'All dates'], ['Dari', 'From'], ['Hingga', 'To'], ['Dari tarikh', 'From date'], ['Hingga tarikh', 'To date'],
+  ['Pilihan tarikh pantas', 'Quick date options'], ['Hari ini', 'Today'], ['{0} hari', '{0} days'], ['Set semula', 'Reset'], ['{0} sesi', '{0} sessions'], ['{0} ·', '{0} ·'], ['Mula', 'Start'], ['Kini', 'Now'], ['{0} hingga {1}', '{0} to {1}'],
+  ['Laporan Log & Skor Analitik · Syif PGO Johor', 'Log & Analytics Score Report · PGO Johor Shift'], ['Jenis:', 'Type:'], ['Anggota:', 'Member:'], ['Stesen:', 'Station:'], ['Tarikh:', 'Date:'], ['Dicetak: {0}', 'Printed: {0}'],
+  ['Skor Analitik · {0}%', 'Analytics Score · {0}%'], ['Sasaran 12j normal', 'Normal target 12h'], ['Purata', 'Average'], ['Jumlah', 'Total'], ['Capai 12j', 'Reached 12h'],
+  ['Sesi selesai', 'Session done'], ['Tiada log.', 'No logs.'],
+  // Notifikasi, status dan chat
+  ['Sistem Syif PGO', 'PGO Shift System'], ['Notifikasi', 'Notification'], ['Matikan alarm', 'Stop alarm'], ['Dihantar oleh: {0}', 'Sent by: {0}'],
+  ['Aktifkan bunyi dan notifikasi', 'Enable sound and notifications'], ['Notifikasi disekat. Benarkan di tetapan pelayar', 'Notifications blocked. Allow them in your browser settings'],
+  ['iPhone: tekan Kongsi > Tambah ke Skrin Utama, buka dari ikon itu, kemudian tekan Aktifkan.', 'iPhone: tap Share > Add to Home Screen, open from that icon, then tap Enable.'],
+  ['Push tidak disokong pada pelayar ini.', 'Push is not supported on this browser.'], ['Push belum aktif. Tekan butang Aktifkan di atas.', 'Push is not active. Tap the Enable button above.'],
+  ['Push gagal didaftar: {0}', 'Push registration failed: {0}'], ['Push aktif: notifikasi sampai walaupun app ditutup', 'Push active: notifications arrive even when the app is closed'],
+  ['Push gagal: tidak dapat hubungi perkhidmatan Google (FCM). Semak internet, VPN atau DNS, kemudian tekan Reset.', 'Push failed: cannot reach the Google service (FCM). Check internet, VPN or DNS, then tap Reset.'], ['Push gagal: {0}', 'Push failed: {0}'],
+  ['Hantar notifikasi', 'Send notification'], ['Mesej untuk semua anggota', 'Message for all members'], ['Hantar', 'Send'],
+  ['Giliran anda: kini bertugas di {0}', 'Your turn: you are now on duty at {0}'], ['Anggota bertugas tinggal {0}, kurang daripada minimum {1}', 'Only {0} members on duty, below the minimum of {1}'],
+  ['Status pengguna', 'User status'], ['Live = app sedang dibuka & tersambung ke sistem.', 'Live = app is open and connected to the system.'], ['Live sekarang (', 'Live now ('], ['Offline (ada ID) (', 'Offline (has ID) ('], ['Tiada ID (', 'No ID ('], ['Memuat...', 'Loading...'], ['Tiada', 'None'],
+  ['Chat kumpulan', 'Group chat'], ['Batal balas', 'Cancel reply'], ['Hantar gambar', 'Send image'], ['Tulis mesej...', 'Write a message...'], ['Batal rakaman', 'Cancel recording'], ['Rakam suara', 'Record voice'],
+  ['Pratonton gambar', 'Image preview'], ['Tambah kapsyen (pilihan)...', 'Add a caption (optional)...'], ['Gambar', 'Image'], ['📷 Gambar', '📷 Image'], ['🎤 Mesej suara', '🎤 Voice message'],
+  ['Tidak berbunyi? Buka audio', 'No sound? Open audio'], ['Padam mesej', 'Delete message'], ['Padam', 'Delete'], ['Belum ada mesej. Mulakan perbualan!', 'No messages yet. Start the conversation!'], ['Membalas {0}', 'Replying to {0}'],
+  ['Chat belum sedia. Jalankan SQL chat di Supabase dahulu.', 'Chat is not ready. Run the chat SQL in Supabase first.'],
+  ['Gagal hantar: {0}', 'Failed to send: {0}'], ['Padam mesej ini?', 'Delete this message?'], ['Gagal padam: {0}', 'Failed to delete: {0}'],
+  ['Gagal proses gambar', 'Failed to process the image'], ['Fail bukan gambar yang sah', 'The file is not a valid image'],
+  ['Merakam {0}s... tekan mikrofon untuk hantar', 'Recording {0}s... tap the microphone to send'], ['Pelayar ini tidak menyokong rakaman suara.', 'This browser does not support voice recording.'], ['Benarkan akses mikrofon di tetapan pelayar.', 'Allow microphone access in your browser settings.'],
+  ['Rakaman kosong, tidak dihantar. Semak mikrofon dan pastikan tiada app lain (panggilan, WhatsApp) sedang guna mikrofon.', 'Empty recording, not sent. Check the microphone and make sure no other app (call, WhatsApp) is using it.'],
+  ['Reset penuh? Semua penapis dikosongkan, cache dibersihkan dan data dimuat semula. Anda kekal log masuk.', 'Full reset? All filters are cleared, the cache is cleaned and data is reloaded. You stay logged in.'],
+  ['Pembina sistem & aplikasi:', 'System & app developer:'], ['Editor CSS:', 'CSS editor:'],
+  // Tupai PGO
+  ['Buka Tupai PGO', 'Open Tupai PGO'], ['Ejas saiz tupai', 'Adjust squirrel size'], ['Saiz tupai', 'Squirrel size'], ['Selesai', 'Done'], ['Pembantu syif anda', 'Your shift assistant'],
+  ['Hidup atau senyapkan cakap automatik', 'Turn automatic talk on or off'], ['Auto: hidup', 'Auto: on'], ['Auto: senyap', 'Auto: quiet'], ['Kecilkan', 'Minimise'], ['Tanya saya...', 'Ask me...'],
+  ['Analisis skrin', 'Analyse screen'], ['Statistik saya', 'My statistics'], ['Rehat seterusnya', 'Next break'], ['Dah berapa lama?', 'How long so far?'], ['Bila habis?', 'When do I finish?'], ['Siapa bertugas', 'Who is on duty'],
+  ['Analisis apa yang terpapar di skrin sekarang', 'Analyse what is on the screen now'], ['statistik saya', 'my statistics'], ['rehat seterusnya', 'next break'], ['berapa lama saya bertugas', 'how long have I been on duty'], ['bila saya habis kerja', 'when do I finish work'], ['siapa bertugas', 'who is on duty'], ['syif semasa', 'current shift'], ['waktu kritikal', 'critical time'],
+  ['Tupai PGO sedang berfikir...', 'Tupai PGO is thinking...'], ['{0} minit', '{0} min'], ['{0} jam {1} minit', '{0} h {1} min'], ['jam {0}', 'at {0}'],
+  ['Selamat malam, {0}!', 'Good evening, {0}!'], ['Selamat pagi, {0}!', 'Good morning, {0}!'], ['Selamat tengah hari, {0}!', 'Good afternoon, {0}!'], ['Selamat petang, {0}!', 'Good afternoon, {0}!'],
+  ['Saya Tupai PGO, pembantu syif anda.', 'I am Tupai PGO, your shift assistant.'], ['Tanya saya apa-apa, atau tekan butang pantas di bawah.', 'Ask me anything, or tap a quick button below.'],
+  ['(Nota: sistem hanya baca 300 log terkini, rekod lama mungkin tidak lengkap.)', '(Note: only the latest 300 logs are read, older records may be incomplete.)'],
+  ['Anda sedang bertugas di {0} sejak {1} ({2}).', 'You have been on duty at {0} since {1} ({2}).'], ['Anda tidak bertugas. Tempoh terakhir: {0} ({1}).', 'You are off duty. Last period: {0} ({1}).'], ['Anda belum Punch In.', 'You have not punched in.'],
+  ['Hari ini (sejak 00:00): {0}', 'Today (since 00:00): {0}'], ['Slot syif semasa (mula {0}): {1}', 'Current shift slot (from {0}): {1}'], ['7 hari lepas: {0} dalam {1} sesi.', 'Last 7 days: {0} in {1} sessions.'], ['7 hari lepas: {0}', 'Last 7 days: {0}'],
+  ['Hari ini: {0}', 'Today: {0}'], ['7 hari: {0}', '7 days: {0}'], ['Jumlah dalam rekod: {0} ({1} sesi)', 'Total on record: {0} ({1} sessions)'], ['Purata sesi: {0}', 'Average session: {0}'], ['terpanjang: {0}', 'longest: {0}'], ['Stesen paling lama: {0} ({1})', 'Longest station: {0} ({1})'],
+  ['Saya perlu tahu stesen anda. Punch In dahulu, kemudian tanya saya semula.', 'I need to know your station. Punch In first, then ask me again.'], ['Stesen {0} tiada slot rehat.', 'Station {0} has no break slots.'], ['Stesen {0} ({1}).', 'Station {0} ({1}).'],
+  ['Sekarang masa {0} anda, tamat {1} ({2} lagi).', 'It is your {0} time now, ends {1} ({2} left).'], ['{0} seterusnya jam {1}, lagi {2}.', 'Next {0} at {1}, in {2}.'], ['{0} seterusnya {1} ({2} lagi).', 'Next {0} {1} (in {2}).'], ['Sekarang {0}, tamat {1}.', 'Now: {0}, ends {1}.'],
+  ['rehat', 'break'], ['makan', 'meal'], ['Habis sudah masa rehat Bos, Kerja lah, Tiada suda masa rehat', 'Break time is over, boss. Back to work, no more breaks.'], ['Habis sudah masa rehat Bos, Kerja lah, jangan Melebih-lebih', 'Break time is over, boss. Back to work, do not overdo it.'],
+  ['{0} (selesai)', '{0} (done)'], ['{0} (sedang berlangsung)', '{0} (in progress)'],
+  ['Punch In dahulu supaya saya tahu stesen anda.', 'Punch In first so I know your station.'], ['Stesen {0} tiada waktu kritikal tetap.', 'Station {0} has no fixed critical time.'], ['Waktu kritikal stesen {0}: {1}.', 'Critical time for station {0}: {1}.'],
+  ['Sekarang WAKTU KRITIKAL, jangan tinggalkan stesen.', 'It is CRITICAL TIME now, do not leave your station.'], ['Sekarang bukan waktu kritikal.', 'It is not critical time now.'], ['Sekarang waktu kritikal stesen ini.', 'It is critical time for this station now.'],
+  ['Tiada sesiapa bertugas sekarang.', 'No one is on duty now.'], ['{0} orang bertugas (minimum {1}).', '{0} people on duty (minimum {1}).'], ['Stesen kosong: {0}', 'Empty stations: {0}'], ['Amaran: bawah minimum!', 'Warning: below minimum!'],
+  ['Sekarang Syif {0} ({1}), tamat {2} ({3} lagi).', 'Now: Shift {0} ({1}), ends {2} ({3} left).'], ['Seterusnya: Syif {0} ({1}).', 'Next: Shift {0} ({1}).'],
+  ['Anda Syif {0}: giliran anda sedang berjalan.', 'You are Shift {0}: your turn is in progress.'], ['Anda Syif {0}: giliran seterusnya {1} jam {2} ({3}).', 'You are Shift {0}: next turn {1} at {2} ({3}).'],
+  ['Log terakhir anda:', 'Your latest logs:'], ['Belum ada log untuk anda.', 'No logs for you yet.'],
+  ['{0} ({1} lagi)', '{0} ({1} left)'], ['Syif semasa tamat {0}.', 'The current shift ends {0}.'], ['Syif anda tamat {0}.', 'Your shift ends {0}.'], ['Syif anda ({0}) tamat {1}, tapi anda belum Punch In.', 'Your shift ({0}) ends {1}, but you have not punched in.'],
+  ['Giliran Syif {0} anda belum bermula.', 'Your Shift {0} turn has not started.'], ['Seterusnya {0} jam {1} hingga {2}.', 'Next: {0} at {1} until {2}.'], ['Anda sedang Punch In di luar giliran.', 'You are punched in outside your turn.'],
+  ['Saya Tupai PGO, pembantu app ini. Tanya saya tentang:', 'I am Tupai PGO, the assistant for this app. Ask me about:'], ['• statistik dan tempoh kerja anda (hari ini, 7 hari, jumlah)', '• your work statistics and hours (today, 7 days, total)'], ['• dah berapa lama anda bertugas', '• how long you have been on duty'], ['• rehat, makan, tidur seterusnya', '• your next break, meal or sleep'], ['• bila anda habis kerja', '• when you finish work'], ['• waktu kritikal stesen anda', '• your station critical time'], ['• siapa bertugas dan stesen kosong', '• who is on duty and empty stations'], ['• syif semasa dan giliran anda', '• the current shift and your turn'], ['• log punch terakhir', '• your latest punch logs'],
+  ['Saya juga bercakap sendiri: peringatan rehat, jam bertugas, waktu kritikal, anggota bawah minimum dan lupa Punch In/Out.', 'I also speak up on my own: break reminders, duty hours, critical time, staff below minimum and forgotten Punch In/Out.'], ['Taip "senyap" untuk diamkan.', 'Type "quiet" to silence me.'],
+  ['Log masuk dahulu.', 'Please log in first.'], ['Sama-sama!', 'You are welcome!'], ['Kerja elok-elok, jaga keselamatan.', 'Work well and stay safe.'],
+  ['Baik, saya senyap.', 'Okay, I will be quiet.'], ['Peringatan rehat dan syif tetap berbunyi.', 'Break and shift reminders will still sound.'], ['Taip "cakap" untuk hidupkan semula.', 'Type "speak" to turn me back on.'], ['Okey!', 'Okay!'], ['Saya akan bercakap sendiri bila ada info penting.', 'I will speak up when there is important news.'],
+  ['Sekarang jam {0}, {1}.', 'It is {0} now, {1}.'], ['Anda {0} ({1}), Syif {2}.', 'You are {0} ({1}), Shift {2}.'], ['Anda di stesen {0}.', 'You are at station {0}.'], ['Anda belum Punch In, jadi belum ada stesen.', 'You have not punched in, so you have no station yet.'],
+  ['Maaf, saya belum faham soalan itu.', 'Sorry, I do not understand that question yet.'], ['Saya boleh jawab tentang kerja, rehat, syif, stesen dan log anda.', 'I can answer about your work, breaks, shift, station and logs.'], ['Cuba: "bila saya habis kerja", "statistik saya" atau "rehat seterusnya".', 'Try: "when do I finish work", "my statistics" or "next break".'], ['Taip "tolong" untuk senarai penuh.', 'Type "help" for the full list.'],
+  ['Jangan lupa minum air.', 'Remember to drink water.'], ['Regangkan badan sekejap.', 'Stretch for a moment.'], ['Semak peralatan stesen anda.', 'Check your station equipment.'], ['Rehatkan mata, pandang jauh 20 saat.', 'Rest your eyes, look far away for 20 seconds.'],
+  ['Jangan biar mengantuk, minum air dan regangkan badan.', 'Stay awake, drink water and stretch.'], ['Bangun berjalan sekejap supaya kekal peka.', 'Get up and walk a little to stay alert.'], ['Semak peralatan dan keadaan sekeliling stesen.', 'Check the equipment and station surroundings.'], ['Pastikan kawasan stesen terang dan selamat.', 'Make sure the station area is bright and safe.'],
+  ['Syif bertukar jam {0}: Syif {1} ambil alih', 'Shift change at {0}: Shift {1} takes over'], ['Syif bertukar jam {0}.', 'Shift change at {0}.'], ['Syif {0} ambil alih.', 'Shift {0} takes over.'], ['Siapkan serah tugas ya!', 'Please prepare the handover!'], ['Hari ini anda dah bertugas {0}.', 'Today you have been on duty {0}.'],
+  ['{0} {1}-{2} (stesen {3}) bermula 5 minit lagi', '{0} {1}-{2} (station {3}) starts in 5 minutes'], ['{0} anda ({1}) bermula 5 minit lagi.', 'Your {0} ({1}) starts in 5 minutes.'], ['Bersedia serah stesen {0}.', 'Get ready to hand over station {0}.'], ['Masa {0} dah tiba ({1}).', 'It is {0} time ({1}).'], ['Selamat berehat!', 'Enjoy your break!'], ['{0} tamat. Kembali ke stesen {1}', '{0} is over. Return to station {1}'],
+  ['Tamat bertugas.', 'Duty ended.'], ['Sesi ini {0} ({1}).', 'This session: {0} ({1}).'], ['Terima kasih, rehat secukupnya!', 'Thank you, get enough rest!'], ['Tukar ke stesen {0}.', 'Switched to station {0}.'], ['Selamat bertugas di {0}!', 'Have a good shift at {0}!'],
+  ['Amaran: anggota bertugas tinggal {0}, bawah minimum {1}.', 'Warning: only {0} members on duty, below the minimum of {1}.'], ['Anggota bertugas dah cukup semula ({0} orang).', 'Enough members on duty again ({0} people).'],
+  ['Waktu kritikal stesen {0} bermula.', 'Critical time for station {0} has started.'], ['Jangan tinggalkan stesen.', 'Do not leave the station.'], ['Waktu kritikal stesen {0} dah tamat.', 'Critical time for station {0} has ended.'], ['Dah {0} jam anda bertugas ({1}).', 'You have been on duty {0} hours ({1}).'],
+  ['Syif {0} anda dah bermula {1} lalu, tapi anda belum Punch In.', 'Your Shift {0} started {1} ago, but you have not punched in.'], ['Jangan lupa ya!', 'Do not forget!'], ['Syif anda dah tamat {0} lalu, tapi anda masih Punch In.', 'Your shift ended {0} ago, but you are still punched in.'], ['Jangan lupa Punch Out ya!', 'Do not forget to Punch Out!']
+];
+
+(() => {
+  window.T = s => s;
+  if (BHS !== 'en') return;
+  document.documentElement.lang = 'en';
+  const tepat = new Map(), corak = [], simpan = new Map();
+  const lolos = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  KAMUS_EN.forEach(([ms, en]) => {
+    if (!/\{\d\}/.test(ms)) return tepat.set(ms, en);
+    const urut = [];
+    const re = new RegExp('^' + ms.split(/\{(\d)\}/).map((x, i) => i % 2 ? (urut.push(x), '(.+?)') : lolos(x)).join('') + '$');
+    corak.push({re, en, urut, berat: ms.replace(/\{\d\}/g, '').length});
+  });
+  corak.sort((a, b) => b.berat - a.berat); // corak paling khusus dicuba dahulu
+  function baris(s, d) {
+    const [, depan, t, belakang] = s.match(/^(\s*)([\s\S]*?)(\s*)$/);
+    if (!t || d > 6 || !/[A-Za-z]{2}/.test(t)) return s;
+    const jadi = x => depan + x + belakang;
+    if (tepat.has(t)) return jadi(tepat.get(t));
+    const slot = t.match(/^((?:• )?)(Rehat|Makan)( \d\d:.*)$/); // contoh: "• Rehat 10:30–11:00 (selesai)"
+    if (slot) return jadi(slot[1] + tepat.get(slot[2]) + baris(slot[3], d + 1));
+    // beberapa ayat dalam satu baris: terjemah satu demi satu jika semuanya dikenali
+    const ayat = t.replace(/([.!?]) (?=\S)/g, '$1\u0001').split('\u0001');
+    const ay = ayat.length > 1 ? ayat.map(a => baris(a, d + 1)) : null;
+    if (ay && ay.every((a, i) => a !== ayat[i])) return jadi(ay.join(' '));
+    for (const c of corak) {
+      const m = t.match(c.re);
+      if (m) return jadi(c.en.replace(/\{(\d)\}/g, (_, n) => baris(m[c.urut.indexOf(n) + 1], d + 1)));
+    }
+    if (ay && ay.some((a, i) => a !== ayat[i])) return jadi(ay.join(' '));
+    if (/[^.]\.$/.test(t)) { const x = t.slice(0, -1), y = baris(x, d + 1); if (y !== x) return jadi(y + '.'); }
+    if (t.includes(' · ')) return jadi(t.split(' · ').map(a => baris(a, d + 1)).join(' · '));
+    return s;
+  }
+  window.T = s => {
+    s = String(s);
+    let h = simpan.get(s);
+    if (h === undefined) {
+      h = s.split('\n').map(x => baris(x, 0)).join('\n');
+      if (simpan.size > 3000) simpan.clear();
+      simpan.set(s, h);
+    }
+    return h;
+  };
+
+  // Kandungan yang ditaip pengguna (chat) tidak diterjemah
+  const LANGKAU = 'script, style, textarea, .cm > span, .cm > b, .cm-reply, #rbIsi, .leaflet-tile-pane, [data-asal]';
+  const ATR = ['placeholder', 'aria-label', 'title', 'alt'];
+  const teks = n => {
+    const p = n.parentElement;
+    if (!p || p.closest(LANGKAU)) return;
+    const asal = n.nodeValue;
+    const baru = p.closest('.aim.me') ? (tepat.get(asal.trim()) || asal) : T(asal);
+    if (baru === asal) return;
+    if (p.tagName === 'OPTION' && !p.hasAttribute('value')) p.setAttribute('value', p.value); // nilai pilihan kekal asal
+    n.nodeValue = baru;
+  };
+  const atribut = el => { if (!el.closest(LANGKAU)) ATR.forEach(a => { const v = el.getAttribute(a); if (v) { const b = T(v); if (b !== v) el.setAttribute(a, b); } }); };
+  const jalan = n => {
+    if (n.nodeType === 3) return teks(n);
+    if (n.nodeType !== 1) return;
+    atribut(n);
+    n.childNodes.forEach(jalan);
+  };
+  new MutationObserver(senarai => senarai.forEach(m => {
+    if (m.type === 'childList') m.addedNodes.forEach(jalan);
+    else if (m.type === 'characterData') teks(m.target);
+    else atribut(m.target);
+  })).observe(document.documentElement, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATR});
+  jalan(document.body);
+  const amaran = window.alert.bind(window), sahkan = window.confirm.bind(window);
+  window.alert = m => amaran(T(m));
+  window.confirm = m => sahkan(T(m));
+})();
+
+// Butang tukar bahasa (halaman dimuat semula, anda kekal log masuk)
+document.querySelectorAll('.bhsBtn').forEach(b => {
+  b.textContent = BHS === 'en' ? '🌐 Bahasa Melayu' : '🌐 English';
+  b.onclick = e => {
+    e.preventDefault();
+    try { localStorage.setItem('bhs', BHS === 'en' ? 'ms' : 'en'); } catch (_) { return; }
+    location.reload();
+  };
+});
+</script>
 
 <script src="config.js"></script>
 <script>
@@ -760,7 +990,7 @@ function bukaTab(id) {
 document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
 try { const t = sessionStorage.getItem('tab'); if (t && document.getElementById(t)) bukaTab(t); } catch (_) {}
 
-const fmt = t => new Date(t).toLocaleString('ms-MY', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
+const fmt = t => new Date(t).toLocaleString(LOKAL, {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
 const nama = id => (anggota.find(a => a.id === id) || {}).nama || '?';
 const masaTs = x => new Date(x.masa).getTime();
 const masukSemua = () => anggota.filter(a => last[a.id] && last[a.id].jenis === 'IN');
@@ -989,7 +1219,7 @@ const sesiAll = [], bukaAng = {};
         <div class="lg-side">${kiri}</div>
         <div class="lg-side">${kanan}</div>
       </div>
-      <div class="when"><b>${jam(masaAkhir)}</b><span class="mut">${new Date(masaAkhir).toLocaleDateString('ms-MY', {day: '2-digit', month: 'short'})}</span></div>
+      <div class="when"><b>${jam(masaAkhir)}</b><span class="mut">${new Date(masaAkhir).toLocaleDateString(LOKAL, {day: '2-digit', month: 'short'})}</span></div>
     </li>`;
   }).join('') || '<li class="mut">Tiada log.</li>';
 
@@ -1219,7 +1449,7 @@ function notify(n, sys) {
   toast(`${tajuk}: ${n.mesej}${n.dari ? ' (' + n.dari + ')' : ''}`);
   if (n.jenis === 'alarm') startAlarm(n.mesej, n.dari); else { beep(250); navigator.vibrate && navigator.vibrate(200); }
   if (sys && 'Notification' in window && Notification.permission === 'granted') // peringatan setempat
-    navigator.serviceWorker.getRegistration().then(r => r && r.showNotification(tajuk + ' - Syif PGO', {body: n.mesej, icon: 'icon-192.png', vibrate: [200, 100, 200]}));
+    navigator.serviceWorker.getRegistration().then(r => r && r.showNotification(T(tajuk) + ' - Syif PGO', {body: T(n.mesej), icon: 'icon-192.png', vibrate: [200, 100, 200]}));
 }
 $('#aktif').onclick = async () => {
   const izin = 'Notification' in window ? Notification.requestPermission() : null; // mesti terus dalam klik
@@ -1348,17 +1578,14 @@ const ANCHOR = new Date('2026-11-23T08:00:00+08:00').getTime(), SLOT = 43200000,
 const idx = t => Math.floor((t - ANCHOR) / SLOT);
 const kump = t => URUTAN[((idx(t) % 3) + 3) % 3];
 const jenisSlot = t => ((idx(t) % 2) + 2) % 2 === 0 ? 'Siang' : 'Malam';
-const jam = t => new Date(t).toLocaleTimeString('ms-MY', {hour: '2-digit', minute: '2-digit', hour12: false});
+const jam = t => new Date(t).toLocaleTimeString(LOKAL, {hour: '2-digit', minute: '2-digit', hour12: false});
 
-// Logo syif: girn + antena, huruf di tengah. Warna ikut kelas .sf.A / .B / .C
+// Logo syif: gambar bomba penuh satu bulatan, huruf di depan. Warna gelang ikut .sf.A / .B / .C
 function logoSyif(k) {
   return `<svg viewBox="0 0 64 64" role="img" aria-label="Syif ${k}">
-    <path fill="currentColor" d="M27.0 20.2L28.2 15.3L35.8 15.3L37.0 20.2L41.8 22.1L46.1 19.6L51.4 24.9L48.9 29.2L50.8 34.0L55.7 35.2L55.7 42.8L50.8 44.0L48.9 48.8L51.4 53.1L46.1 58.4L41.8 55.9L37.0 57.8L35.8 62.7L28.2 62.7L27.0 57.8L22.3 55.9L17.9 58.4L12.6 53.1L15.1 48.8L13.2 44.0L8.3 42.8L8.3 35.2L13.2 34.0L15.1 29.2L12.6 24.9L17.9 19.6L22.2 22.1Z"/>
-    <path stroke="currentColor" stroke-width="3.5" stroke-linecap="round" d="M32 16V8"/>
-    <circle cx="32" cy="7" r="3.5" fill="currentColor"/>
-    <path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M26.6 11.6a7 7 0 0 1 0-9.2M37.4 11.6a7 7 0 0 0 0-9.2M21.8 14a12 12 0 0 1 0-13M42.2 14a12 12 0 0 0 0-13"/>
-    <circle cx="32" cy="39" r="15.5" style="fill:var(--bg)"/>
-    <text x="32" y="48" text-anchor="middle" fill="currentColor" style="font:800 25px system-ui,sans-serif">${k}</text>
+    <g clip-path="url(#bulatSyif)"><use href="#gambarSyif"/><circle cx="32" cy="32" r="30" fill="currentColor" opacity=".12"/></g>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="4"/>
+    <text x="32" y="56" text-anchor="middle" fill="#fff" stroke="#111419" stroke-width="5" stroke-linejoin="round" paint-order="stroke" style="font:900 26px system-ui,sans-serif">${k}</text>
   </svg>`;
 }
 
@@ -1372,7 +1599,7 @@ function jadual() {
   let h = '<colgroup><col style="width:40%"><col style="width:30%"><col style="width:30%"></colgroup><tr><th>Tarikh</th><th>Siang<small>08:00–20:00</small></th><th>Malam<small>20:00–08:00</small></th></tr>';
   for (let k = 0; k < 7; k++) {
     const d = d0 + k * 86400000, sa = kump(d), sb = kump(d + SLOT);
-    h += `<tr><td>${new Date(d).toLocaleDateString('ms-MY', {weekday: 'short', day: 'numeric', month: 'short'})}</td>
+    h += `<tr><td>${new Date(d).toLocaleDateString(LOKAL, {weekday: 'short', day: 'numeric', month: 'short'})}</td>
       <td><span class="sf ${sa}${idx(d) === ci ? ' now' : ''}">${logoSyif(sa)}</span></td>
       <td><span class="sf ${sb}${idx(d + SLOT) === ci ? ' now' : ''}">${logoSyif(sb)}</span></td></tr>`;
   }
@@ -1657,7 +1884,7 @@ function aiSyif() {
     if (kump(now) === me.kumpulan) s += `\nAnda Syif ${me.kumpulan}: giliran anda sedang berjalan.`;
     else for (let k = 1; k < 6; k++) {
       const t0 = mula + k * SLOT;
-      if (kump(t0) === me.kumpulan) { s += `\nAnda Syif ${me.kumpulan}: giliran seterusnya ${new Date(t0).toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'short'})} jam ${jam(t0)} (${jenisSlot(t0)}).`; break; }
+      if (kump(t0) === me.kumpulan) { s += `\nAnda Syif ${me.kumpulan}: giliran seterusnya ${new Date(t0).toLocaleDateString(LOKAL, {weekday: 'long', day: 'numeric', month: 'short'})} jam ${jam(t0)} (${jenisSlot(t0)}).`; break; }
     }
   }
   return s;
@@ -1675,7 +1902,7 @@ function aiHabis() { // bila habis kerja / balik
   for (let k = 1; k < 6; k++) {
     const t0 = mula + k * SLOT;
     if (kump(t0) === me.kumpulan)
-      return `Giliran Syif ${me.kumpulan} anda belum bermula. Seterusnya ${new Date(t0).toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'short'})} jam ${jam(t0)} hingga ${jam(t0 + SLOT)}.` +
+      return `Giliran Syif ${me.kumpulan} anda belum bermula. Seterusnya ${new Date(t0).toLocaleDateString(LOKAL, {weekday: 'long', day: 'numeric', month: 'short'})} jam ${jam(t0)} hingga ${jam(t0 + SLOT)}.` +
         (dalam ? `\nAnda sedang Punch In di luar giliran. Syif semasa tamat ${hingga(tamat)}.` : '');
   }
   return `Syif semasa tamat ${hingga(tamat)}.`;
@@ -1689,23 +1916,23 @@ function aiJawab(q) {
   const kata_ = (...k) => k.some(w => kata.has(w));
   if (kata_('hai', 'hi', 'helo', 'hello', 'hey', 'salam', 'assalamualaikum')) return `${aiSapa()}, ${me.nama}!\n${aiStatus()}`;
   if (kata_('tq', 'thanks', 'thank') || ada('terima kasih')) return 'Sama-sama! Kerja elok-elok, jaga keselamatan.';
-  if (kata_('senyap', 'diam', 'mute')) { aiSetSenyap(true); return 'Baik, saya senyap. Peringatan rehat dan syif tetap berbunyi. Taip "cakap" untuk hidupkan semula.'; }
-  if (kata_('cakap', 'bersuara')) { aiSetSenyap(false); return 'Okey! Saya akan bercakap sendiri bila ada info penting.'; }
-  if (ada('rehat', 'makan', 'tidur', 'break', 'lunch')) return aiRehat();
-  if (ada('kritikal')) return aiKritikal();
-  if (ada('statistik', 'ringkasan', 'summary', 'laporan', 'prestasi')) return aiStatistik();
-  if (ada('minggu', '7 hari', 'seminggu')) return aiMinggu();
-  if (ada('hari ini', 'harini')) return aiHariIni();
-  if (ada('habis', 'balik', 'pulang', 'siap kerja', 'tamat kerja', 'selesai') || kata_('off')) return aiHabis();
+  if (kata_('senyap', 'diam', 'mute', 'quiet')) { aiSetSenyap(true); return 'Baik, saya senyap. Peringatan rehat dan syif tetap berbunyi. Taip "cakap" untuk hidupkan semula.'; }
+  if (kata_('cakap', 'bersuara', 'speak')) { aiSetSenyap(false); return 'Okey! Saya akan bercakap sendiri bila ada info penting.'; }
+  if (ada('rehat', 'makan', 'tidur', 'break', 'lunch', 'meal', 'sleep')) return aiRehat();
+  if (ada('kritikal', 'critical')) return aiKritikal();
+  if (ada('statistik', 'ringkasan', 'summary', 'laporan', 'prestasi', 'statistic', 'stats', 'report')) return aiStatistik();
+  if (ada('minggu', '7 hari', 'seminggu', 'week', '7 days')) return aiMinggu();
+  if (ada('hari ini', 'harini', 'today')) return aiHariIni();
+  if (ada('habis', 'balik', 'pulang', 'siap kerja', 'tamat kerja', 'selesai', 'finish', 'go home', 'end work') || kata_('off')) return aiHabis();
   if (ada('syif', 'shift', 'giliran', 'jadual', 'tamat')) return aiSyif();
-  if (ada('pukul', 'jam berapa', 'tarikh', 'hari apa')) return `Sekarang jam ${jam(Date.now())}, ${new Date().toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'long'})}.`;
-  if (ada('nama saya', 'saya siapa', 'id saya')) return `Anda ${me.nama} (${me.kod || '-'}), Syif ${me.kumpulan || '-'}.`;
-  if (ada('lama', 'jam', 'tempoh', 'durasi', 'status', 'sekarang')) return aiHariIni();
-  if (ada('siapa', 'bertugas', 'orang', 'anggota', 'kawan', 'rakan', 'cukup', 'minimum', 'amaran')) return aiSiapa();
-  if (ada('stesen')) { const st = penugasan().map[me.id]; return st ? `Anda di stesen ${st}.\n${aiKritikal()}` : 'Anda belum Punch In, jadi belum ada stesen.'; }
-  if (ada('log', 'punch', 'terakhir', 'sejarah')) return aiLog();
+  if (ada('pukul', 'jam berapa', 'tarikh', 'hari apa', 'what time', 'date')) return `Sekarang jam ${jam(Date.now())}, ${new Date().toLocaleDateString(LOKAL, {weekday: 'long', day: 'numeric', month: 'long'})}.`;
+  if (ada('nama saya', 'saya siapa', 'id saya', 'my name', 'who am i', 'my id')) return `Anda ${me.nama} (${me.kod || '-'}), Syif ${me.kumpulan || '-'}.`;
+  if (ada('lama', 'jam', 'tempoh', 'durasi', 'status', 'sekarang', 'how long', 'hours', 'duration')) return aiHariIni();
+  if (ada('siapa', 'bertugas', 'orang', 'anggota', 'kawan', 'rakan', 'cukup', 'minimum', 'amaran', 'who', 'duty', 'staff', 'warning')) return aiSiapa();
+  if (ada('stesen', 'station')) { const st = penugasan().map[me.id]; return st ? `Anda di stesen ${st}.\n${aiKritikal()}` : 'Anda belum Punch In, jadi belum ada stesen.'; }
+  if (ada('log', 'punch', 'terakhir', 'sejarah', 'history', 'latest')) return aiLog();
   if (ada('tolong', 'bantu', 'help', 'menu', 'boleh buat')) return AI_BANTU;
-  return 'Ai Sedang berehat, Skrip akan ambil alih perbualan ini ya, Maaf, saya belum faham soalan itu. Saya boleh jawab tentang kerja, rehat, syif, stesen dan log anda. Cuba: "bila saya habis kerja", "statistik saya" atau "rehat seterusnya". Taip "tolong" untuk senarai penuh.';
+  return 'Maaf, saya belum faham soalan itu. Saya boleh jawab tentang kerja, rehat, syif, stesen dan log anda. Cuba: "bila saya habis kerja", "statistik saya" atau "rehat seterusnya". Taip "tolong" untuk senarai penuh.';
 }
 
 // ----- Cakap sendiri (proaktif) -----
@@ -1805,7 +2032,7 @@ function aiSkrin() {
 function aiKonteks() {
   if (!me) return 'Pengguna belum log masuk.';
   return [
-    `Masa sekarang: ${jam(Date.now())}, ${new Date().toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}`,
+    `Masa sekarang: ${jam(Date.now())}, ${new Date().toLocaleDateString(LOKAL, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}`,
     `Pengguna: ${me.nama} (Kod: ${me.kod || '-'}, Syif: ${me.kumpulan || '-'})`,
     `Status: ${aiStatus()}`,
     `Syif: ${aiSyif()}`,
@@ -1827,7 +2054,7 @@ async function aiTanya(q) {
   q = (q || '').trim(); if (!q || aiSibuk) return;
   aiTambah('me', q);
 
-  if (/^(senyap|diam|mute|cakap|bersuara)$/i.test(q)) {
+  if (/^(senyap|diam|mute|cakap|bersuara|quiet|speak)$/i.test(q)) {
     aiTambah('ai', aiJawab(q));
     return;
   }
@@ -1836,7 +2063,7 @@ async function aiTanya(q) {
   const loadEl = aiTambah('ai', 'Tupai PGO sedang berfikir...');
   try {
     const {data, error} = await db.functions.invoke('tupai-ai', {
-      body: { soalan: q, konteks: aiKonteks(), sejarah: aiSejarah }
+      body: { soalan: BHS === 'en' ? q + '\n(Please answer in English.)' : q, konteks: aiKonteks(), sejarah: aiSejarah }
     });
     if (error || !data || !data.jawapan) throw new Error(error?.message || data?.error || 'Tiada respons');
 
@@ -1853,7 +2080,8 @@ async function aiTanya(q) {
   }
 }
 function aiKirim() { const i = $('#aiIn'), v = i.value; i.value = ''; aiTanya(v); }
-function aiBicara(t) { // peringatan automatik daripada tupai
+function aiBicara(t) {
+  t = T(t); // peringatan automatik daripada tupai
   aiTambah('ai', t);
   if (aiTerbuka) return;
   $('#aiBadge').style.display = 'block';
@@ -1881,7 +2109,7 @@ function aiAnalisisTab(id) {
 try {
       const {data, error} = await db.functions.invoke('tupai-ai', {
         body: {
-          soalan: 'Berikan 1 ulasan analisis automatik yang sangat padat (1 hingga 2 ayat ringkas sahaja, terus kepada isi tanpa mukadimah) tentang perkara paling penting pada tab yang sedang dibuka sekarang.',
+          soalan: 'Berikan 1 ulasan analisis automatik yang sangat padat (1 hingga 2 ayat ringkas sahaja, terus kepada isi tanpa mukadimah) tentang perkara paling penting pada tab yang sedang dibuka sekarang.' + (BHS === 'en' ? ' Please answer in English.' : ''),
           konteks: aiKonteks(),
           sejarah: []
         }
@@ -2144,10 +2372,10 @@ function chatRender(bawah) {
   const el = $('#chatMsgs'), dekat = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   let h = '', hari = '';
   chatMsgs.forEach(m => {
-    const hk = new Date(m.masa).toLocaleDateString('ms-MY', {weekday: 'short', day: 'numeric', month: 'short'});
+    const hk = new Date(m.masa).toLocaleDateString(LOKAL, {weekday: 'short', day: 'numeric', month: 'short'});
     if (hk !== hari) { hari = hk; h += `<div class="cdate">${esc(hk)}</div>`; }
     const sendiri = m.user_id === me.user_id;
-    const isi = m.jenis === 'gambar' ? `<img src="${esc(m.url)}" loading="lazy" alt="Gambar" data-buka="${esc(m.url)}">`
+    const isi = m.jenis === 'gambar' ? `<img src="${esc(m.url)}" loading="lazy" alt="Gambar" data-buka="${esc(m.url)}">${m.mesej ? `<span class="cm-kap">${esc(m.mesej)}</span>` : ''}`
       : m.jenis === 'suara' ? `<audio controls preload="metadata" src="${esc(m.url)}"></audio><a href="${esc(m.url)}" target="_blank" rel="noopener" style="font-size:.7rem;color:inherit;opacity:.7">Tidak berbunyi? Buka audio</a>`
       : `<span>${esc(m.mesej)}</span>`;
       const isDev = me && String(me.kod || '').toUpperCase() === 'A02';
@@ -2175,7 +2403,7 @@ function chatAktifReply(cm) {
   chatReply = {
     id: m.id,
     nama: chatNama(m),
-    isi: m.jenis === 'gambar' ? '📷 Gambar' : m.jenis === 'suara' ? '🎤 Mesej suara' : (m.mesej || ''),
+    isi: m.jenis === 'gambar' ? '📷 ' + (m.mesej || 'Gambar') : m.jenis === 'suara' ? '🎤 Mesej suara' : (m.mesej || ''),
     jenis: m.jenis || 'teks'
   };
   $('#rbNama').textContent = 'Membalas ' + chatReply.nama;
@@ -2238,7 +2466,7 @@ function chatTerima(m) {
       try { localStorage.setItem(chatKeyRead(), String(Date.now())); } catch (_) {}
     } else {
       chatTdkBaca++; chatDot();
-      toast(`Chat · ${chatNama(m)}: ${m.jenis === 'gambar' ? '📷 Gambar' : m.jenis === 'suara' ? '🎤 Mesej suara' : m.mesej}`);
+      toast(`Chat · ${chatNama(m)}: ${m.jenis === 'gambar' ? '📷 ' + (m.mesej || 'Gambar') : m.jenis === 'suara' ? '🎤 Mesej suara' : m.mesej}`);
       beep(120);
     }
   }
@@ -2297,21 +2525,22 @@ async function chatMula() {
 }
 
 // ----- Gambar dan suara -----
-async function chatMuatNaik(blob, ext, jenis) { // muat naik ke Storage, kemudian simpan baris chat
-  if (!me || chatSibuk) return;
+async function chatMuatNaik(blob, ext, jenis, kapsyen = '') { // muat naik ke Storage, kemudian simpan baris chat
+  if (!me || chatSibuk) return false;
   chatSibuk = true;
   try {
     const path = `${me.user_id}/${Date.now()}.${ext}`;
     const up = await db.storage.from('chat-media').upload(path, blob, {contentType: blob.type.split(';')[0], cacheControl: '31536000'});
     if (up.error) throw up.error;
     const url = db.storage.from('chat-media').getPublicUrl(path).data.publicUrl;
-    const row = {nama: me.nama, mesej: '', jenis, url};
+    const row = {nama: me.nama, mesej: kapsyen, jenis, url};
     if (chatReply) { row.reply_id = chatReply.id; row.reply_nama = chatReply.nama; row.reply_isi = chatReply.isi.slice(0, 200); row.reply_jenis = chatReply.jenis; }
     const {data, error} = await db.from('chat').insert(row).select().single();
     if (error) throw error;
     chatTerima(data); chatRender(true);
     $('#rbBatal').click();
-  } catch (e) { alert('Gagal hantar: ' + (e.message || e)); }
+    return true;
+  } catch (e) { alert('Gagal hantar: ' + (e.message || e)); return false; }
   finally { chatSibuk = false; }
 }
 
@@ -2331,11 +2560,38 @@ function kecilkan(file, maks = 1280) { // kecilkan gambar sebelum muat naik
   });
 }
 $('#chatImg').onclick = () => $('#chatFile').click();
+// Pilih gambar → pratonton + kapsyen → hantar
+let gbSedia = null; // {blob, url}
+function gbTutup() {
+  if (gbSedia) URL.revokeObjectURL(gbSedia.url);
+  gbSedia = null;
+  $('#gbPratonton').classList.remove('on'); $('#gbImej').removeAttribute('src'); $('#gbKapsyen').value = '';
+}
 $('#chatFile').onchange = async e => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f) return;
-  try { chatMuatNaik(await kecilkan(f), 'jpg', 'gambar'); } catch (err) { alert(err.message); }
+  try {
+    const blob = await kecilkan(f);
+    gbTutup();
+    gbSedia = {blob, url: URL.createObjectURL(blob)};
+    $('#gbImej').src = gbSedia.url;
+    $('#gbKapsyen').value = $('#chatIn').value.trim(); // teks yang sudah ditaip jadi kapsyen
+    $('#gbPratonton').classList.add('on');
+    $('#gbKapsyen').focus();
+  } catch (err) { alert(err.message); }
 };
+async function gbHantar() {
+  if (!gbSedia || chatSibuk) return;
+  const b = $('#gbHantar'), label = b.textContent, kapsyen = $('#gbKapsyen').value.trim();
+  b.disabled = true; b.textContent = 'Memproses...';
+  const ok = await chatMuatNaik(gbSedia.blob, 'jpg', 'gambar', kapsyen);
+  b.disabled = false; b.textContent = label;
+  if (ok) { $('#chatIn').value = ''; gbTutup(); } // gagal: pratonton kekal supaya boleh cuba lagi
+}
+$('#gbHantar').onclick = gbHantar;
+$('#gbBatal').onclick = () => { if (!$('#gbHantar').disabled) gbTutup(); };
+$('#gbKapsyen').onkeydown = e => { if (e.key === 'Enter') gbHantar(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && gbSedia && !$('#gbHantar').disabled) gbTutup(); });
 $('#chatMsgs').addEventListener('click', e => { const u = e.target.dataset && e.target.dataset.buka; if (u) window.open(u, '_blank'); });
 
 let rakam = null;
