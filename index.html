@@ -1841,7 +1841,8 @@ function dashLog(ses, rankSrc, fmtDur, TARGET) {
   const hari = [...Array(7)].map((_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 6 + i); return {t: d.getTime(), lbl: d.getDate(), jum: 0, n: 0}; });
   done.forEach(s => { const h = hari.find(x => s.outTs >= x.t && s.outTs < x.t + 86400000); if (h) { h.jum += s.ms; h.n++; } });
   hari.forEach(h => { h.pur = h.n ? h.jum / h.n : 0; });
-  const YJAM = 1000, YLANGKAH = 50; // maksimum paksi Y (jam) dan jarak antara garis (jam)
+  const YJAM = 300, YLANGKAH = 50; 
+  // maksimum paksi Y (jam) dan jarak antara garis (jam)
   const W = 300, H = 400, PL = 32, PR = 10, PT = 10, PB = 20, mx = Math.max(YJAM * 3600000, ...hari.map(h => h.jum));
   const X = i => PL + (i + .5) * (W - PL - PR) / 7, Y = ms => H - PB - ms / mx * (H - PT - PB);
   const garis = (k, col, area) => {
