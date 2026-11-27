@@ -354,6 +354,25 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   #log li { break-inside: avoid; border-bottom: 1px solid #e2e6ec !important; }
   .mut, .lg-side > span, .rk-val, .ls-hd span, .ls-item small { color: #555 !important; }
 }
+/* ===== Animasi bomba padam api (skrin log masuk) ===== */
+#login{position:relative;z-index:1}
+#bomba{display:block;width:100%;max-width:420px;height:auto;max-height:34vh;margin:5vh auto 0;pointer-events:none;overflow:visible} /* duduk betul-betul atas kad login */
+#bomba *{transform-box:fill-box;transform-origin:50% 100%}
+.bb-surut{animation:bbSurut 6s ease-in-out infinite}
+.bb-api{animation:bbApi .5s ease-in-out infinite alternate}
+.bb-asap{opacity:0;animation:bbAsap 3.6s linear infinite}
+.bb-air{stroke-dasharray:14 12;animation:bbAir .45s linear infinite}
+.bb-titis{animation:bbTitis .8s ease-out infinite}
+.bb-orang{animation:bbOrang .45s ease-in-out infinite alternate}
+@keyframes bbSurut{0%,100%{transform:scale(1)}60%{transform:scale(.45)}75%{transform:scale(.55)}}
+@keyframes bbApi{from{transform:scale(1,1) skewX(-4deg)}to{transform:scale(.88,1.16) skewX(5deg)}}
+@keyframes bbAsap{0%{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:.55}100%{transform:translate(22px,-95px) scale(1.7);opacity:0}}
+@keyframes bbAir{to{stroke-dashoffset:-26}}
+@keyframes bbTitis{0%{transform:translate(0,0);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(.4);opacity:0}}
+@keyframes bbOrang{to{transform:translateX(-1.5px)}}
+@media(prefers-reduced-motion:reduce){#bomba *{animation:none!important}.bb-asap{opacity:.4}}
+@media print{#bomba{display:none}}
+
 /* ===== Zoom in / zoom out ===== */
 .tab:not(#t7){zoom:var(--z,1)}
 .zm{display:flex;gap:4px}
@@ -416,7 +435,40 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   </div>
 </div>
 
-<div id="login" class="card" style="margin-top:12vh">
+<svg id="bomba" viewBox="0 30 400 242" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+  <rect x="4" y="265" width="392" height="7" rx="3.5" fill="#7b8794" opacity=".7"/>
+  <!-- asap --><circle class="bb-asap" cx="298" cy="92" r="13" fill="#9aa3ad" style="animation-delay:-0s"/><circle class="bb-asap" cx="318" cy="100" r="10" fill="#9aa3ad" style="animation-delay:-0.9s"/><circle class="bb-asap" cx="285" cy="104" r="9" fill="#9aa3ad" style="animation-delay:-1.8s"/><circle class="bb-asap" cx="330" cy="112" r="12" fill="#9aa3ad" style="animation-delay:-2.7s"/>
+  <!-- rumah terbakar -->
+  <path fill="#d9c3a0" d="M258 160h112v108H258z"/><path fill="#8d3b32" d="M244 164L314 106L384 164Z"/>
+  <path fill="#3b2a24" d="M270 178h30v30h-30zM328 178h30v30h-30z"/><path fill="#6b4531" d="M300 224h30v44h-30z"/><circle cx="324" cy="247" r="2.5" fill="#f2c14e"/>
+  <!-- api --><g transform="translate(285 208) scale(0.72)"><g class="bb-surut"><g class="bb-api" style="animation-delay:-0s"><path fill="#ff5a1f" d="M0 0C-20-2-24-24-10-40C-9-28-3-27-1-32C2-45-5-54 3-68C7-50 25-40 21-18C19-5 11 0 0 0Z"/><path fill="#ffc531" d="M1-1C-11-2-13-15-5-25C-4-18 0-17 1-21C3-28 0-33 4-41C7-29 15-22 12-10C11-4 7-1 1-1Z"/></g></g></g><g transform="translate(343 208) scale(0.8)"><g class="bb-surut"><g class="bb-api" style="animation-delay:-0.2s"><path fill="#ff5a1f" d="M0 0C-20-2-24-24-10-40C-9-28-3-27-1-32C2-45-5-54 3-68C7-50 25-40 21-18C19-5 11 0 0 0Z"/><path fill="#ffc531" d="M1-1C-11-2-13-15-5-25C-4-18 0-17 1-21C3-28 0-33 4-41C7-29 15-22 12-10C11-4 7-1 1-1Z"/></g></g></g><g transform="translate(314 134) scale(1.05)"><g class="bb-surut"><g class="bb-api" style="animation-delay:-0.35s"><path fill="#ff5a1f" d="M0 0C-20-2-24-24-10-40C-9-28-3-27-1-32C2-45-5-54 3-68C7-50 25-40 21-18C19-5 11 0 0 0Z"/><path fill="#ffc531" d="M1-1C-11-2-13-15-5-25C-4-18 0-17 1-21C3-28 0-33 4-41C7-29 15-22 12-10C11-4 7-1 1-1Z"/></g></g></g><g transform="translate(360 154) scale(0.6)"><g class="bb-surut"><g class="bb-api" style="animation-delay:-0.1s"><path fill="#ff5a1f" d="M0 0C-20-2-24-24-10-40C-9-28-3-27-1-32C2-45-5-54 3-68C7-50 25-40 21-18C19-5 11 0 0 0Z"/><path fill="#ffc531" d="M1-1C-11-2-13-15-5-25C-4-18 0-17 1-21C3-28 0-33 4-41C7-29 15-22 12-10C11-4 7-1 1-1Z"/></g></g></g><g transform="translate(262 268) scale(0.55)"><g class="bb-surut"><g class="bb-api" style="animation-delay:-0.28s"><path fill="#ff5a1f" d="M0 0C-20-2-24-24-10-40C-9-28-3-27-1-32C2-45-5-54 3-68C7-50 25-40 21-18C19-5 11 0 0 0Z"/><path fill="#ffc531" d="M1-1C-11-2-13-15-5-25C-4-18 0-17 1-21C3-28 0-33 4-41C7-29 15-22 12-10C11-4 7-1 1-1Z"/></g></g></g>
+  <!-- pili bomba dan hos -->
+  <path fill="none" stroke="#c9a227" stroke-width="7" stroke-linecap="round" d="M30 256C48 284 92 276 96 250C99 232 108 218 128 214"/>
+  <g fill="#d32f2f"><rect x="16" y="236" width="22" height="32" rx="4"/><path d="M16 238a11 11 0 0 1 22 0z"/><rect x="10" y="246" width="34" height="8" rx="3"/><rect x="12" y="264" width="30" height="5" rx="2"/></g>
+  <!-- air -->
+  <path fill="none" stroke="#3aa0e8" stroke-width="11" stroke-linecap="round" d="M163 205Q216 130 278 176"/>
+  <path class="bb-air" fill="none" stroke="#cdeeff" stroke-width="5" stroke-linecap="round" d="M163 205Q216 130 278 176"/>
+  <circle class="bb-titis" cx="278" cy="176" r="4" fill="#7fd0ff" style="--x:-24px;--y:-22px;animation-delay:-0s"/><circle class="bb-titis" cx="278" cy="176" r="3" fill="#7fd0ff" style="--x:-8px;--y:-34px;animation-delay:-0.15s"/><circle class="bb-titis" cx="278" cy="176" r="3.5" fill="#7fd0ff" style="--x:18px;--y:-26px;animation-delay:-0.3s"/><circle class="bb-titis" cx="278" cy="176" r="3" fill="#7fd0ff" style="--x:-30px;--y:8px;animation-delay:-0.45s"/><circle class="bb-titis" cx="278" cy="176" r="2.5" fill="#7fd0ff" style="--x:24px;--y:10px;animation-delay:-0.6s"/><circle class="bb-titis" cx="278" cy="176" r="3" fill="#7fd0ff" style="--x:4px;--y:26px;animation-delay:-0.7s"/>
+  <!-- anggota bomba -->
+  <g class="bb-orang">
+    <path fill="#1f2937" d="M92 262h24v8H88q0-8 4-8zM126 262h22q6 0 6 8h-28z"/>
+    <path fill="#2f3e5c" d="M100 226h20l-5 38H94zM117 226h22l8 38h-22z"/>
+    <path fill="#ffd633" d="M96 250h20l-1 6H95zM130 250h14l1 6h-14z"/>
+    <rect x="94" y="176" width="52" height="58" rx="17" fill="#38496b"/>
+    <rect x="94" y="212" width="52" height="8" fill="#ffd633"/><rect x="94" y="215" width="52" height="2" fill="#e8edf2"/>
+    <circle cx="121" cy="154" r="25" fill="#f2bd91"/>
+    <circle cx="129" cy="156" r="3" fill="#1f2937"/><circle cx="142" cy="155" r="3" fill="#1f2937"/>
+    <path fill="none" stroke="#7a3b2a" stroke-width="2.5" stroke-linecap="round" d="M128 167q7 6 14 0"/><circle cx="116" cy="165" r="4" fill="#ee8f7a" opacity=".6"/>
+    <path fill="#d62828" d="M92 150q2-34 31-34t29 31q-28-9-60 3z"/><path fill="none" stroke="#9b1c1c" stroke-width="6" stroke-linecap="round" d="M90 150q30-13 64-3"/>
+    <path fill="#ffd633" d="M121 123h14v10l-7 7l-7-7z"/>
+    <path fill="none" stroke="#2c3a57" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" d="M104 188L112 214L133 212"/>
+    <path fill="none" stroke="#43577f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" d="M134 188L140 208L152 206"/>
+    <path fill="#9aa5b1" d="M124 211l30-14l7 12l-31 11z"/><path fill="#5d6773" d="M152 196l14 4l-1 12l-10-1z"/>
+    <circle cx="133" cy="213" r="8" fill="#22262e"/><circle cx="153" cy="205" r="8" fill="#22262e"/>
+  </g>
+</svg>
+
+<div id="login" class="card" style="margin-top:6px">
     <h1>Syif PGO Johor</h1>
   <input id="lid" placeholder="ID (contoh: A01)" autocapitalize="characters" autocomplete="username">
   <input id="lpw" type="password" placeholder="Kata laluan" autocomplete="current-password">
@@ -746,8 +798,8 @@ $('#keluar').onclick = async e => {
 async function boot() {
   if (!db) { $('#lerr').textContent = MSG_KONFIG; return; }
   const {data: {session}} = await db.auth.getSession();
-  if (!session) { $('#login').style.display = 'block'; $('#app').style.display = 'none'; return; }
-  $('#login').style.display = 'none'; $('#app').style.display = 'block';
+  if (!session) { $('#login').style.display = 'block'; $('#bomba').style.display = 'block'; $('#app').style.display = 'none'; return; }
+  $('#login').style.display = 'none'; $('#bomba').style.display = 'none'; $('#app').style.display = 'block';
   semakIzin();
   await load();
   me = anggota.find(a => a.user_id === session.user.id);
