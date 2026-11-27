@@ -1705,7 +1705,7 @@ function aiJawab(q) {
   if (ada('stesen')) { const st = penugasan().map[me.id]; return st ? `Anda di stesen ${st}.\n${aiKritikal()}` : 'Anda belum Punch In, jadi belum ada stesen.'; }
   if (ada('log', 'punch', 'terakhir', 'sejarah')) return aiLog();
   if (ada('tolong', 'bantu', 'help', 'menu', 'boleh buat')) return AI_BANTU;
-  return 'Maaf, saya belum faham soalan itu. Saya boleh jawab tentang kerja, rehat, syif, stesen dan log anda. Cuba: "bila saya habis kerja", "statistik saya" atau "rehat seterusnya". Taip "tolong" untuk senarai penuh.';
+  return 'Ai Sedang berehat, Skrip akan ambil alih perbualan ini ya, Maaf, saya belum faham soalan itu. Saya boleh jawab tentang kerja, rehat, syif, stesen dan log anda. Cuba: "bila saya habis kerja", "statistik saya" atau "rehat seterusnya". Taip "tolong" untuk senarai penuh.';
 }
 
 // ----- Cakap sendiri (proaktif) -----
