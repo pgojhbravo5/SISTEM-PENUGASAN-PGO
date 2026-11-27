@@ -261,34 +261,42 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 .tabs button{font-size:.66rem;padding:8px 2px}
 [data-device=desktop] #peta{height:calc(100dvh - 230px)}
 
-/* Dashboard analitik gaya graf */
+/* Dashboard analitik (ikut tema asal) */
 .lscore{padding:0;background:none;border:0}
-.ds{padding:14px;border-radius:16px;background:linear-gradient(160deg,#1a2550,#121a38);color:#e8ecf8;box-shadow:var(--sh)}
+.ds{padding:14px;border-radius:14px;background:var(--field);border:1px solid var(--bd);color:var(--tx)}
 .ds-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
-.ds-hd b{font-size:.9rem}.ds-hd span{font-size:.7rem;color:#9fb0d6}
-.ds-x{width:auto;margin:0;padding:3px 10px;border-radius:999px;font-size:.7rem;background:rgba(255,255,255,.1);color:#e8ecf8;border:0}
+.ds-hd b{font-size:.9rem}.ds-hd span{font-size:.7rem;color:var(--mut)}
+.ds-x{width:auto;margin:0;padding:3px 10px;border-radius:999px;font-size:.7rem;background:var(--card);color:var(--tx);border:1px solid var(--bd)}
 .ds-top{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center}
 .ds-ring{width:110px;height:110px}
-.ds-big{fill:#fff;font:700 15px system-ui}.ds-sm{fill:#9fb0d6;font:8px system-ui}
+.ds-big{fill:var(--tx);font:700 15px system-ui}.ds-sm{fill:var(--mut);font:8px system-ui}
 .ds-tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.ds-t{padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.07)}
-.ds-t small{display:block;font-size:.62rem;color:#9fb0d6}.ds-t b{font-size:.82rem;font-variant-numeric:tabular-nums}
-.ds-lg{display:flex;align-items:center;gap:6px;margin:6px 0 4px;font-size:.66rem;color:#9fb0d6}
+.ds-t{padding:6px 8px;border-radius:10px;background:var(--card);border:1px solid var(--bd)}
+.ds-t small{display:block;font-size:.62rem;color:var(--mut)}.ds-t b{font-size:.82rem;font-variant-numeric:tabular-nums}
+.ds-lg{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:6px 0 4px;font-size:.66rem;color:var(--mut)}
 .ds-lg i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.ds-cap{margin:10px 0 2px;font-size:.72rem;font-weight:600;color:#cfd9f5}
-.ds-svg{width:100%;height:auto;display:block}.ds-svg text{fill:#9fb0d6;font:8px system-ui}
-.ds-tabs{display:flex;gap:4px;margin:12px 0 6px;padding:3px;border-radius:12px;background:rgba(255,255,255,.07)}
-.ds-tabs button{flex:1;margin:0;width:auto;padding:6px 4px;border:0;border-radius:9px;background:transparent;color:#9fb0d6;font-size:.74rem}
-.ds-tabs button.on{background:rgba(255,255,255,.16);color:#fff}
+.ds-cap{margin:10px 0 2px;font-size:.72rem;font-weight:600}
+.ds-svg{width:100%;height:auto;display:block}.ds-svg text{fill:var(--mut);font:8px system-ui}
+.ds-tabs{display:flex;gap:4px;margin:12px 0 6px;padding:3px;border-radius:12px;background:var(--card);border:1px solid var(--bd)}
+.ds-tabs button{flex:1;margin:0;width:auto;padding:6px 4px;border:0;border-radius:9px;background:transparent;color:var(--mut);font-size:.74rem}
+.ds-tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
 .ds-board{display:flex;flex-direction:column;gap:4px;max-height:230px;overflow-y:auto}
-.ds-r{display:grid;grid-template-columns:24px 34px 1fr auto;align-items:center;gap:8px;width:100%;margin:0;padding:6px 8px;border:1px solid transparent;border-radius:10px;background:rgba(255,255,255,.05);color:#e8ecf8;font-size:.76rem;text-align:left}
-.ds-r.on{border-color:#ff4f8b;background:rgba(255,79,139,.14)}
+.ds-r{display:grid;grid-template-columns:24px 34px 1fr auto;align-items:center;gap:8px;width:100%;margin:0;padding:6px 8px;border:1px solid transparent;border-radius:10px;background:var(--card);color:var(--tx);font-size:.76rem;text-align:left}
+.ds-r.on{border-color:var(--pri);background:rgba(179,38,30,.12)}
 .ds-m{text-align:center}.ds-id{font-weight:700}
-.ds-bar{height:8px;border-radius:2px;overflow:hidden;background:repeating-linear-gradient(90deg,rgba(255,255,255,.1) 0 3px,transparent 3px 5px)}
+.ds-bar{height:8px;border-radius:2px;overflow:hidden;background:repeating-linear-gradient(90deg,var(--ln) 0 3px,transparent 3px 5px)}
 .ds-bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--c) 0 3px,transparent 3px 5px)}
-.ds-v{font-variant-numeric:tabular-nums;color:#9fb0d6;font-size:.7rem;white-space:nowrap}
-.ds-sm2{margin:6px 0;color:#9fb0d6;font-size:.75rem}
-@media print{.ds{background:#fff!important;color:#111!important;box-shadow:none}.ds *{color:#111!important}.ds-big{fill:#111}}
+.ds-v{font-variant-numeric:tabular-nums;color:var(--mut);font-size:.7rem;white-space:nowrap}
+.ds-sm2{margin:6px 0;color:var(--mut);font-size:.75rem}
+.ds-lg button{width:auto;margin:0;padding:2px 8px;border-radius:999px;font-size:.66rem;background:var(--card);color:var(--mut);border:1px solid var(--bd);display:inline-flex;align-items:center;gap:5px}
+.ds-lg button.off{opacity:.4;text-decoration:line-through}
+.tog-log{width:100%;margin:6px 0 8px;padding:8px;border-radius:12px;font-size:.8rem;background:var(--field);color:var(--mut)}
+.ds-hit{fill:transparent;cursor:crosshair}.ds-hit:hover{fill:var(--ln)}
+#dsTip{position:fixed;z-index:20;display:none;pointer-events:none;padding:8px 10px;border-radius:10px;background:var(--tx);color:var(--bg);font-size:.76rem;line-height:1.45;box-shadow:var(--sh);white-space:nowrap}
+#dsTip b{display:block;margin-bottom:2px}
+@media print{#dsTip{display:none!important}}
+@media print{#log{display:block!important}#bTogLog{display:none!important}}
+@media print{.ds,.ds *{color:#111!important}.ds-big,.ds-svg text{fill:#111}}
 
 /* ===== Paparan Desktop (auto: html[data-device="desktop"]) ===== */
 [data-device=desktop] body{max-width:none;margin:0;padding:24px 28px}
@@ -635,8 +643,9 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
     </div>
     <div class="sb"><span id="logCnt" class="mut"></span><a href="#" id="fReset" class="keluar">Set semula</a></div>
     <div id="logScore" class="lscore"></div>
+    <button type="button" id="bTogLog" class="tog-log" aria-expanded="true">Sembunyikan log ▲</button>
     <ul id="log"></ul>
-    </div>
+  </div>
   </section>
 
 <!-- TAB 5: Hantar notifikasi -->
@@ -1211,6 +1220,7 @@ const sesiAll = [], bukaAng = {};
   $('#logScore').innerHTML = dashLog(sesiTapis, sesiRankSrc, fmtDur, TARGET_MS);
   $('#logScore').querySelectorAll('[data-aid]').forEach(b => b.onclick = () => { fAng = fAng === b.dataset.aid ? '' : b.dataset.aid; render(); });
   $('#logScore').querySelectorAll('[data-skt]').forEach(b => b.onclick = () => { window._skorTab = b.dataset.skt; render(); });
+  $('#logScore').querySelectorAll('[data-lg]').forEach(b => b.onclick = () => { const o = window._lgOff = window._lgOff || {}; o[b.dataset.lg] = !o[b.dataset.lg]; render(); });
 
   // Senarai log: Punch In (kiri) | Punch Out (kanan) | Masa log (hujung kanan)
   $('#log').innerHTML = (logPrintAll ? sesiTapis : sesiTapis.slice(0, 50)).map(s => {
@@ -1808,7 +1818,7 @@ document.querySelectorAll('#segN button').forEach(b => b.onclick = () => rujukan
 
 // ===== Dashboard analitik log (gaya graf) =====
 function dashLog(ses, rankSrc, fmtDur, TARGET) {
-  const C = {g: '#2fe0a5', p: '#ff4f8b', c: '#5fd3e8', a: '#f2b84b'};
+  const C = {g: 'var(--ok)', p: 'var(--bad)', c: 'var(--c-rehat)', a: 'var(--c-makan)'};
   const sel = fAng ? anggota.find(x => String(x.id) === fAng) : null;
   const done = ses.filter(s => s.ms != null).sort((x, y) => x.outTs - y.outTs);
   const jum = done.reduce((n, s) => n + s.ms, 0), pur = done.length ? jum / done.length : 0;
@@ -1820,31 +1830,38 @@ function dashLog(ses, rankSrc, fmtDur, TARGET) {
 
   // Cincin berkembar: luar = skor purata, dalam = peratus sesi capai 12j
   const ring = (r, p, col) => { const k = 2 * Math.PI * r;
-    return `<circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="9"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${k * p / 100} ${k}" transform="rotate(-90 50 50)"/>`; };
+    return `<circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--ln)" stroke-width="9"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${k * p / 100} ${k}" transform="rotate(-90 50 50)"/>`; };
   const rings = `<svg viewBox="0 0 100 100" class="ds-ring">${ring(42, skor, C.g)}${ring(29, pc, C.p)}<text x="50" y="48" text-anchor="middle" class="ds-big">${skor}%</text><text x="50" y="60" text-anchor="middle" class="ds-sm">skor</text></svg>`;
   const tile = (k, v, c) => `<div class="ds-t"><small>${k}</small><b${c ? ` style="color:${c}"` : ''}>${v}</b></div>`;
   const tiles = tile('Purata', done.length ? fmtDur(pur) : '-') + tile('Jumlah', done.length ? fmtDur(jum) : '-') +
     tile('Terpanjang', done.length ? fmtDur(maks) : '-', C.g) + tile('Terpendek', done.length ? fmtDur(pendek) : '-', C.p) +
     tile('Capai 12j', `${capai}/${done.length}`, C.c) + tile('Stesen utama', top ? top[0] : '-', C.a);
 
-  // Graf kawasan/garis: tempoh 14 sesi terakhir
-  const pts = done.slice(-14), W = 300, H = 110, P = 8, mx = Math.max(TARGET, maks);
-  const xy = (i, ms) => [P + (pts.length > 1 ? i * (W - 2 * P) / (pts.length - 1) : (W - 2 * P) / 2), H - P - ms / mx * (H - 2 * P)];
-  const ln = pts.map((s, i) => xy(i, s.ms).map(v => v.toFixed(1)).join(',')).join(' ');
-  const yT = (H - P - TARGET / mx * (H - 2 * P)).toFixed(1);
-  const trend = pts.length ? `<svg viewBox="0 0 ${W} ${H}" class="ds-svg"><defs><linearGradient id="dsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C.g}" stop-opacity=".55"/><stop offset="1" stop-color="${C.g}" stop-opacity="0"/></linearGradient></defs>
-    <line x1="${P}" x2="${W - P}" y1="${yT}" y2="${yT}" stroke="${C.p}" stroke-dasharray="4 3"/>
-    <polygon points="${xy(0, 0)[0]},${H - P} ${ln} ${xy(pts.length - 1, 0)[0]},${H - P}" fill="url(#dsg)"/>
-    <polyline points="${ln}" fill="none" stroke="${C.g}" stroke-width="2" stroke-linejoin="round"/>
-    ${pts.map((s, i) => { const [x, y] = xy(i, s.ms); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="${s.ms >= TARGET ? C.g : C.p}"/>`; }).join('')}</svg>` : '<p class="ds-sm2">Belum ada sesi selesai</p>';
-
-  // Graf bar: jumlah jam kerja 7 hari lepas
-  const hari = [...Array(7)].map((_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 6 + i); return {t: d.getTime(), ms: 0, lbl: d.getDate()}; });
-  done.forEach(s => { const h = hari.find(x => s.outTs >= x.t && s.outTs < x.t + 86400000); if (h) h.ms += s.ms; });
-  const bmx = Math.max(TARGET, ...hari.map(x => x.ms)), bw = (W - 2 * P) / 7, bh = 76, yB = (84 - TARGET / bmx * bh).toFixed(1);
-  const bars = `<svg viewBox="0 0 300 100" class="ds-svg">${hari.map((x, i) => { const h = x.ms / bmx * bh;
-    return `<rect x="${(P + i * bw + 5).toFixed(1)}" y="${(84 - h).toFixed(1)}" width="${(bw - 10).toFixed(1)}" height="${Math.max(h, x.ms ? 2 : 0).toFixed(1)}" rx="2" fill="${x.ms >= TARGET ? C.g : C.p}"/><text x="${(P + i * bw + bw / 2).toFixed(1)}" y="96" text-anchor="middle">${x.lbl}</text>`; }).join('')}
-    <line x1="${P}" x2="${W - P}" y1="${yB}" y2="${yB}" stroke="${C.a}" stroke-dasharray="3 3" opacity=".7"/></svg>`;
+  // Graf gabungan 7 hari: garis 1 = jam kerja harian, garis 2 = purata tempoh sesi
+  const hari = [...Array(7)].map((_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 6 + i); return {t: d.getTime(), lbl: d.getDate(), jum: 0, n: 0}; });
+  done.forEach(s => { const h = hari.find(x => s.outTs >= x.t && s.outTs < x.t + 86400000); if (h) { h.jum += s.ms; h.n++; } });
+  hari.forEach(h => { h.pur = h.n ? h.jum / h.n : 0; });
+  const YJAM = 1000, YLANGKAH = 50; // maksimum paksi Y (jam) dan jarak antara garis (jam)
+  const W = 300, H = 400, PL = 32, PR = 10, PT = 10, PB = 20, mx = Math.max(YJAM * 3600000, ...hari.map(h => h.jum));
+  const X = i => PL + (i + .5) * (W - PL - PR) / 7, Y = ms => H - PB - ms / mx * (H - PT - PB);
+  const garis = (k, col, area) => {
+    const p = hari.map((h, i) => h[k] ? [X(i), Y(h[k]), h] : null).filter(Boolean);
+    if (!p.length) return '';
+    const l = p.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ');
+    return (area && p.length > 1 ? `<polygon points="${p[0][0].toFixed(1)},${H - PB} ${l} ${p[p.length - 1][0].toFixed(1)},${H - PB}" fill="url(#dsg)"/>` : '') +
+      (p.length > 1 ? `<polyline points="${l}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : '') +
+      p.map(q => `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3" fill="${col}"><title>${q[2].lbl}: ${fmtDur(q[2][k])}</title></circle>`).join('');
+  };
+  const grid = Array.from({length: YJAM / YLANGKAH + 1}, (_, k) => k * YLANGKAH * 3600000).map(v => `<line x1="${PL}" x2="${W - PR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--ln)"/><text x="${PL - 4}" y="${(Y(v) + 3).toFixed(1)}" text-anchor="end">${v / 3600000}j</text>`).join('');
+  window._dsHari = hari;
+  const off = window._lgOff || {};
+  const lgb = (k, col, txt) => `<button type="button" data-lg="${k}" class="${off[k] ? 'off' : ''}"><i style="background:${col}"></i>${txt}</button>`;
+  const kombo = `<svg viewBox="0 0 ${W} ${H}" class="ds-svg"><defs><linearGradient id="dsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${C.g};stop-opacity:.35"/><stop offset="1" style="stop-color:${C.g};stop-opacity:0"/></linearGradient></defs>${grid}
+    ${hari.map((h, i) => h.jum && !off[h.jum >= TARGET ? 'cap' : 'belum'] ? `<rect x="${(X(i) - (W - PL - PR) / 14 + 4).toFixed(1)}" y="${Y(h.jum).toFixed(1)}" width="${((W - PL - PR) / 7 - 8).toFixed(1)}" height="${(H - PB - Y(h.jum)).toFixed(1)}" rx="2" fill="${h.jum >= TARGET ? C.g : C.p}"><title>${h.lbl}: ${fmtDur(h.jum)}</title></rect>` : '').join('')}
+    ${off.sas ? '' : `<line x1="${PL}" x2="${W - PR}" y1="${Y(TARGET).toFixed(1)}" y2="${Y(TARGET).toFixed(1)}" stroke="${C.a}" stroke-dasharray="4 3"/>`}
+    ${off.pur ? '' : garis('pur', C.c)}
+    ${hari.map((h, i) => `<text x="${X(i).toFixed(1)}" y="${H - 5}" text-anchor="middle">${h.lbl}</text>`).join('')}
+    ${hari.map((h, i) => `<rect class="ds-hit" data-i="${i}" x="${(X(i) - (W - PL - PR) / 14).toFixed(1)}" y="${PT}" width="${((W - PL - PR) / 7).toFixed(1)}" height="${H - PT - PB}"/>`).join('')}</svg>`;
 
   // Scoreboard (abaikan penapis ID supaya semua ID sentiasa kelihatan)
   const m = {};
@@ -1861,11 +1878,48 @@ function dashLog(ses, rankSrc, fmtDur, TARGET) {
     <div class="ds-top">${rings}<div class="ds-tiles">${tiles}</div></div>
     <div class="ds-lg"><i style="background:${C.g}"></i>Skor purata<i style="background:${C.p}"></i>Sesi capai 12j (${pc}%)</div>
     ${urut >= 0 ? `<div class="ds-cap">Kedudukan jam kerja: #${urut + 1} daripada ${Object.keys(m).length} ID</div>` : ''}
-    <div class="ds-cap">Trend tempoh sesi · garis merah = 12j</div>${trend}
-    <div class="ds-cap">Jam kerja 7 hari lepas · garis kuning = 12j</div>${bars}
+    <div class="ds-cap">Trend 7 hari lepas</div>
+    <div class="ds-lg">${lgb('cap', C.g, 'Capai 12j')}${lgb('belum', C.p, 'Belum capai')}${lgb('pur', C.c, 'Purata tempoh sesi')}${lgb('sas', C.a, 'Sasaran 12j')}</div>
+    ${done.length ? kombo : '<p class="ds-sm2">Belum ada sesi selesai</p>'}
     <div class="ds-tabs"><button type="button" data-skt="aktif" class="${tab === 'aktif' ? 'on' : ''}">Paling aktif</button><button type="button" data-skt="capai" class="${tab === 'capai' ? 'on' : ''}">Capai 12 jam</button></div>
     <div class="ds-board">${board}</div></div>`;
 }
+
+// Sembunyi atau papar senarai log (pilihan diingat)
+(function () {
+  const b = $('#bTogLog'), u = $('#log');
+  const set = sembunyi => {
+    u.style.display = sembunyi ? 'none' : '';
+    b.textContent = sembunyi ? 'Papar log ▼' : 'Sembunyikan log ▲';
+    b.setAttribute('aria-expanded', String(!sembunyi));
+    try { localStorage.setItem('logSembunyi', sembunyi ? '1' : '0'); } catch (_) {}
+  };
+  b.onclick = () => set(u.style.display !== 'none');
+  try { set(localStorage.getItem('logSembunyi') === '1'); } catch (_) {}
+})();
+
+// Tooltip hover graf analitik (serta-merta, ikut kursor)
+(function () {
+  const box = $('#logScore'), tip = document.createElement('div');
+  tip.id = 'dsTip'; document.body.appendChild(tip);
+  const fd = ms => { const m = Math.round(ms / 60000); return m < 60 ? m + 'm' : Math.floor(m / 60) + 'j ' + m % 60 + 'm'; };
+  const tunjuk = e => {
+    const r = e.target.closest && e.target.closest('.ds-hit'), h = r && (window._dsHari || [])[+r.dataset.i];
+    if (!h) { tip.style.display = 'none'; return; }
+    const tkh = new Date(h.t).toLocaleDateString('ms-MY', {weekday: 'long', day: 'numeric', month: 'short'});
+    tip.innerHTML = `<b>${tkh}</b>` + (h.n
+      ? `Jam kerja: ${fd(h.jum)}${h.jum >= 12 * 3600000 ? ' ✓ capai 12j' : ''}<br>Purata sesi: ${fd(h.pur)}<br>Bilangan sesi: ${h.n}`
+      : 'Tiada data');
+    tip.style.display = 'block';
+    const w = tip.offsetWidth, ht = tip.offsetHeight;
+    tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8)) + 'px';
+    tip.style.top = (e.clientY + 14 + ht > innerHeight ? e.clientY - ht - 10 : e.clientY + 14) + 'px';
+  };
+  box.addEventListener('mousemove', tunjuk);
+  box.addEventListener('click', tunjuk); // sentuhan pada telefon
+  box.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  document.addEventListener('click', e => { if (!box.contains(e.target)) tip.style.display = 'none'; });
+})();
 
 // ===== Penapis log =====
 $('#fJns').onchange = e => { logFilter = e.target.value; render(); };
