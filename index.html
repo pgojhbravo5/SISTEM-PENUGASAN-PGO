@@ -1843,7 +1843,7 @@ function dashLog(ses, rankSrc, fmtDur, TARGET) {
   hari.forEach(h => { h.pur = h.n ? h.jum / h.n : 0; });
   const YJAM = 300, YLANGKAH = 50; 
   // maksimum paksi Y (jam) dan jarak antara garis (jam)
-  const W = 300, H = 150, PL = 32, PR = 10, PT = 10, PB = 20, mx = Math.max(YJAM * 3600000, ...hari.map(h => h.jum));
+  const W = 500, H = 200, PL = 32, PR = 10, PT = 10, PB = 20, mx = Math.max(YJAM * 3600000, ...hari.map(h => h.jum));
   const X = i => PL + (i + .5) * (W - PL - PR) / 7, Y = ms => H - PB - ms / mx * (H - PT - PB);
   const garis = (k, col, area) => {
     const p = hari.map((h, i) => h[k] ? [X(i), Y(h[k]), h] : null).filter(Boolean);
