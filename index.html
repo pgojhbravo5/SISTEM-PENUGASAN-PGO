@@ -55,6 +55,20 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
 
+/* ===== Motion bila tekan tab ===== */
+.tabs button{transition:background .2s,color .2s,transform .15s}
+.tabs button:active{transform:scale(.9)}
+.tabs button.pop svg{animation:tabpop .45s ease}
+@keyframes tabpop{35%{transform:translateY(-5px) scale(1.22)}70%{transform:translateY(1px) scale(.95)}}
+/* Motion popup: login, pengesahan, mesej ringkas, Tupai PGO */
+#login,#konfirmasi.on .kf-box,#aiPanel.on,#aiBubble.on{animation:naik .4s cubic-bezier(.22,.8,.36,1) backwards}
+#konfirmasi.on{animation:pudar .25s ease backwards}
+#toast{animation:turun .35s cubic-bezier(.22,.8,.36,1) backwards}
+@keyframes naik{from{opacity:0;transform:translateY(40px) scale(.94)}}
+@keyframes turun{from{opacity:0;transform:translateY(-24px)}}
+@keyframes pudar{from{opacity:0}}
+@media(prefers-reduced-motion:reduce){.tabs button.pop svg,#login,#konfirmasi.on,#konfirmasi.on .kf-box,#aiPanel.on,#aiBubble.on,#toast{animation:none}.tabs button:active{transform:none}}
+
 /* Jadual rujukan */
 :root{--c-rehat:#2f62c9;--c-makan:#a86400;--c-tidur:#7248bd}
 @media(prefers-color-scheme:dark){:root{--c-rehat:#7fa6ff;--c-makan:#f0b955;--c-tidur:#b995ff}}
@@ -654,7 +668,45 @@ function bukaTab(id) {
   if (id === 't7' && typeof petaMula === 'function') petaMula();
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
-document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
+let motionTimer = null, motionSenarai = [];
+// Elemen yang bergerak sebagai satu unit (tidak dipecahkan lagi)
+const MOTION_UNIT = 'button, input, select, textarea, label, li, tr, svg, details, .pt, .tl, .seg, .leaflet-container';
+const nampak = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.top < innerHeight && r.bottom > 0; };
+function ayatDalam(el, hasil) { // kumpul baris ayat, butang dan item di dalam kad
+  for (const c of el.children) {
+    const blok = [...c.children].some(x => !['inline', 'none'].includes(getComputedStyle(x).display));
+    if (!c.matches(MOTION_UNIT) && blok) ayatDalam(c, hasil);
+    else if (nampak(c)) hasil.push(c);
+  }
+  return hasil;
+}
+function gerak(el, dari, tempoh, lengah) {
+  motionSenarai.push(el.animate([{...dari, offset: 0}], {duration: tempoh, delay: lengah, easing: 'cubic-bezier(.22,.8,.36,1)', fill: 'backwards'}));
+}
+function gerakTab(tab) { // kad naik dari tengah ke atas, kemudian ayat masuk satu demi satu
+  motionSenarai.forEach(a => a.cancel()); motionSenarai = [];
+  if (!tab || !tab.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const kad = [...tab.children].filter(nampak);
+  const ayat = kad.map(k => k.matches(MOTION_UNIT) ? [] : ayatDalam(k, [])); // ukur sebelum animasi bermula
+  let n = 0;
+  kad.forEach((k, i) => {
+    const mula = Math.min(i, 5) * 70;
+    gerak(k, {opacity: 0, transform: 'translateY(60px) scale(.94)'}, 450, mula);
+    ayat[i].forEach(el => gerak(el, {opacity: 0, transform: 'translateY(16px)'}, 380, Math.max(mula + 200, 200 + Math.min(n++, 24) * 35)));
+  });
+}
+function lantunIkon(btn) {
+  clearTimeout(motionTimer);
+  document.querySelectorAll('.pop').forEach(x => x.classList.remove('pop'));
+  void btn.offsetWidth; // mula semula animasi jika tab sama ditekan lagi
+  btn.classList.add('pop');
+  motionTimer = setTimeout(() => btn.classList.remove('pop'), 500);
+}
+document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => {
+  bukaTab(b.dataset.tab);
+  lantunIkon(b);
+  gerakTab(document.getElementById(b.dataset.tab));
+});
 try { const t = sessionStorage.getItem('tab'); if (t && document.getElementById(t)) bukaTab(t); } catch (_) {}
 
 const fmt = t => new Date(t).toLocaleString('ms-MY', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
@@ -711,6 +763,7 @@ async function boot() {
   if (!subscribed) { subscribed = true; langgan(); }
   daftarPush();
   presenceMula();
+  gerakTab(document.querySelector('.tab.on'));
 }
 // ===== Data =====
 async function load() {
