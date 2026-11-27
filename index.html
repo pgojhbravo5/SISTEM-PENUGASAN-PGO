@@ -51,23 +51,14 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 @media(prefers-reduced-motion:reduce){#alarm{animation:none}}
 /* Tab bawah (glass) */
 .tabs{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:616px;margin-inline:auto;z-index:4;display:flex;gap:4px;padding:6px;border-radius:28px;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
-.tabs button{flex:1;margin:0;width:auto;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:0;border-radius:22px;background:transparent;color:var(--tx);font-size:.72rem;font-weight:600;transition:background .2s,color .2s}
+.tabs button{flex:1;margin:0;width:auto;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:0;border-radius:22px;background:transparent;color:var(--tx);font-size:.72rem;font-weight:600;transition:background .1s,color .1s}
 .tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
 
-/* ===== Motion bila tekan tab ===== */
-.tabs button{transition:background .2s,color .2s,transform .15s}
-.tabs button:active{transform:scale(.9)}
-.tabs button.pop svg{animation:tabpop .45s ease}
-@keyframes tabpop{35%{transform:translateY(-5px) scale(1.22)}70%{transform:translateY(1px) scale(.95)}}
-/* Motion popup: login, pengesahan, mesej ringkas, Tupai PGO */
-#login,#konfirmasi.on .kf-box,#aiPanel.on,#aiBubble.on{animation:naik .4s cubic-bezier(.22,.8,.36,1) backwards}
-#konfirmasi.on{animation:pudar .25s ease backwards}
-#toast{animation:turun .35s cubic-bezier(.22,.8,.36,1) backwards}
-@keyframes naik{from{opacity:0;transform:translateY(40px) scale(.94)}}
-@keyframes turun{from{opacity:0;transform:translateY(-24px)}}
-@keyframes pudar{from{opacity:0}}
-@media(prefers-reduced-motion:reduce){.tabs button.pop svg,#login,#konfirmasi.on,#konfirmasi.on .kf-box,#aiPanel.on,#aiBubble.on,#toast{animation:none}.tabs button:active{transform:none}}
+/* ===== Motion tab: kandungan naik 0.1 saat ===== */
+.tab.on{animation:tabmasuk .1s ease-out}
+@keyframes tabmasuk{from{opacity:0;transform:translateY(12px)}}
+@media(prefers-reduced-motion:reduce){.tab.on{animation:none}}
 
 /* Jadual rujukan */
 :root{--c-rehat:#2f62c9;--c-makan:#a86400;--c-tidur:#7248bd}
@@ -167,15 +158,25 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 
 
 /* Tupai PGO (pembantu) */
-#aiLaunch{position:fixed;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;width:66px;height:66px;margin:0;padding:4px;border-radius:50%;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);display:grid;place-items:center;animation:aibob 3s ease-in-out infinite;touch-action:none;user-select:none;cursor:grab}
+#aiLaunch{position:fixed;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:7;width:var(--tupai,66px);height:var(--tupai,66px);margin:0;padding:4px;border-radius:50%;background:var(--card);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);display:grid;place-items:center;animation:aibob 3s ease-in-out infinite;touch-action:none;user-select:none;cursor:grab}
 #aiLaunch.drag{animation:none;cursor:grabbing}
 #aiLaunch svg{width:100%;height:100%;display:block}
 #aiLaunch.wig{animation:aiwig .6s ease 3}
 #aiBadge{position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;background:var(--bad);border:2px solid var(--bg);display:none}
-#aiBubble{position:fixed;right:84px;bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:3;max-width:min(250px,calc(100vw - 108px));padding:8px 12px;border-radius:14px 14px 4px 14px;background:var(--tx);color:var(--bg);font-size:.82rem;line-height:1.35;white-space:pre-line;display:none;cursor:pointer;box-shadow:var(--sh)}
+#aiBubble{position:fixed;right:calc(var(--tupai,66px) + 18px);bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:6;max-width:min(250px,calc(100vw - var(--tupai,66px) - 42px));padding:8px 12px;border-radius:14px 14px 4px 14px;background:var(--tx);color:var(--bg);font-size:.82rem;line-height:1.35;white-space:pre-line;display:none;cursor:pointer;box-shadow:var(--sh)}
 #aiBubble.on{display:block}
-#aiPanel{position:fixed;left:12px;right:12px;margin-inline:auto;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3;max-width:380px;max-height:calc(100vh - 210px);max-height:min(520px,calc(100dvh - 210px));display:none;flex-direction:column;overflow:hidden;border-radius:20px;border:1px solid var(--bd);box-shadow:var(--sh);background:linear-gradient(var(--card),var(--card)),var(--bg);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
+#aiPanel{position:fixed;left:12px;right:12px;margin-inline:auto;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:6;max-width:380px;max-height:calc(100vh - 210px);max-height:min(520px,calc(100dvh - 210px));display:none;flex-direction:column;overflow:hidden;border-radius:20px;border:1px solid var(--bd);box-shadow:var(--sh);background:linear-gradient(var(--card),var(--card)),var(--bg);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
 #aiPanel.on{display:flex}
+#aiLaunch{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* Ejas saiz tupai: muncul bila ikon ditekan lama */
+#aiSaizPop{position:fixed;z-index:7;display:none;width:190px;padding:8px 12px 10px;border-radius:14px;border:1px solid var(--bd);box-shadow:var(--sh);background:linear-gradient(var(--card),var(--card)),var(--bg);font-size:.8rem}
+#aiSaizPop.on{display:block}
+#aiSaizPop::after{content:'';position:absolute;left:var(--panah,50%);bottom:-7px;width:12px;height:12px;margin-left:-6px;background:var(--bg);transform:rotate(45deg);box-shadow:3px 3px 6px rgba(40,50,70,.12)}
+#aiSaizPop.bawah::after{bottom:auto;top:-7px;box-shadow:none}
+#aiSaizPop label{display:flex;justify-content:space-between;font-weight:600}
+#aiSaizPop input{display:block;margin:4px 0 0;padding:0;border:0;background:transparent;accent-color:var(--pri);height:28px}
+#aiSaizPop button{margin-top:4px;padding:5px;font-size:.8rem}
+#aiLaunch.edit{animation:none}
 .aih{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln)}
 .aih svg{width:42px;height:42px;flex:none}
 .aih div{min-width:0}.aih b{display:block;line-height:1.2}.aih small{display:block;color:var(--mut);font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -324,7 +325,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 
 /* Tupai PGO: sudut kanan bawah */
 [data-device=desktop] #aiLaunch{right:28px;bottom:28px}
-[data-device=desktop] #aiBubble{right:106px;bottom:40px;max-width:280px}
+[data-device=desktop] #aiBubble{right:calc(var(--tupai,66px) + 40px);bottom:40px;max-width:280px}
 [data-device=desktop] #aiPanel{left:auto;right:28px;margin:0;width:400px;max-width:none;bottom:108px;max-height:min(620px,calc(100dvh - 140px))}
 
 /* Butang ikon cetak PDF & paparan cetak */
@@ -350,6 +351,16 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   #log li { break-inside: avoid; border-bottom: 1px solid #e2e6ec !important; }
   .mut, .lg-side > span, .rk-val, .ls-hd span, .ls-item small { color: #555 !important; }
 }
+/* ===== Zoom in / zoom out ===== */
+.tab:not(#t7){zoom:var(--z,1)}
+.zm{display:flex;gap:4px}
+.zm button{width:auto;min-width:34px;margin:0;padding:3px 10px;border-radius:999px;font-size:.82rem;color:var(--mut)}
+#chatCard{height:calc((100vh - 96px) / var(--z,1));height:calc((100dvh - 96px - env(safe-area-inset-bottom,0px)) / var(--z,1));min-height:calc(320px / var(--z,1))}
+[data-device=desktop] #chatCard{height:calc((100vh - 48px) / var(--z,1));height:calc((100dvh - 48px) / var(--z,1));min-height:calc(480px / var(--z,1))}
+[data-device=desktop] #t4>.card>#log{max-height:calc(100dvh / var(--z,1) - 130px)}
+[data-device=desktop] #t5>div:nth-of-type(2)>ul{max-height:calc(100dvh / var(--z,1) - 260px)}
+#rujN{overflow-x:auto}#rujN table{min-width:336px}
+@media print{.tab:not(#t7){zoom:1}[data-device=desktop] #t4>.card>#log{max-height:none}}
 </style>
 <script>
 // Auto-detect peranti: desktop = skrin >=1024px + tetikus/trackpad. Paksa ujian: ?view=desktop atau ?view=mobile
@@ -416,7 +427,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <section id="t1" class="tab on">
 <header class="hd">
   <div><h1>Syif PGO Johor</h1><p class="mut" style="margin:2px 0 0">Log masuk: <b id="kod"></b> · Syif <span id="mykump"></span></p></div>
-  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar"> Log Keluar</a></div>
+  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar"> Log Keluar</a><div class="zm" role="group" aria-label="Saiz paparan"><button type="button" id="zKurang" aria-label="Zoom out">−</button><button type="button" id="zAsal" aria-label="Saiz asal">100%</button><button type="button" id="zTambah" aria-label="Zoom in">+</button></div></div>
 </header>
 <button id="aktif" class="pri" style="margin:0 0 6px">Aktifkan bunyi dan notifikasi</button>
 <p id="pushStatus" class="mut" style="margin:0 0 12px"></p>
@@ -568,6 +579,11 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <!-- Pembantu: Tupai PGO -->
 <div id="aiBubble" role="status"></div>
 <button type="button" id="aiLaunch" aria-label="Buka Tupai PGO"><svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg><i id="aiBadge"></i></button>
+<div id="aiSaizPop" role="dialog" aria-label="Ejas saiz tupai">
+  <label for="aiSaizIn">Saiz tupai <span id="aiSaizLbl">66</span></label>
+  <input type="range" id="aiSaizIn" min="44" max="120" step="2" value="66">
+  <button type="button" id="aiSaizOk" class="pri">Selesai</button>
+</div>
 <section id="aiPanel" aria-label="Tupai PGO">
   <div class="aih">
     <svg viewBox="0 0 72 70" aria-hidden="true"><use href="#tupai"/></svg>
@@ -651,6 +667,22 @@ let chatMsgs = [], chatTdkBaca = 0, chatSedia = false, chatSibuk = false, chatRe
 let logFilter = 'all', fAng = '', fStn = '', fDari = '', fHingga = '', logPrintAll = false; // penapis log & mod cetak penuh
 $('#min').textContent = MIN;
 
+// ===== Zoom in / zoom out (disimpan pada peranti ini) =====
+let zum = 100;
+try { zum = Number(localStorage.getItem('zum')) || 100; } catch (_) {}
+function setZum(v) {
+  zum = Math.min(130, Math.max(80, v));
+  document.documentElement.style.setProperty('--z', zum / 100);
+  $('#zAsal').textContent = zum + '%';
+  $('#zKurang').disabled = zum <= 80;
+  $('#zTambah').disabled = zum >= 130;
+  try { localStorage.setItem('zum', zum); } catch (_) {}
+}
+$('#zKurang').onclick = () => setZum(zum - 10);
+$('#zTambah').onclick = () => setZum(zum + 10);
+$('#zAsal').onclick = () => setZum(100);
+setZum(zum);
+
 // ===== Tab =====
 function kosongkanAppBadge() {
   if ('clearAppBadge' in navigator) {
@@ -663,50 +695,13 @@ function bukaTab(id) {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
   window.scrollTo(0, 0);
   document.body.classList.toggle('chat', id === 't6');
+  if (id !== 't6') aiIkut();
   if (id === 't6') { kosongkanAppBadge(); chatTandaDibaca(); chatRender(true); }
   else if (typeof aiAnalisisTab === 'function') { aiAnalisisTab(id); }
   if (id === 't7' && typeof petaMula === 'function') petaMula();
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
-let motionTimer = null, motionSenarai = [];
-// Elemen yang bergerak sebagai satu unit (tidak dipecahkan lagi)
-const MOTION_UNIT = 'button, input, select, textarea, label, li, tr, svg, details, .pt, .tl, .seg, .leaflet-container';
-const nampak = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.top < innerHeight && r.bottom > 0; };
-function ayatDalam(el, hasil) { // kumpul baris ayat, butang dan item di dalam kad
-  for (const c of el.children) {
-    const blok = [...c.children].some(x => !['inline', 'none'].includes(getComputedStyle(x).display));
-    if (!c.matches(MOTION_UNIT) && blok) ayatDalam(c, hasil);
-    else if (nampak(c)) hasil.push(c);
-  }
-  return hasil;
-}
-function gerak(el, dari, tempoh, lengah) {
-  motionSenarai.push(el.animate([{...dari, offset: 0}], {duration: tempoh, delay: lengah, easing: 'cubic-bezier(.22,.8,.36,1)', fill: 'backwards'}));
-}
-function gerakTab(tab) { // kad naik dari tengah ke atas, kemudian ayat masuk satu demi satu
-  motionSenarai.forEach(a => a.cancel()); motionSenarai = [];
-  if (!tab || !tab.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const kad = [...tab.children].filter(nampak);
-  const ayat = kad.map(k => k.matches(MOTION_UNIT) ? [] : ayatDalam(k, [])); // ukur sebelum animasi bermula
-  let n = 0;
-  kad.forEach((k, i) => {
-    const mula = Math.min(i, 5) * 70;
-    gerak(k, {opacity: 0, transform: 'translateY(60px) scale(.94)'}, 450, mula);
-    ayat[i].forEach(el => gerak(el, {opacity: 0, transform: 'translateY(16px)'}, 380, Math.max(mula + 200, 200 + Math.min(n++, 24) * 35)));
-  });
-}
-function lantunIkon(btn) {
-  clearTimeout(motionTimer);
-  document.querySelectorAll('.pop').forEach(x => x.classList.remove('pop'));
-  void btn.offsetWidth; // mula semula animasi jika tab sama ditekan lagi
-  btn.classList.add('pop');
-  motionTimer = setTimeout(() => btn.classList.remove('pop'), 500);
-}
-document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => {
-  bukaTab(b.dataset.tab);
-  lantunIkon(b);
-  gerakTab(document.getElementById(b.dataset.tab));
-});
+document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
 try { const t = sessionStorage.getItem('tab'); if (t && document.getElementById(t)) bukaTab(t); } catch (_) {}
 
 const fmt = t => new Date(t).toLocaleString('ms-MY', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
@@ -763,7 +758,6 @@ async function boot() {
   if (!subscribed) { subscribed = true; langgan(); }
   daftarPush();
   presenceMula();
-  gerakTab(document.querySelector('.tab.on'));
 }
 // ===== Data =====
 async function load() {
@@ -1796,6 +1790,7 @@ function aiBicara(t) { // peringatan automatik daripada tupai
   if (aiTerbuka) return;
   $('#aiBadge').style.display = 'block';
   const b = $('#aiBubble'); b.textContent = t.length > 180 ? t.slice(0, 177) + '…' : t; b.classList.add('on');
+  aiIkut();
   const l = $('#aiLaunch'); l.classList.remove('wig'); void l.offsetWidth; l.classList.add('wig');
   clearTimeout(aiTt); aiTt = setTimeout(() => b.classList.remove('on'), 12000);
 }
@@ -1842,6 +1837,7 @@ function aiBuka(b) {
     if (me && !$('#aiMsgs').children.length) aiTambah('ai', `${aiSapa()}, ${me.nama}! Saya Tupai PGO, pembantu syif anda.\n${aiRingkas()}\nTanya saya apa-apa, atau tekan butang pantas di bawah.`);
     setTimeout(() => { $('#aiMsgs').scrollTop = $('#aiMsgs').scrollHeight; }, 0);
   }
+  aiIkut();
   try { localStorage.setItem('aiBuka', b ? '1' : '0'); } catch (_) {}
 }
 function aiMula() { // dipanggil sekali selepas log masuk
@@ -1857,6 +1853,43 @@ function aiMula() { // dipanggil sekali selepas log masuk
   const tabAktif = document.querySelector('.tab.on');
   if (tabAktif && !aiSenyap) setTimeout(() => aiAnalisisTab(tabAktif.id), 1200);
 }
+let aiSaiz = 66; // saiz ikon Tupai PGO (px), disimpan pada peranti ini
+// ===== Teks Tupai PGO (gelembung + pop-up) ikut kedudukan ikon =====
+function aiIkut() {
+  const el = $('#aiLaunch'), b = $('#aiBubble'), p = $('#aiPanel');
+  if (!el.style.left) return; // belum pernah di-drag: guna kedudukan asal
+  const W = window.innerWidth, H = window.innerHeight, pad = 8, jarak = 6;
+  const x = parseFloat(el.style.left), y = parseFloat(el.style.top), s = aiSaiz;
+  const nav = $('.tabs').getBoundingClientRect(), sisi = nav.height > nav.width; // desktop: menu di kiri
+  const kiri = sisi ? nav.right + pad : pad, bawah = !sisi && nav.height ? nav.top - pad : H - pad;
+  const had = (v, a, z) => Math.max(a, Math.min(z, v));
+  const diKanan = x + s / 2 > W / 2, diBawah = y + s / 2 > H / 2;
+
+  if (b.classList.contains('on')) {
+    Object.assign(b.style, {left: '0px', top: '0px', right: 'auto', bottom: 'auto'}); // ukur saiz sebenar
+    const bw = b.offsetWidth, bh = b.offsetHeight;
+    let bx = diKanan ? x - bw - jarak : x + s + jarak, by = y + s - bh - 12; // di sebelah ikon
+    if (bx < kiri || bx + bw > W - pad) { // tak muat di sebelah: letak atas atau bawah ikon
+      bx = diKanan ? x + s - bw : x;
+      by = y - bh - jarak >= pad ? y - bh - jarak : y + s + jarak;
+    }
+    bx = had(bx, kiri, W - bw - pad); by = had(by, pad, bawah - bh); // gelembung tidak menutup menu bawah
+    b.style.left = bx + 'px'; b.style.top = by + 'px';
+    const atas = by >= y + s;
+    b.style.borderRadius = diKanan ? (atas ? '14px 4px 14px 14px' : '14px 14px 4px 14px') : (atas ? '4px 14px 14px 14px' : '14px 14px 14px 4px');
+  }
+
+  if (p.classList.contains('on')) {
+    const pw = Math.min(sisi ? 400 : 380, W - kiri - pad);
+    const px = had(diKanan ? x + s - pw : x, kiri, W - pw - pad);
+    // Ikon di separuh bawah: pop-up membuka ke atas. Di separuh atas: ke bawah.
+    const tepi = diBawah ? Math.max(H - bawah, H - (y + s)) : Math.max(pad, y);
+    Object.assign(p.style, {margin: '0', width: pw + 'px', left: px + 'px', right: 'auto',
+      top: diBawah ? 'auto' : tepi + 'px', bottom: diBawah ? tepi + 'px' : 'auto',
+      maxHeight: Math.min(sisi ? 620 : 520, (diBawah ? H : bawah) - tepi - (diBawah ? pad : 0)) + 'px'});
+  }
+}
+
 // ===== Drag ikon Tupai PGO ke seluruh skrin + simpan posisi =====
 (function () {
   const el = $('#aiLaunch');
@@ -1864,16 +1897,64 @@ function aiMula() { // dipanggil sekali selepas log masuk
 
   function letak(x, y) {
     const pad = 8;
-    const maxX = Math.max(pad, window.innerWidth - el.offsetWidth - pad);
-    const maxY = Math.max(pad, window.innerHeight - el.offsetHeight - pad);
+    const maxX = Math.max(pad, window.innerWidth - aiSaiz - pad);
+    const maxY = Math.max(pad, window.innerHeight - aiSaiz - pad);
     const nx = Math.min(maxX, Math.max(pad, x));
     const ny = Math.min(maxY, Math.max(pad, y));
     el.style.left = nx + 'px';
     el.style.top = ny + 'px';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
+    aiIkut(); // teks ikut sekali semasa drag
     return {x: nx, y: ny};
   }
+
+  let paksi = null; // titik tengah dan kaki tupai semasa saiz diejas
+  function letakPop() { // betul-betul atas kepala tupai
+    const pop = $('#aiSaizPop'), W = window.innerWidth;
+    const pw = pop.offsetWidth, ph = pop.offsetHeight, x = parseFloat(el.style.left), y = parseFloat(el.style.top);
+    const muatAtas = y - ph - 8 >= 4; // tupai rapat tepi atas: terpaksa letak di bawah
+    const px = Math.max(8, Math.min(W - pw - 8, paksi.x - pw / 2)); // tidak bergerak kiri-kanan semasa meluncur
+    pop.classList.toggle('bawah', !muatAtas);
+    pop.style.left = px + 'px';
+    pop.style.top = (muatAtas ? y - ph - 8 : y + aiSaiz + 8) + 'px';
+    pop.style.setProperty('--panah', Math.max(16, Math.min(pw - 16, x + aiSaiz / 2 - px)) + 'px');
+  }
+  function setSaiz(v) {
+    aiSaiz = Math.min(120, Math.max(44, v || 66));
+    document.documentElement.style.setProperty('--tupai', aiSaiz + 'px');
+    $('#aiSaizIn').value = aiSaiz; $('#aiSaizLbl').textContent = aiSaiz;
+    if (paksi) { letak(paksi.x - aiSaiz / 2, paksi.b - aiSaiz); letakPop(); }
+    else if (el.style.left) letak(parseFloat(el.style.left), parseFloat(el.style.top)); // kekal dalam skrin
+  }
+  $('#aiSaizIn').oninput = e => {
+    setSaiz(Number(e.target.value));
+    try {
+      localStorage.setItem('aiSaiz', aiSaiz);
+      if (localStorage.getItem('aiPos')) localStorage.setItem('aiPos', JSON.stringify({x: parseFloat(el.style.left), y: parseFloat(el.style.top)}));
+    } catch (_) {}
+  };
+  try { setSaiz(Number(localStorage.getItem('aiSaiz'))); } catch (_) {}
+
+  // Tekan lama pada ikon = buka ejas saiz
+  const pop = $('#aiSaizPop');
+  let tekanTmr = null;
+  const tutupSaiz = () => { pop.classList.remove('on'); el.classList.remove('edit'); paksi = null; };
+  function bukaSaiz() {
+    $('#aiBubble').classList.remove('on');
+    el.classList.add('edit'); // hentikan animasi supaya kedudukan tepat
+    const r = el.getBoundingClientRect();
+    letak(r.left, r.top);
+    paksi = {x: parseFloat(el.style.left) + aiSaiz / 2, b: parseFloat(el.style.top) + aiSaiz};
+    pop.classList.add('on');
+    letakPop();
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+  $('#aiSaizOk').onclick = tutupSaiz;
+  document.addEventListener('pointerdown', e => { if (!e.target.closest('#aiSaizPop')) tutupSaiz(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') tutupSaiz(); });
+  window.addEventListener('resize', tutupSaiz);
+  el.addEventListener('contextmenu', e => e.preventDefault()); // elak menu telefon semasa tekan lama
 
   // Pulihkan posisi terakhir jika ada
   try {
@@ -1889,6 +1970,13 @@ function aiMula() { // dipanggil sekali selepas log masuk
     l0 = r.left; t0 = r.top;
     el.setPointerCapture(e.pointerId);
     el.classList.add('drag');
+    clearTimeout(tekanTmr);
+    tekanTmr = setTimeout(() => { // ditahan 0.6 saat tanpa digerakkan
+      if (!drag || gerak) return;
+      drag = false; // lepas jari selepas ini tidak membuka pop-up chat
+      el.classList.remove('drag');
+      bukaSaiz();
+    }, 600);
   });
 
   el.addEventListener('pointermove', e => {
@@ -1896,10 +1984,12 @@ function aiMula() { // dipanggil sekali selepas log masuk
     const dx = e.clientX - x0, dy = e.clientY - y0;
     if (!gerak && Math.hypot(dx, dy) < 6) return;
     gerak = true;
+    clearTimeout(tekanTmr);
     letak(l0 + dx, t0 + dy);
   });
 
   function tamatDrag(e) {
+    clearTimeout(tekanTmr);
     if (!drag) return;
     drag = false;
     el.classList.remove('drag');
