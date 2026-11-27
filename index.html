@@ -86,7 +86,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .chip:empty{display:none}
 .chip.on,.chip.g{background:rgba(26,127,75,.16);color:var(--ok);border-color:transparent}
 .chip.k{background:rgba(198,40,40,.14);color:var(--bad);border-color:transparent}
-.chip.offc{color:var(--mut)}
+.chip.wt{background:rgba(230,160,40,.18);color:var(--c-makan);border-color:transparent}
 .row button{flex:1}
 .slot2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tl{border-radius:12px;padding:8px 12px;background:rgba(80,120,220,.14)}
@@ -606,7 +606,19 @@ try { const t = sessionStorage.getItem('tab'); if (t && document.getElementById(
 
 const fmt = t => new Date(t).toLocaleString('ms-MY', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
 const nama = id => (anggota.find(a => a.id === id) || {}).nama || '?';
-const bertugas = () => anggota.filter(a => last[a.id] && last[a.id].jenis === 'IN');
+const masaTs = x => new Date(x.masa).getTime();
+const masukSemua = () => anggota.filter(a => last[a.id] && last[a.id].jenis === 'IN');
+function setMenunggu() { // stesen sama: yang paling awal Punch In = bertugas, selebihnya menunggu
+  const per = {}, tunggu = new Set();
+  masukSemua().forEach(a => { const s = last[a.id].stesen || ''; (per[s] = per[s] || []).push(a); });
+  Object.values(per).forEach(arr => {
+    arr.sort((x, y) => masaTs(last[x.id]) - masaTs(last[y.id]));
+    arr.slice(1).forEach(a => tunggu.add(a.id));
+  });
+  return tunggu;
+}
+const bertugas = () => { const t = setMenunggu(); return masukSemua().filter(a => !t.has(a.id)); };
+const menungguList = () => { const t = setMenunggu(); return masukSemua().filter(a => t.has(a.id)); };
 
 // ===== Login =====
 async function masuk() {
@@ -665,13 +677,13 @@ function render() {
   $('#cnt').textContent = on.length;
   $('#cnt').className = 'big ' + (on.length >= MIN ? 'ok' : 'bad');
   $('#warn').textContent = on.length < MIN ? `Amaran: kurang daripada minimum ${MIN} orang` : '';
-  const sk = kump(Date.now()), msk = a => !!(last[a.id] && last[a.id].jenis === 'IN');
+  const sk = kump(Date.now()), msk = a => !!(last[a.id] && last[a.id].jenis === 'IN'), tg = new Set(menungguList().map(a => a.id));
   const baris = a => { const l = last[a.id], dalam = msk(a);
     return `<li class="lg"><span class="av sm ${dalam ? 'in' : 'off'}">${(a.kod || a.nama || '').slice(0, 3)}</span>
-      <div class="who"><b>${a.nama}</b><span class="${dalam ? 'ok' : 'mut'}">${dalam ? (l.stesen || 'Bertugas') + ' · sejak ' + jam(l.masa) : 'Tidak bertugas'}</span></div>
+      <div class="who"><b>${a.nama}</b><span class="${dalam ? 'ok' : 'mut'}">${dalam ? (tg.has(a.id) ? 'Menunggu ' : '') + (l.stesen || 'Bertugas') + ' · sejak ' + jam(l.masa) : 'Tidak bertugas'}</span></div>
       ${a.kumpulan === sk ? '<span class="chip sk">Syif semasa</span>' : ''}</li>`; };
   const lain = anggota.filter(a => !msk(a)).sort((x, y) => (y.kumpulan === sk) - (x.kumpulan === sk));
-  $('#senarai').innerHTML = on.map(baris).join('') || '<li class="mut">Tiada anggota bertugas</li>';
+  $('#senarai').innerHTML = on.concat(menungguList()).map(baris).join('') || '<li class="mut">Tiada anggota bertugas</li>';
   $('#senaraiLain').innerHTML = lain.map(baris).join('');
   $('#nLain').textContent = lain.length;
   $('#lain').style.display = lain.length ? 'block' : 'none';
@@ -826,7 +838,8 @@ const sesiAll = [], bukaAng = {};
   }).join('') || '<li class="mut">Tiada log.</li>';
 
 const l = me && last[me.id], dalam = l && l.jenis === 'IN';
-  const stt = $('#status'); stt.textContent = !me ? '' : dalam ? 'Bertugas' : 'Tidak bertugas'; stt.className = 'chip ' + (dalam ? 'on' : 'offc');
+const tgSaya = !!me && tg.has(me.id);
+  const stt = $('#status'); stt.textContent = !me ? '' : tgSaya ? 'Menunggu' : dalam ? 'Bertugas' : 'Tidak bertugas'; stt.className = 'chip ' + (tgSaya ? 'wt' : dalam ? 'on' : 'offc');
   $('#bIn').disabled = !me || dalam;
   $('#bOut').disabled = !me || !dalam;
   $('#bIn').style.display = dalam ? 'none' : 'block';
@@ -859,7 +872,7 @@ function timer() {
     lbl.textContent = 'Tempoh bertugas terakhir · ' + jam(t.mula) + '–' + jam(t.tamat);
   } else {
     el.textContent = hms(Date.now() - t.mula); el.className = 'big ok';
-    lbl.textContent = 'Bertugas sejak ' + jam(t.mula);
+    lbl.textContent = (menungguList().some(a => a.id === me.id) ? 'Menunggu giliran sejak ' : 'Bertugas sejak ') + jam(t.mula);
   }
 }
 setInterval(timer, 1000);
@@ -868,11 +881,15 @@ async function punch(jenis, st) {
   if (!me) return;
   if (jenis === 'IN') {
     if (!st) return alert('Pilih stesen dahulu');
-    const n = bertugas().filter(a => a.id !== me.id).length + 1;
-    if (!bukaStesen(n).includes(st) && !confirm(`Stesen ${st} ditutup bila ${n} orang bertugas. Teruskan?`)) return;
+    if (menungguList().some(a => a.id !== me.id && last[a.id].stesen === st)) return alert('Stesen ini sudah ada orang yang menunggu. Pilih stesen lain.');
+    const diduduki = bertugas().some(a => a.id !== me.id && last[a.id].stesen === st);
+    if (diduduki && bertugas().some(a => a.id === me.id)) return alert('Stesen ini sedang diduduki. Pilih stesen yang kosong.');
+    if (!diduduki) {
+      const n = bertugas().filter(a => a.id !== me.id).length + 1;
+      if (!bukaStesen(n).includes(st) && !confirm(`Stesen ${st} ditutup bila ${n} orang bertugas. Teruskan?`)) return;
+    }
   }
-  if (sibuk) return;
-  sibuk = true;
+  if (sibuk) return;  sibuk = true;
   try {
     const row = {anggota_id: me.id, jenis, stesen: jenis === 'IN' ? st : null};
     const {error} = await db.from('punch').insert(row);
@@ -1009,7 +1026,10 @@ function langgan() {
   db.channel('pgo')
     .on('postgres_changes', {event: '*', schema: 'public', table: 'punch'}, p => {
       if (p.eventType !== 'INSERT') return load();
+      const sblmTunggu = !!me && menungguList().some(a => a.id === me.id);
       logs.unshift(p.new); last[p.new.anggota_id] = p.new; render();
+      if (sblmTunggu && last[me.id] && last[me.id].jenis === 'IN' && !menungguList().some(a => a.id === me.id))
+        notify({jenis: 'info', mesej: `Giliran anda: kini bertugas di ${last[me.id].stesen}`}, true);
       toast(`${nama(p.new.anggota_id)} Punch ${p.new.jenis}`);
       if (p.new.jenis === 'OUT' && bertugas().length < MIN)
         notify({jenis: 'info', mesej: `Anggota bertugas tinggal ${bertugas().length}, kurang daripada minimum ${MIN}`});
@@ -1154,10 +1174,11 @@ function penugasan() { // ikut stesen yang dipilih anggota semasa Punch In
 function pilihanStesen() { // senarai pilihan: stesen yang sudah diambil orang lain dikunci
   if (!me) return;
   const sel = $('#pilihStesen'), cur = sel.value, l = last[me.id], dalam = l && l.jenis === 'IN', ambil = {};
+  const nanti = {};
   bertugas().forEach(a => { if (a.id !== me.id && last[a.id].stesen) ambil[last[a.id].stesen] = a; });
-  sel.innerHTML = STESEN_SEMUA.map(s => `<option value="${s}"${ambil[s] ? ' disabled' : ''}>${s}${ambil[s] ? ' (' + ambil[s].nama + ')' : ''}</option>`).join('');
-  sel.value = cur && !ambil[cur] ? cur : dalam && l.stesen ? l.stesen : (KEUTAMAAN.find(s => !ambil[s]) || '');
-  $('#bTukar').style.display = dalam ? 'block' : 'none';
+  menungguList().forEach(a => { if (a.id !== me.id && last[a.id].stesen) nanti[last[a.id].stesen] = a; });
+  sel.innerHTML = STESEN_SEMUA.map(s => `<option value="${s}"${nanti[s] ? ' disabled' : ''}>${s}${nanti[s] ? ' (menunggu: ' + nanti[s].nama + ')' : ambil[s] ? ' (' + ambil[s].nama + ' · anda menunggu)' : ''}</option>`).join('');
+  sel.value = cur && !nanti[cur] ? cur : dalam && l.stesen ? l.stesen : (KEUTAMAAN.find(s => !ambil[s] && !nanti[s]) || KEUTAMAAN.find(s => !nanti[s]) || '');  $('#bTukar').style.display = dalam ? 'block' : 'none';
 }
 
 function slotSaya(st, p, jenis, mula) {
@@ -1174,6 +1195,10 @@ function stesen() {
   }).join('');
   $('#stesenSaya').textContent = st || '-';
   const kr = $('#krit');
+  if (menungguList().some(a => a.id === me.id)) {
+    $('#stesenSaya').textContent = last[me.id].stesen + ' · menunggu';
+    kr.className = 'chip wt'; kr.textContent = 'Menunggu giliran'; $('#rehatSaya').innerHTML = ''; return;
+  }
   if (!st) { kr.className = 'chip'; kr.textContent = 'Punch In dahulu'; $('#rehatSaya').innerHTML = ''; return; }
   const c = new Date(now), cur = c.getHours() * 60 + c.getMinutes();
   const kritis = (KRITIKAL[st] || []).some(w => {
