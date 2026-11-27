@@ -763,6 +763,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <script>
 const BHS = (() => { try { return localStorage.getItem('bhs') === 'en' ? 'en' : 'ms'; } catch (_) { return 'ms'; } })();
 const LOKAL = BHS === 'en' ? 'en-GB' : 'ms-MY'; // format tarikh dan masa
+const U_JAM = BHS === 'en' ? 'h' : 'j'; // unit jam: j (Melayu) / h (English)
 // Setiap baris: ['teks Melayu', 'English']. {0}, {1} = bahagian yang berubah (nama, masa, nombor)
 const KAMUS_EN = [
   ['Online sekarang', 'Online now'], ['Belum ada rekod', 'No record yet'], ['baru sahaja', 'just now'], ['{0} minit lalu', '{0} min ago'], ['Hari ini {0}', 'Today {0}'], ['Semalam {0}', 'Yesterday {0}'],
@@ -877,7 +878,18 @@ const KAMUS_EN = [
   ['Tamat bertugas.', 'Duty ended.'], ['Sesi ini {0} ({1}).', 'This session: {0} ({1}).'], ['Terima kasih, rehat secukupnya!', 'Thank you, get enough rest!'], ['Tukar ke stesen {0}.', 'Switched to station {0}.'], ['Selamat bertugas di {0}!', 'Have a good shift at {0}!'],
   ['Amaran: anggota bertugas tinggal {0}, bawah minimum {1}.', 'Warning: only {0} members on duty, below the minimum of {1}.'], ['Anggota bertugas dah cukup semula ({0} orang).', 'Enough members on duty again ({0} people).'],
   ['Waktu kritikal stesen {0} bermula.', 'Critical time for station {0} has started.'], ['Jangan tinggalkan stesen.', 'Do not leave the station.'], ['Waktu kritikal stesen {0} dah tamat.', 'Critical time for station {0} has ended.'], ['Dah {0} jam anda bertugas ({1}).', 'You have been on duty {0} hours ({1}).'],
-  ['Syif {0} anda dah bermula {1} lalu, tapi anda belum Punch In.', 'Your Shift {0} started {1} ago, but you have not punched in.'], ['Jangan lupa ya!', 'Do not forget!'], ['Syif anda dah tamat {0} lalu, tapi anda masih Punch In.', 'Your shift ended {0} ago, but you are still punched in.'], ['Jangan lupa Punch Out ya!', 'Do not forget to Punch Out!']
+  ['Syif {0} anda dah bermula {1} lalu, tapi anda belum Punch In.', 'Your Shift {0} started {1} ago, but you have not punched in.'], ['Jangan lupa ya!', 'Do not forget!'], ['Syif anda dah tamat {0} lalu, tapi anda masih Punch In.', 'Your shift ended {0} ago, but you are still punched in.'], ['Jangan lupa Punch Out ya!', 'Do not forget to Punch Out!'],
+  // Analitik, butang log dan lain-lain (tambahan)
+  ['Sembunyikan log ▲', 'Hide log ▲'], ['Papar log ▼', 'Show log ▼'],
+  ['Analisis · {0}', 'Analysis · {0}'], ['Semua ID', 'All IDs'], ['Semua ID ✕', 'All IDs ✕'], ['Tekan ID di bawah', 'Tap an ID below'],
+  ['Terpanjang', 'Longest'], ['Terpendek', 'Shortest'], ['Stesen utama', 'Main station'], ['skor', 'score'],
+  ['Skor purata', 'Average score'], ['Sesi capai 12j ({0}%)', 'Sessions reaching 12h ({0}%)'],
+  ['Kedudukan jam kerja: #{0} daripada {1} ID', 'Work-hours rank: #{0} of {1} IDs'],
+  ['Trend 7 hari lepas', 'Last 7 days trend'], ['Belum capai', 'Not reached'], ['Purata tempoh sesi', 'Average session length'], ['Sasaran 12j', 'Target 12h'],
+  ['Belum ada sesi selesai', 'No completed sessions yet'], ['Paling aktif', 'Most active'], ['Capai 12 jam', 'Reached 12 hours'],
+  ['Jam kerja: {0} ✓ capai 12j', 'Work hours: {0} ✓ reached 12h'], ['Jam kerja: {0}', 'Work hours: {0}'], ['Bilangan sesi: {0}', 'Number of sessions: {0}'], ['Tiada data', 'No data'],
+  ['Tiada respons', 'No response'],
+  ['Selamat pagi', 'Good morning'], ['Selamat tengah hari', 'Good afternoon'], ['Selamat petang', 'Good afternoon'], ['Selamat malam', 'Good evening']
 ];
 
 (() => {
@@ -949,6 +961,7 @@ const KAMUS_EN = [
     else atribut(m.target);
   })).observe(document.documentElement, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATR});
   jalan(document.body);
+  document.title = T(document.title); // <title> berada di luar body
   const amaran = window.alert.bind(window), sahkan = window.confirm.bind(window);
   window.alert = m => amaran(T(m));
   window.confirm = m => sahkan(T(m));
@@ -1187,7 +1200,7 @@ const sesiAll = [], bukaAng = {};
 
   const fmtDur = ms => {
     const m = Math.round(ms / 60000);
-    return m < 60 ? `${m}m` : `${Math.floor(m / 60)}j ${m % 60}m`;
+    return m < 60 ? `${m}m` : `${Math.floor(m / 60)}${U_JAM} ${m % 60}m`;
   };
   const TARGET_MS = 12 * 3600000;
 
@@ -1853,7 +1866,7 @@ function dashLog(ses, rankSrc, fmtDur, TARGET) {
       (p.length > 1 ? `<polyline points="${l}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : '') +
       p.map(q => `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3" fill="${col}"><title>${q[2].lbl}: ${fmtDur(q[2][k])}</title></circle>`).join('');
   };
-  const grid = Array.from({length: YJAM / YLANGKAH + 1}, (_, k) => k * YLANGKAH * 3600000).map(v => `<line x1="${PL}" x2="${W - PR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--ln)"/><text x="${PL - 4}" y="${(Y(v) + 3).toFixed(1)}" text-anchor="end">${v / 3600000}j</text>`).join('');
+  const grid = Array.from({length: YJAM / YLANGKAH + 1}, (_, k) => k * YLANGKAH * 3600000).map(v => `<line x1="${PL}" x2="${W - PR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--ln)"/><text x="${PL - 4}" y="${(Y(v) + 3).toFixed(1)}" text-anchor="end">${v / 3600000}${U_JAM}</text>`).join('');
   window._dsHari = hari;
   const off = window._lgOff || {};
   const lgb = (k, col, txt) => `<button type="button" data-lg="${k}" class="${off[k] ? 'off' : ''}"><i style="background:${col}"></i>${txt}</button>`;
@@ -1903,7 +1916,7 @@ function dashLog(ses, rankSrc, fmtDur, TARGET) {
 (function () {
   const box = $('#logScore'), tip = document.createElement('div');
   tip.id = 'dsTip'; document.body.appendChild(tip);
-  const fd = ms => { const m = Math.round(ms / 60000); return m < 60 ? m + 'm' : Math.floor(m / 60) + 'j ' + m % 60 + 'm'; };
+  const fd = ms => { const m = Math.round(ms / 60000); return m < 60 ? m + 'm' : Math.floor(m / 60) + U_JAM + ' ' + m % 60 + 'm'; };
   const tunjuk = e => {
     const r = e.target.closest && e.target.closest('.ds-hit'), h = r && (window._dsHari || [])[+r.dataset.i];
     if (!h) { tip.style.display = 'none'; return; }
