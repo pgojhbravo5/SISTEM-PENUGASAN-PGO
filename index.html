@@ -408,6 +408,9 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 .hm .keluar{flex:1 1 auto;display:flex;justify-content:center;align-items:center;height:34px;white-space:nowrap;border-radius:10px}
 .hm #keluar{color:var(--bad)}
 [data-device=desktop] .hm{justify-self:end;width:380px}
+/* ===== Last Online ===== */
+.who .lo{display:block;font-size:.72rem;color:var(--mut)}
+.who .lo span{font-size:inherit;color:inherit}
 </style>
 <script>
 // Auto-detect peranti: desktop = skrin >=1024px + tetikus/trackpad. Paksa ujian: ?view=desktop atau ?view=mobile
@@ -723,6 +726,7 @@ const BHS = (() => { try { return localStorage.getItem('bhs') === 'en' ? 'en' : 
 const LOKAL = BHS === 'en' ? 'en-GB' : 'ms-MY'; // format tarikh dan masa
 // Setiap baris: ['teks Melayu', 'English']. {0}, {1} = bahagian yang berubah (nama, masa, nombor)
 const KAMUS_EN = [
+  ['Online sekarang', 'Online now'], ['Belum ada rekod', 'No record yet'], ['baru sahaja', 'just now'], ['{0} minit lalu', '{0} min ago'], ['Hari ini {0}', 'Today {0}'], ['Semalam {0}', 'Yesterday {0}'],
   // Log masuk, kepala dan menu
   ['Kata laluan', 'Password'], ['ID (contoh: A01)', 'ID (e.g. A01)'], ['Log masuk', 'Log in'], ['Log masuk:', 'Logged in:'], ['· Syif', '· Shift'], ['· Syif {0}', '· Shift {0}'],
   ['○ Menyambung...', '○ Connecting...'], ['Log Keluar', 'Log Out'], ['Saiz paparan', 'Display size'], ['Saiz asal', 'Original size'],
@@ -1040,6 +1044,7 @@ $('#lpw').onkeydown = e => { if (e.key === 'Enter') masuk(); };
 $('#keluar').onclick = async e => {
   e.preventDefault();
   try { if (presenceCh) await presenceCh.untrack(); } catch (_) {}
+  await lastOnlineKemas(); // rekod masa keluar
   try {
     const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription();
     if (sub) { await db.rpc('padam_push', {p_endpoint: sub.endpoint}); await sub.unsubscribe(); }
@@ -1547,6 +1552,7 @@ let presenceCh = null, onlineUsers = new Set();
 
 function presenceMula() {
   if (presenceCh || !me || !db) return;
+  lastOnlineMula();
   const key = me.user_id + '-' + Math.random().toString(36).slice(2, 8);
   presenceCh = db.channel('presence-pgo', {config: {presence: {key}}});
   presenceCh
@@ -1561,6 +1567,37 @@ function presenceMula() {
         try { await presenceCh.track({user_id: me.user_id, nama: me.nama, masa: Date.now()}); } catch (_) {}
       }
     });
+}
+
+// ===== Last Online =====
+let lastOn = {}; // id anggota -> masa terakhir online
+async function lastOnlineMuat() {
+  const {data, error} = await db.from('last_online').select('anggota_id, masa');
+  if (error) return console.warn('Last online:', error.message);
+  (data || []).forEach(x => lastOn[x.anggota_id] = Math.max(lastOn[x.anggota_id] || 0, new Date(x.masa).getTime()));
+  presenceRender();
+}
+async function lastOnlineKemas() { // rekod masa saya
+  if (!me) return;
+  const {error} = await db.rpc('kemas_last_online');
+  if (error) console.warn('Last online:', error.message);
+}
+function lastOnlineMula() {
+  lastOnlineKemas().then(lastOnlineMuat);
+  setInterval(() => { if (!document.hidden) lastOnlineKemas().then(lastOnlineMuat); }, 60000);
+  document.addEventListener('visibilitychange', () => {
+    const simpan = lastOnlineKemas(); // rekod bila app dibuka atau ditinggalkan
+    if (!document.hidden) simpan.then(lastOnlineMuat);
+  });
+}
+function teksLastOnline(t) {
+  if (!t) return 'Belum ada rekod';
+  const minit = Math.floor((Date.now() - t) / 60000), h0 = new Date().setHours(0, 0, 0, 0);
+  if (minit < 1) return 'baru sahaja';
+  if (minit < 60) return `${minit} minit lalu`;
+  if (t >= h0) return `Hari ini ${jam(t)}`;
+  if (t >= h0 - 86400000) return `Semalam ${jam(t)}`;
+  return `${new Date(t).toLocaleDateString(LOKAL, {day: 'numeric', month: 'short'})}, ${jam(t)}`;
 }
 
 function presenceRender() {
@@ -1581,9 +1618,11 @@ function presenceRender() {
   const baris = (a, status) => {
     const l = last[a.id], dalam = l && l.jenis === 'IN';
     const avClass = status === 'online' ? 'in' : status === 'offline' ? 'out' : 'off';
+    if (status === 'online') lastOn[a.id] = Date.now();
+    const lo = status === 'noid' ? '' : `<small class="lo">Last online: <span>${status === 'online' ? 'Online sekarang' : teksLastOnline(lastOn[a.id])}</span></small>`;
     return `<li class="lg">
       <span class="av sm ${avClass}">${(a.kod || a.nama || '').slice(0, 3)}</span>
-      <div class="who"><b>${a.nama}</b><span class="mut">${a.kod || '-'}${dalam ? ' · ' + (l.stesen || '-') : ''}</span></div>
+      <div class="who"><b>${a.nama}</b><span class="mut">${a.kod || '-'}${dalam ? ' · ' + (l.stesen || '-') : ''}</span>${lo}</div>
       ${dalam ? '<span class="chip on">Bertugas</span>' : ''}
     </li>`;
   };
