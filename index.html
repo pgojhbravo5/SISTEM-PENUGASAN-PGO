@@ -8,6 +8,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#b3261e">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{--bg:#eef1f5;--card:rgba(255,255,255,.55);--field:rgba(255,255,255,.6);--tx:#1b2430;--mut:#5f6b79;--bd:rgba(255,255,255,.7);--ln:rgba(27,36,48,.1);--ok:#1a7f4b;--bad:#c62828;--pri:#b3261e;--sh:0 8px 28px rgba(40,50,70,.12);--b1:rgba(179,38,30,.28);--b2:rgba(60,110,220,.25);--b3:rgba(26,127,75,.18)}
 @media(prefers-color-scheme:dark){:root{--bg:#0d1115;--card:rgba(34,42,52,.55);--field:rgba(255,255,255,.07);--tx:#e8ecf0;--mut:#98a3af;--bd:rgba(255,255,255,.14);--ln:rgba(255,255,255,.1);--ok:#4cc58a;--bad:#ff6b6b;--pri:#e0554a;--sh:0 8px 28px rgba(0,0,0,.45);--b1:rgba(224,85,74,.3);--b2:rgba(70,120,230,.28);--b3:rgba(76,197,138,.16)}}
@@ -230,7 +232,12 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 .reply-bar .rb-info b{display:block;color:var(--pri);font-size:.72rem;margin-bottom:1px}
 .reply-bar .rb-info span{display:block;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .reply-bar #rbBatal{width:34px;height:34px;padding:0;border-radius:50%;flex:none;margin:0;font-size:1rem;line-height:1}
-
+#peta{position:relative;isolation:isolate;z-index:0;height:min(62vh,520px);min-height:320px;border-radius:14px;overflow:hidden;border:1px solid var(--bd)}
+.pm{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:700 .7rem system-ui;color:#fff;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.pm.in{background:var(--ok)}.pm.off{background:#7b8794}
+.leaflet-container{font:inherit}
+.tabs button{font-size:.66rem;padding:8px 2px}
+[data-device=desktop] #peta{height:calc(100dvh - 230px)}
 /* ===== Paparan Desktop (auto: html[data-device="desktop"]) ===== */
 [data-device=desktop] body{max-width:none;margin:0;padding:24px 28px}
 [data-device=desktop] body:has(#app[style*="block"]){padding-left:252px}
@@ -529,7 +536,19 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   </div>
 </div>
 </section>
-
+<!-- TAB 7: Peta Punch In -->
+<section id="t7" class="tab">
+  <div class="card">
+    <div class="sb"><h2 style="margin:0">Peta Punch In</h2><span id="petaCnt" class="mut"></span></div>
+    <div class="seg" id="segPeta" role="group" aria-label="Julat peta">
+      <button data-m="on" class="on">Bertugas</button>
+      <button data-m="hari">Hari ini</button>
+      <button data-m="minggu">7 hari</button>
+    </div>
+    <div id="peta"></div>
+    <p class="mut" style="margin:8px 0 0">Hijau = sedang bertugas, kelabu = sudah Punch Out. Bulatan merah = kawasan Ibu Pejabat.</p>
+  </div>
+</section>
 <footer class="kredit">
   <div>Pembina sistem &amp; aplikasi: <b>PB Mohamad Aidil</b></div>
   <div>Editor CSS: <b>PB Jevinson</b></div>
@@ -567,6 +586,7 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
   <button data-tab="t4"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Log</button>
   <button data-tab="t5"><svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/></svg>Notif</button>
   <button data-tab="t6"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H10l-4 3.5V16H4z"/></svg>Chat<i id="chatDot" class="tdot"></i></button>
+  <button data-tab="t7"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 12 3.5 6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>Peta</button>
 </nav>
 </div>
 
@@ -574,6 +594,42 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <script>
 // ====== TETAPAN: SUPABASE_URL, SUPABASE_KEY dan VAPID_PUBLIC diisi dalam config.js ======
 const MIN = 3; // minimum anggota bertugas
+// ===== Pagar lokasi: Punch In hanya dalam radius dari Ibu Pejabat =====
+const GEO = {
+  aktif: true,
+  lat: 0, lng: 0,       // ISI koordinat Ibu Pejabat dari Langkah 0. Jika 0, pagar dimatikan.
+  radius: 1000,         // meter
+  ketepatanMaks: 300,   // bacaan GPS kurang tepat daripada ini diabaikan (meter)
+  keluarSahkan: 2,      // bilangan bacaan berturut-turut di luar kawasan sebelum auto Punch Out
+  kecuali: []           // kod ID yang dikecualikan, contoh ['A02'] untuk ujian
+};
+const geoKecuali = () => !me || GEO.kecuali.map(x => x.toUpperCase()).includes(String(me.kod || '').toUpperCase());
+const jarakM = (a, b, c, d) => {
+  const R = 6371000, r = x => x * Math.PI / 180, dLat = r(c - a), dLng = r(d - b);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
+function dapatLokasi() {
+  return new Promise((ok, gagal) => {
+    if (!navigator.geolocation) return gagal(new Error('Pelayar ini tidak menyokong GPS.'));
+    navigator.geolocation.getCurrentPosition(p => ok(p.coords), e => gagal(new Error(
+      e.code === 1 ? 'Akses lokasi ditolak. Benarkan Lokasi (Precise) untuk app ini di tetapan pelayar.' :
+      e.code === 2 ? 'Lokasi tidak dapat dikesan. Hidupkan GPS dan cuba lagi.' :
+      'GPS lambat bertindak balas. Cuba lagi di kawasan terbuka.')),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 0});
+  });
+}
+async function semakGeo() { // null = dalam kawasan; selain itu = mesej ralat
+  if (!GEO.aktif || !GEO.lat || geoKecuali()) return null;
+  try {
+    const c = await dapatLokasi();
+    window._geo = {lat: c.latitude, lng: c.longitude, ketepatan: Math.round(c.accuracy), t: Date.now()};
+    if (c.accuracy > GEO.ketepatanMaks) return `GPS kurang tepat (±${Math.round(c.accuracy)} m). Cuba lagi di kawasan terbuka.`;
+    const j = jarakM(c.latitude, c.longitude, GEO.lat, GEO.lng);
+    return j > GEO.radius ? `Anda ${(j / 1000).toFixed(1)} km dari Ibu Pejabat. Punch In hanya dibenarkan dalam ${GEO.radius / 1000} km.` : null;
+  } catch (e) { return e.message; }
+}
+
 // =====================
 const KONFIG_OK = typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_KEY !== 'undefined' &&
   !SUPABASE_URL.includes('XXXX') && !SUPABASE_KEY.includes('ANON_PUBLIC');
@@ -599,6 +655,7 @@ function bukaTab(id) {
   document.body.classList.toggle('chat', id === 't6');
   if (id === 't6') { kosongkanAppBadge(); chatTandaDibaca(); chatRender(true); }
   else if (typeof aiAnalisisTab === 'function') { aiAnalisisTab(id); }
+  if (id === 't7' && typeof petaMula === 'function') petaMula();
   try { sessionStorage.setItem('tab', id); } catch (_) {}
 }
 document.querySelectorAll('.tabs button[data-tab]').forEach(b => b.onclick = () => bukaTab(b.dataset.tab));
@@ -847,6 +904,8 @@ const tgSaya = !!me && tg.has(me.id);
   pilihanStesen();
   stesen();
   timer();
+  geoPantau();
+  petaRender();
   if (aiOk) aiAuto();
   presenceRender();
 }
@@ -881,6 +940,13 @@ async function punch(jenis, st) {
   if (!me) return;
   if (jenis === 'IN') {
     if (!st) return alert('Pilih stesen dahulu');
+    if (!(last[me.id] && last[me.id].jenis === 'IN')) { // Punch In baharu sahaja, bukan Tukar stesen
+      const bt = $('#bIn'), lbl = bt.textContent;
+      bt.disabled = true; bt.textContent = 'Menyemak lokasi...';
+      const ralat = await semakGeo();
+      bt.disabled = false; bt.textContent = lbl;
+      if (ralat) return alert(ralat);
+    }
     if (menungguList().some(a => a.id !== me.id && last[a.id].stesen === st)) return alert('Stesen ini sudah ada orang yang menunggu. Pilih stesen lain.');
     const diduduki = bertugas().some(a => a.id !== me.id && last[a.id].stesen === st);
     if (diduduki && bertugas().some(a => a.id === me.id)) return alert('Stesen ini sedang diduduki. Pilih stesen yang kosong.');
@@ -892,6 +958,8 @@ async function punch(jenis, st) {
   if (sibuk) return;  sibuk = true;
   try {
     const row = {anggota_id: me.id, jenis, stesen: jenis === 'IN' ? st : null};
+    const g = window._geo;
+    if (jenis === 'IN' && g && Date.now() - g.t < 90000) { row.lat = g.lat; row.lng = g.lng; row.ketepatan = g.ketepatan; }
     const {error} = await db.from('punch').insert(row);
     if (error) alert('Gagal: ' + error.message);
   } finally { sibuk = false; }
@@ -939,7 +1007,75 @@ $('#kfYa').onclick = async () => {
     ya.disabled = false; b.disabled = false; ya.textContent = label;
   }
 };
-
+// ===== Pantau lokasi semasa Punch In: keluar kawasan = auto Punch Out =====
+let geoWatch = null, geoLuar = 0, geoSedangOut = false;
+function geoPantau() { // dipanggil dari render()
+  if (!GEO.aktif || !GEO.lat || !me || !navigator.geolocation || geoKecuali()) return;
+  const dalam = !!(last[me.id] && last[me.id].jenis === 'IN');
+  if (dalam && geoWatch === null) {
+    geoLuar = 0;
+    geoWatch = navigator.geolocation.watchPosition(p => {
+      const c = p.coords;
+      if (c.accuracy > GEO.ketepatanMaks) return;
+      const j = jarakM(c.latitude, c.longitude, GEO.lat, GEO.lng);
+      geoLuar = j > GEO.radius ? geoLuar + 1 : 0;
+      if (geoLuar >= GEO.keluarSahkan) geoAutoOut(j);
+    }, () => {}, {enableHighAccuracy: true, maximumAge: 10000, timeout: 30000});
+  } else if (!dalam && geoWatch !== null) {
+    navigator.geolocation.clearWatch(geoWatch); geoWatch = null; geoLuar = 0;
+  }
+}
+async function geoAutoOut(j) {
+  if (geoSedangOut || sibuk) return;
+  geoSedangOut = true;
+  try {
+    const {error} = await db.from('punch').insert({anggota_id: me.id, jenis: 'OUT', stesen: null});
+    if (!error) { toast(`Auto Punch Out: anda ${(j / 1000).toFixed(1)} km dari Ibu Pejabat (had ${GEO.radius / 1000} km)`); beep(300); }
+  } finally { geoSedangOut = false; }
+}
+// ===== Peta Punch In (Leaflet + OpenStreetMap) =====
+let peta = null, petaLapis = null, petaMod = 'on';
+function petaMula() {
+  const el = $('#peta');
+  if (typeof L === 'undefined') { el.innerHTML = '<p class="mut" style="padding:16px">Peta tidak dapat dimuat. Semak sambungan internet.</p>'; return; }
+  if (!peta) {
+    const pg = typeof GEO !== 'undefined' ? GEO : {};
+    peta = L.map('peta').setView([pg.lat || 1.4927, pg.lng || 103.7414], 14);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap'}).addTo(peta);
+    petaLapis = L.layerGroup().addTo(peta);
+    if (pg.lat) L.circle([pg.lat, pg.lng], {radius: pg.radius, color: '#b3261e', weight: 2, fillOpacity: .06}).addTo(peta);
+  }
+  setTimeout(() => { peta.invalidateSize(); petaRender(true); }, 60);
+}
+function petaRender(muat) {
+  if (!peta) return;
+  petaLapis.clearLayers();
+  const now = Date.now(), had = petaMod === 'hari' ? 86400000 : petaMod === 'minggu' ? 7 * 86400000 : Infinity;
+  const unik = {}, pts = [];
+  logs.forEach(x => { // logs terbaru dahulu: ambil Punch In terkini yang ada koordinat bagi setiap anggota
+    if (x.jenis !== 'IN' || x.lat == null || x.lng == null || unik[x.anggota_id]) return;
+    if (now - masaTs(x) > had) return;
+    unik[x.anggota_id] = x;
+  });
+  Object.values(unik).forEach(x => {
+    const a = anggota.find(m => m.id === x.anggota_id);
+    if (!a) return;
+    const dlm = !!(last[a.id] && last[a.id].jenis === 'IN');
+    if (petaMod === 'on' && !dlm) return;
+    const ic = L.divIcon({className: '', html: `<div class="pm ${dlm ? 'in' : 'off'}">${esc((a.kod || a.nama || '').slice(0, 3))}</div>`, iconSize: [34, 34], iconAnchor: [17, 17]});
+    L.marker([x.lat, x.lng], {icon: ic})
+      .bindPopup(`<b>${esc(a.nama)}</b><br>${esc(a.kod || '')} · ${esc(x.stesen || '-')}<br>Punch In ${esc(fmt(x.masa))}${dlm ? '' : '<br>(sudah Punch Out)'}`)
+      .addTo(petaLapis);
+    pts.push([x.lat, x.lng]);
+  });
+  $('#petaCnt').textContent = pts.length + ' lokasi';
+  if (muat && pts.length) peta.fitBounds(pts, {padding: [40, 40], maxZoom: 17});
+}
+document.querySelectorAll('#segPeta button').forEach(b => b.onclick = () => {
+  petaMod = b.dataset.m;
+  document.querySelectorAll('#segPeta button').forEach(x => x.classList.toggle('on', x === b));
+  petaRender(true);
+});
 // ===== Bunyi, alarm, notifikasi =====
 function beep(ms = 200) {
   if (!ac) bukaAudio();
