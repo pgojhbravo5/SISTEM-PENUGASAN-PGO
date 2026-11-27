@@ -1961,17 +1961,24 @@ $('#fReset').onclick = e => {
   render();
 };
 
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+const habisCetak = () => { if (logPrintAll) { logPrintAll = false; render(); } };
+
 $('#bPrintLog').onclick = () => {
+  // iOS: window.print() tiada kesan dalam app Skrin Utama (PWA)
+  if (IOS && STANDALONE) { alert('Cetak PDF tidak disokong dalam app Skrin Utama iPhone. Buka sistem ini dalam Safari, kemudian tekan Cetak PDF.'); return; }
   logPrintAll = true;
   render();
-  setTimeout(() => window.print(), 60);
+  window.print(); // mesti dipanggil terus dalam sentuhan pengguna; setTimeout disekat iOS
+  if (IOS) setTimeout(habisCetak, 8000); // iOS tidak sentiasa hantar afterprint
 };
 window.addEventListener('beforeprint', () => {
   if (!logPrintAll) { logPrintAll = true; render(); }
 });
-window.addEventListener('afterprint', () => {
-  if (logPrintAll) { logPrintAll = false; render(); }
-});
+window.addEventListener('afterprint', habisCetak);
+const mqCetak = matchMedia('print'), onMq = e => { if (!e.matches) habisCetak(); };
+mqCetak.addEventListener ? mqCetak.addEventListener('change', onMq) : mqCetak.addListener(onMq);
 
 // ===== Tupai PGO: pembantu pintar (jawab berdasarkan data app + peringatan rehat) =====
 let aiTerbuka = false, aiOk = false, aiTt;
