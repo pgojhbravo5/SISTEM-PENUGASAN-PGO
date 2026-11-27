@@ -163,10 +163,11 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 #aiLaunch svg{width:100%;height:100%;display:block}
 #aiLaunch.wig{animation:aiwig .6s ease 3}
 #aiBadge{position:absolute;top:1px;right:1px;width:14px;height:14px;border-radius:50%;background:var(--bad);border:2px solid var(--bg);display:none}
-#aiBubble{position:fixed;right:calc(var(--tupai,66px) + 18px);bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:6;max-width:min(250px,calc(100vw - var(--tupai,66px) - 42px));padding:8px 12px;border-radius:14px 14px 4px 14px;background:var(--tx);color:var(--bg);font-size:.82rem;line-height:1.35;white-space:pre-line;display:none;cursor:pointer;box-shadow:var(--sh)}
+#aiBubble{position:fixed;right:calc(var(--tupai,66px) + 18px);bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:6;max-width:min(calc(250px * var(--pz,1)),calc(100vw - var(--tupai,66px) - 42px));padding:calc(8px * var(--pz,1)) calc(12px * var(--pz,1));border-radius:14px 14px 4px 14px;background:var(--tx);color:var(--bg);font-size:calc(.82rem * var(--pz,1));line-height:1.35;white-space:pre-line;display:none;cursor:pointer;box-shadow:var(--sh)}
 #aiBubble.on{display:block}
-#aiPanel{position:fixed;left:12px;right:12px;margin-inline:auto;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:6;max-width:380px;max-height:calc(100vh - 210px);max-height:min(520px,calc(100dvh - 210px));display:none;flex-direction:column;overflow:hidden;border-radius:20px;border:1px solid var(--bd);box-shadow:var(--sh);background:linear-gradient(var(--card),var(--card)),var(--bg);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
+#aiPanel{position:fixed;left:12px;right:12px;margin-left:auto;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:6;max-width:calc(380px * var(--pz,1));max-height:calc(100vh - 210px);max-height:min(calc(520px * var(--pz,1)),calc(100dvh - 210px));display:none;flex-direction:column;overflow:hidden;border-radius:20px;border:1px solid var(--bd);box-shadow:var(--sh);background:linear-gradient(var(--card),var(--card)),var(--bg);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
 #aiPanel.on{display:flex}
+#aiPanel>*{zoom:var(--pz,1)} /* chat Tupai ikut saiz ikon */
 #aiLaunch{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 /* Ejas saiz tupai: muncul bila ikon ditekan lama */
 #aiSaizPop{position:fixed;z-index:7;display:none;width:190px;padding:8px 12px 10px;border-radius:14px;border:1px solid var(--bd);box-shadow:var(--sh);background:linear-gradient(var(--card),var(--card)),var(--bg);font-size:.8rem}
@@ -327,8 +328,8 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 
 /* Tupai PGO: sudut kanan bawah */
 [data-device=desktop] #aiLaunch{right:28px;bottom:28px}
-[data-device=desktop] #aiBubble{right:calc(var(--tupai,66px) + 40px);bottom:40px;max-width:280px}
-[data-device=desktop] #aiPanel{left:auto;right:28px;margin:0;width:400px;max-width:none;bottom:108px;max-height:min(620px,calc(100dvh - 140px))}
+[data-device=desktop] #aiBubble{right:calc(var(--tupai,66px) + 40px);bottom:40px;max-width:calc(280px * var(--pz,1))}
+[data-device=desktop] #aiPanel{left:auto;right:28px;margin:0;width:calc(400px * var(--pz,1));max-width:none;bottom:108px;max-height:min(calc(620px * var(--pz,1)),calc(100dvh - 140px))}
 
 /* Butang ikon cetak PDF & paparan cetak */
 .ic-print{width:36px;height:36px;margin:0;padding:0;flex:none;display:grid;place-items:center;border-radius:10px}
@@ -1860,6 +1861,7 @@ function aiMula() { // dipanggil sekali selepas log masuk
 let aiSaiz = 66; // saiz ikon Tupai PGO (px), disimpan pada peranti ini
 // ===== Tupai pudar bila tidak digunakan =====
 const AI_REDUP_MS = 5000; // 5000 = 5 saat
+let aiSkala = 1; // saiz chat & gelembung, ikut saiz ikon
 let aiRedupTmr = null;
 function aiAktif() { // terang semula, kemudian pudar selepas tidak digunakan
   const el = $('#aiLaunch');
@@ -1897,13 +1899,13 @@ function aiIkut() {
   }
 
   if (p.classList.contains('on')) {
-    const pw = Math.min(sisi ? 400 : 380, W - kiri - pad);
+    const pw = Math.min((sisi ? 400 : 380) * aiSkala, W - kiri - pad);
     const px = had(diKanan ? x + s - pw : x, kiri, W - pw - pad);
     // Ikon di separuh bawah: pop-up membuka ke atas. Di separuh atas: ke bawah.
     const tepi = diBawah ? Math.max(H - bawah, H - (y + s)) : Math.max(pad, y);
-    Object.assign(p.style, {margin: '0', width: pw + 'px', left: px + 'px', right: 'auto',
+    Object.assign(p.style, {margin: '0', width: pw + 'px', maxWidth: 'none', left: px + 'px', right: 'auto',
       top: diBawah ? 'auto' : tepi + 'px', bottom: diBawah ? tepi + 'px' : 'auto',
-      maxHeight: Math.min(sisi ? 620 : 520, (diBawah ? H : bawah) - tepi - (diBawah ? pad : 0)) + 'px'});
+      maxHeight: Math.min((sisi ? 620 : 520) * aiSkala, (diBawah ? H : bawah) - tepi - (diBawah ? pad : 0)) + 'px'});
   }
 }
 
@@ -1940,6 +1942,9 @@ function aiIkut() {
   function setSaiz(v) {
     aiSaiz = Math.min(120, Math.max(44, v || 66));
     document.documentElement.style.setProperty('--tupai', aiSaiz + 'px');
+    // ikon 44 = chat 70%, ikon 66 = 100%, ikon 120 = 130%
+    aiSkala = aiSaiz <= 66 ? 0.7 + (aiSaiz - 44) / 22 * 0.3 : 1 + (aiSaiz - 66) / 54 * 0.3;
+    document.documentElement.style.setProperty('--pz', aiSkala.toFixed(3));
     $('#aiSaizIn').value = aiSaiz; $('#aiSaizLbl').textContent = aiSaiz;
     if (paksi) { letak(paksi.x - aiSaiz / 2, paksi.b - aiSaiz); letakPop(); }
     else if (el.style.left) letak(parseFloat(el.style.left), parseFloat(el.style.top)); // kekal dalam skrin
