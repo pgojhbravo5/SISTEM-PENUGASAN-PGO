@@ -56,7 +56,7 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 .tabs button.on{background:var(--field);color:var(--pri);box-shadow:inset 0 0 0 1px var(--bd)}
 
 /* ===== Motion tab: kandungan naik 0.1 saat ===== */
-.tab.on{animation:tabmasuk .3s ease-out}
+.tab.on{animation:tabmasuk .1s ease-out}
 @keyframes tabmasuk{from{opacity:0;transform:translateY(12px)}}
 @media(prefers-reduced-motion:reduce){.tab.on{animation:none}}
 
@@ -177,6 +177,8 @@ ul{list-style:none;margin:0;padding:0}li{display:flex;justify-content:space-betw
 #aiSaizPop input{display:block;margin:4px 0 0;padding:0;border:0;background:transparent;accent-color:var(--pri);height:28px}
 #aiSaizPop button{margin-top:4px;padding:5px;font-size:.8rem}
 #aiLaunch.edit{animation:none}
+#aiLaunch{transition:opacity .1s}
+#aiLaunch.redup{opacity:.5}
 .aih{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln)}
 .aih svg{width:42px;height:42px;flex:none}
 .aih div{min-width:0}.aih b{display:block;line-height:1.2}.aih small{display:block;color:var(--mut);font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1792,7 +1794,8 @@ function aiBicara(t) { // peringatan automatik daripada tupai
   const b = $('#aiBubble'); b.textContent = t.length > 180 ? t.slice(0, 177) + '…' : t; b.classList.add('on');
   aiIkut();
   const l = $('#aiLaunch'); l.classList.remove('wig'); void l.offsetWidth; l.classList.add('wig');
-  clearTimeout(aiTt); aiTt = setTimeout(() => b.classList.remove('on'), 12000);
+  clearTimeout(aiTt); aiTt = setTimeout(() => { b.classList.remove('on'); aiAktif(); }, 12000);
+  aiAktif();
 }
 
 // ===== Analisis automatik bila tukar tab & mula buka app =====
@@ -1838,6 +1841,7 @@ function aiBuka(b) {
     setTimeout(() => { $('#aiMsgs').scrollTop = $('#aiMsgs').scrollHeight; }, 0);
   }
   aiIkut();
+  aiAktif();
   try { localStorage.setItem('aiBuka', b ? '1' : '0'); } catch (_) {}
 }
 function aiMula() { // dipanggil sekali selepas log masuk
@@ -1854,6 +1858,19 @@ function aiMula() { // dipanggil sekali selepas log masuk
   if (tabAktif && !aiSenyap) setTimeout(() => aiAnalisisTab(tabAktif.id), 1200);
 }
 let aiSaiz = 66; // saiz ikon Tupai PGO (px), disimpan pada peranti ini
+// ===== Tupai pudar bila tidak digunakan =====
+const AI_REDUP_MS = 5000; // 5000 = 5 saat
+let aiRedupTmr = null;
+function aiAktif() { // terang semula, kemudian pudar selepas tidak digunakan
+  const el = $('#aiLaunch');
+  el.classList.remove('redup');
+  clearTimeout(aiRedupTmr);
+  aiRedupTmr = setTimeout(() => {
+    const sibukGuna = el.matches('.drag, .edit') || $('#aiBubble').classList.contains('on') ||
+      (matchMedia('(hover: hover)').matches && el.matches(':hover'));
+    if (sibukGuna) aiAktif(); else el.classList.add('redup');
+  }, AI_REDUP_MS);
+}
 // ===== Teks Tupai PGO (gelembung + pop-up) ikut kedudukan ikon =====
 function aiIkut() {
   const el = $('#aiLaunch'), b = $('#aiBubble'), p = $('#aiPanel');
@@ -1939,7 +1956,10 @@ function aiIkut() {
   // Tekan lama pada ikon = buka ejas saiz
   const pop = $('#aiSaizPop');
   let tekanTmr = null;
-  const tutupSaiz = () => { pop.classList.remove('on'); el.classList.remove('edit'); paksi = null; };
+  const tutupSaiz = () => {
+    if (!pop.classList.contains('on')) return;
+    pop.classList.remove('on'); el.classList.remove('edit'); paksi = null; aiAktif();
+  };
   function bukaSaiz() {
     $('#aiBubble').classList.remove('on');
     el.classList.add('edit'); // hentikan animasi supaya kedudukan tepat
@@ -2004,6 +2024,8 @@ function aiIkut() {
 
   el.addEventListener('pointerup', tamatDrag);
   el.addEventListener('pointercancel', tamatDrag);
+  ['pointerenter', 'pointerdown', 'pointerup', 'pointercancel', 'pointerleave', 'focus'].forEach(n => el.addEventListener(n, aiAktif));
+  aiAktif();
 
   // Pastikan ikon kekal dalam skrin bila saiz skrin berubah
   window.addEventListener('resize', () => {
