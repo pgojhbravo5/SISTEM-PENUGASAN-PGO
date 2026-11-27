@@ -396,6 +396,18 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 [data-device=desktop] #t5>div:nth-of-type(2)>ul{max-height:calc(100dvh / var(--z,1) - 260px)}
 #rujN{overflow-x:auto}#rujN table{min-width:336px}
 @media print{.tab:not(#t7){zoom:1}[data-device=desktop] #t4>.card>#log{max-height:none}}
+/* ===== Kepala halaman yang kemas ===== */
+.hd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center}
+.hd>div:first-child{grid-column:1;grid-row:1/span 2}
+.hr{display:contents}
+.hd .pill{grid-column:2;grid-row:1;justify-self:end}
+.hd .zm{grid-column:2;grid-row:2;justify-self:end;gap:0;border:1px solid var(--bd);border-radius:999px;background:var(--field);overflow:hidden}
+.hd .zm button{height:30px;border:0;border-radius:0;background:transparent;box-shadow:none}
+.hd .zm #zAsal{min-width:52px;border-inline:1px solid var(--bd)}
+.hm{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.hm .keluar{flex:1 1 auto;display:flex;justify-content:center;align-items:center;height:34px;white-space:nowrap;border-radius:10px}
+.hm #keluar{color:var(--bad)}
+[data-device=desktop] .hm{justify-self:end;width:380px}
 </style>
 <script>
 // Auto-detect peranti: desktop = skrin >=1024px + tetikus/trackpad. Paksa ujian: ?view=desktop atau ?view=mobile
@@ -500,7 +512,15 @@ body.chat #aiLaunch,body.chat #aiBubble,body.chat #aiPanel,body.chat .kredit{dis
 <section id="t1" class="tab on">
 <header class="hd">
   <div><h1>Syif PGO Johor</h1><p class="mut" style="margin:2px 0 0">Log masuk: <b id="kod"></b> · Syif <span id="mykump"></span></p></div>
-  <div class="hr"><span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span><a href="#" id="bReset" class="keluar">↻ Reset</a><a href="#" id="keluar" class="keluar"> Log Keluar</a><a href="#" class="keluar bhsBtn" data-asal>🌐 English</a><div class="zm" role="group" aria-label="Saiz paparan"><button type="button" id="zKurang" aria-label="Zoom out">−</button><button type="button" id="zAsal" aria-label="Saiz asal">100%</button><button type="button" id="zTambah" aria-label="Zoom in">+</button></div></div>
+  <div class="hr">
+    <span class="pill"><span id="conn" class="mut">○ Menyambung...</span></span>
+    <div class="zm" role="group" aria-label="Saiz paparan"><button type="button" id="zKurang" aria-label="Zoom out">−</button><button type="button" id="zAsal" aria-label="Saiz asal">100%</button><button type="button" id="zTambah" aria-label="Zoom in">+</button></div>
+    <nav class="hm">
+      <a href="#" id="bReset" class="keluar">↻ Reset</a>
+      <a href="#" class="keluar bhsBtn" data-asal>🌐 English</a>
+      <a href="#" id="keluar" class="keluar">Log Keluar</a>
+    </nav>
+  </div>
 </header>
 <button id="aktif" class="pri" style="margin:0 0 6px">Aktifkan bunyi dan notifikasi</button>
 <p id="pushStatus" class="mut" style="margin:0 0 12px"></p>
